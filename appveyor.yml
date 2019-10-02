@@ -1,0 +1,19 @@
+environment:
+  APPVEYOR_YML_DISABLE_PS_LINUX: true
+version: 0.0.{build}
+image:
+    - Visual Studio 2017
+    - Ubuntu
+init:
+    - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 70 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+before_build:
+    - git submodule update --init --recursive
+    - cmake .
+build_script:
+    - cmake --build . --config Release
+test_script:
+    - ps: ctest --output-on-failure
+artifacts:
+    - path: bin
+      name: artifacts
+      type: zip

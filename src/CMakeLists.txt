@@ -1,0 +1,14 @@
+set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+# Force MSVC to place artifacts where I want it
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR})
+
+file(GLOB SRC "*.cpp")
+
+add_executable(easypt2 ${SRC})
+
+# Having fun with Profile-Guided Optimizations
+# set_target_properties(easypt2 PROPERTIES COMPILE_FLAGS "/GL")
+#set_target_properties(easypt2 PROPERTIES LINK_FLAGS "/LTCG /GENPROFILE")
+# set_target_properties(easypt2 PROPERTIES LINK_FLAGS "/LTCG /USEPROFILE")

@@ -1,0 +1,3 @@
+console.write("What's your name?\t");
+let name = console.readLine();
+console.writeLine("Hello " + name + "! Nice to meet you.");
