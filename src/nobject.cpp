@@ -15,13 +15,13 @@ std::shared_ptr<object> object::shared_from_this()
     return std::enable_shared_from_this<object>::shared_from_this();
 }
 
-object::objectPtr& object::operator[](const name &n)
+object::objectPtr &object::operator[](const name &n)
 {
     if (properties.count(n))
         return properties[n];
     if (properties.count("prototype"_n) && properties["prototype"_n])
     {
-        object::objectPtr& res = properties["prototype"_n]->read(n);
+        object::objectPtr &res = properties["prototype"_n]->read(n);
         if (res)
             return res;
     }
@@ -41,7 +41,14 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
             localStack.insert("this"_n, thisObj);
         localStack.insert("args"_n, makeObject(std::move(args)));
         //TODO implement returning
-        get<compoundStatement>()(&localStack);
+        try
+        {
+            get<compoundStatement>()(&localStack);
+        }
+        catch (const object::objectPtr &ret)
+        {
+            return ret;
+        }
         return makeUndefined();
     }
     throw std::runtime_error("object is not a function");
@@ -50,7 +57,7 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
     //return (*(*this)["callOperator"_n])(thisObj, std::move(args), st);
 }
 
-object::objectPtr& object::read(const name &n)
+object::objectPtr &object::read(const name &n)
 {
     static object::objectPtr notFound(nullptr);
     if (properties.count(n))

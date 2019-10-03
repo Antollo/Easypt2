@@ -99,10 +99,12 @@ void runtime::init(stack *st)
     addOperatorL("let"_n, {
         return insertObject(args[0].name, nullptr);
     });
-
     addOperatorL("function"_n, {
         //args[0].arity special meaning: index
         return makeObject(compoundStatement::get(args[0].arity));
+    });
+    addOperatorL("return"_n, {
+        throw args[0].resolve(st);
     });
 
     object::objectPrototype = makeUndefined();

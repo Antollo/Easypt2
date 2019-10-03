@@ -274,7 +274,8 @@ bool parser::isOperator(const std::string &token)
 
 bool parser::isUnaryOperator(const std::string &token)
 {
-    return token.back() == 'u' || token == "++" || token == "--" || token == "!" || token == "~" || token == "let" || token == "function";
+    return token.back() == 'u' || token == "++" || token == "--" || token == "!" 
+    || token == "~" || token == "let" || token == "function" || token == "return";
 }
 
 bool parser::isNumberLiteral(const std::string &token)
@@ -316,7 +317,7 @@ int parser::operatorPrecedence(const std::string &token)
         return 14;
     else if (token == "||")
         return 15;
-    else if (token.back() == '=' || token == ":")
+    else if (token.back() == '=' || token == ":" || token == "return")
         return 16;
     else
         throw std::runtime_error("operator has no precedence");
@@ -325,7 +326,10 @@ int parser::operatorPrecedence(const std::string &token)
 // true if left-associative
 bool parser::operatorAssociativity(const std::string &token)
 {
-    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function")
+    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" 
+    || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" 
+    || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" 
+    || token == "^=" || token == "|=" || token == "let" || token == "function"  || token == "return")
         return false;
     return true;
 }

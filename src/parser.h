@@ -16,7 +16,7 @@ class parser
 {
 public:
     const static inline std::string basicOperatorRegexString = R"(((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>)=)|(\|\||&&|<<|>>|--|\+\+|->|==)|(\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\])|(\+u|-u|\*u))";
-    const static inline std::string extendedOperatorRegexString = "(let|function)";
+    const static inline std::string extendedOperatorRegexString = "(let|function|return)";
     const static inline std::string operatorRegexString = basicOperatorRegexString + "|"s + extendedOperatorRegexString;
     const static inline std::string numberRegexString = R"(([0-9]+([.][0-9]+)?))";
     const static inline std::string nameRegexString = R"(([#_A-Za-z0-9]+))";

@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 {
     try
     {
-        assert("a\nb\n3\n3\n1\nab\n3.500000\n1\n11\n2\n7\nfunction\ntrue\ntrue\ns\n10987654321\nproperty" == out([&argc, &argv]() {
+        assert("a\nb\n3\n3\n1\nab\n3.500000\n1\n11\n2\n7\nfunction\ntrue\ntrue\ns\n10987654321\nproperty\nreturn function 2\nreturn method 1\nthis property: property\nreturn function 3\n" == out([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);
 
