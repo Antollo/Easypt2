@@ -1,4 +1,6 @@
 #include <cmath>
+#include <stdexcept>
+#include <iostream>
 #include "number.h"
 
 number::number(const int &n) : v(n){};

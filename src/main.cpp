@@ -15,13 +15,14 @@ int main(int argc, char **argv)
     {
         stack globalStack;
         runtime::init(&globalStack);
-        
+
         auto st = &globalStack;
         insertObject("argv"_n, object::arrayType());
         insertObject("argc"_n, 0_n);
-        
+
         for (int i = 0; i < argc; i++)
         {
+            std::cerr << "arg";
             if (isFlag(argv[i], "file") && i != argc - 1)
             {
                 import(nullptr, {makeObject(std::string(argv[++i]))}, &globalStack);

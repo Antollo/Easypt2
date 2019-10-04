@@ -88,7 +88,7 @@ void runtime::init(stack *st)
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return token(makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>())));
-            
+
 
         return token((*(*a)["=="_n])(a, {b}, st));
     });

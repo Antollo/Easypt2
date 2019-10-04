@@ -62,7 +62,7 @@ std::string parseString(const std::string &source)
     return ret;
 }
 
-token::token(const std::string &n, tokenType t) : name(n), arity(-1), type(t), value(nullptr)
+token::token(const std::string &n, tokenType t) : _name(n), arity(-1), type(t), value(nullptr)
 {
     switch (type)
     {
@@ -92,7 +92,7 @@ object::objectPtr& token::resolve(stack *st) const
     {
     case token::tokenType::Name:
     case token::tokenType::CallOperator:
-        return (*st)[name];
+        return (*st)[_name];
         break;
 
     case token::tokenType::Value:
@@ -100,7 +100,7 @@ object::objectPtr& token::resolve(stack *st) const
         break;
 
     default:
-        throw std::runtime_error("tried to resolve wrong token: " + static_cast<std::string>(name));
+        throw std::runtime_error("tried to resolve wrong token: " + static_cast<std::string>(_name));
         break;
     }
 }

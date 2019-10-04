@@ -131,9 +131,9 @@ inline void newLine()
 template <class T, class... Ts>
 void error(const T &t, const Ts &... args)
 {
-    std::cout << "\033[91m\033[1m"s;
+    std::cout << "\033[91m\033[1m";
     std::cout << t;
-    std::cout << "\033[0m"s << std::endl;
+    std::cout << "\033[0m" << std::endl;
     if constexpr (sizeof...(args))
         error(args...);
 }

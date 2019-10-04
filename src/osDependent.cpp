@@ -99,11 +99,13 @@ static void sigaction_segv(int signal, siginfo_t *si, void *arg)
     ucontext_t *ctx = (ucontext_t *)arg;
 
 #if __WORDSIZE == 64
-    printf("Caught SIGSEGV, addr %p\n", si->si_addr, ctx->uc_mcontext.gregs[REG_RIP]);
-    ctx->uc_mcontext.gregs[REG_RIP] += 1;
+    printf("Caught SIGSEGV, addr %p\n", si->si_addr);
+    std::exit(1);
+    ctx->uc_mcontext.gregs[REG_RIP] += 10;
 #else
-    printf("Caught SIGSEGV, addr %p\n", si->si_addr, ctx->uc_mcontext.gregs[REG_EIP]);
-    ctx->uc_mcontext.gregs[REG_EIP] += 1;
+    printf("Caught SIGSEGV, addr %p\n", si->si_addr);
+    std::exit(1);
+    ctx->uc_mcontext.gregs[REG_EIP] += 10;
 #endif
 }
 #endif
