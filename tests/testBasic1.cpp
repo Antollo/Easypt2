@@ -14,24 +14,41 @@ int main(int argc, char **argv)
 {
     try
     {
-        assert("a\nb\n3\n3\n1\nab\n3.500000\n1\n11\n2\n7\nfunction\ntrue\ntrue\ns\n10987654321\nproperty\nreturn function 2\nreturn method 1\nthis property: property\nreturn function 3\n" == out([&argc, &argv]() {
+        assert(
+R"(a
+b
+3
+3
+1
+ab
+3.500000
+1
+11
+2
+7
+function
+true
+true
+s
+10987654321
+property
+return function 2
+return method 1
+this property: property
+return function 3
+log from second file
+return value from second file
+)"s == out([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);
 
                    auto st = &globalStack;
-                   insertObject("argv"_n, object::arrayType());
-                   insertObject("argc"_n, 0_n);
 
                    for (int i = 0; i < argc; i++)
                    {
                        if (isFlag(argv[i], "file") && i != argc - 1)
                        {
                            import(nullptr, {makeObject(std::string(argv[++i]))}, &globalStack);
-                       }
-                       else
-                       {
-                           globalStack["argv"_n]->get<object::arrayType>().push_back(makeObject(std::string(argv[i])));
-                           globalStack["argc"_n]->get<number>()++;
                        }
                    }
                }));

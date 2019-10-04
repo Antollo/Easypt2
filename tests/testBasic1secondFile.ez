@@ -1,0 +1,2 @@
+console.writeLine("log from second file");
+return "return value from second file";

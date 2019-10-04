@@ -25,9 +25,9 @@ token expressionStatement::operator()(stack *st) const
 {
     if (_tokens.empty())
         return token();
-    if (_tokens.front().type == token::tokenType::CompoundStatement)
+    if (_tokens.front().getType() == token::tokenType::CompoundStatement)
     {
-        compoundStatement::get(_tokens.front().arity)(st);
+        compoundStatement::get(_tokens.front().getArity())(st);
         return token();
     }
     std::stack<token> stack;
@@ -38,7 +38,7 @@ token expressionStatement::operator()(stack *st) const
 
     for (auto it = _tokens.begin(); it != _tokens.end(); it++)
     {
-        switch (it->type)
+        switch (it->getType())
         {
         case token::tokenType::Name:
         case token::tokenType::Value:
@@ -46,17 +46,17 @@ token expressionStatement::operator()(stack *st) const
             stack.push(*it);
             break;
         case token::tokenType::CallOperator:
-            arr.resize(it->arity);
-            for (int i = it->arity - 1; i >= 0; i--)
+            arr.resize(it->getArity());
+            for (int i = it->getArity() - 1; i >= 0; i--)
             {
                 arr[i] = stack.top().resolve(st);
                 stack.pop();
             }
-            if (std::next(it) != _tokens.end() && std::next(it)->name == "."_n)
+            if (std::next(it) != _tokens.end() && std::next(it)->getName() == "."_n)
             {
                 object::objectPtr &caller = stack.top().resolve(st);
                 stack.pop();
-                stack.push(token((*(*caller)[it->name])(caller, std::move(arr), st)));
+                stack.push(token((*(*caller)[it->getName()])(caller, std::move(arr), st)));
                 it++;
             }
             else
@@ -64,32 +64,32 @@ token expressionStatement::operator()(stack *st) const
             arr.clear();
             break;
         case token::tokenType::Operator:
-            if (it->name == "."_n)
+            if (it->getName() == "."_n)
             {
                 token b = stack.top();
                 stack.pop();
                 token a = stack.top();
                 stack.pop();
-                stack.push(token((*a.resolve(st))[b.name]));
+                stack.push(token((*a.resolve(st))[b.getName()]));
             }
             else
             {
-                args.resize(it->arity);
-                for (int i = it->arity - 1; i >= 0; i--)
+                args.resize(it->getArity());
+                for (int i = it->getArity() - 1; i >= 0; i--)
                 {
                     args[i] = stack.top();
                     stack.pop();
                 }
-                if (operators.count(it->name) == 0)
+                if (operators.count(it->getName()) == 0)
                 {
                     //TODO implement all operators
-                    throw std::runtime_error("unsupported operator " + static_cast<std::string>(it->name));
+                    throw std::runtime_error("unsupported operator " + static_cast<std::string>(it->getName()));
                 }
-                stack.push(operators[it->name](st, args));
+                stack.push(operators[it->getName()](st, args));
             }
             break;
         default:
-            throw std::runtime_error("unsupported token: " + static_cast<std::string>(it->name));
+            throw std::runtime_error("unsupported token: " + static_cast<std::string>(it->getName()));
             break;
         }
     }
@@ -123,9 +123,9 @@ void expressionStatement::check(bool verbose) const
 {
     if (_tokens.empty())
         return;
-    if (_tokens.front().type == token::tokenType::CompoundStatement)
+    if (_tokens.front().getType() == token::tokenType::CompoundStatement)
     {
-        compoundStatement::get(_tokens.front().arity).check(verbose);
+        compoundStatement::get(_tokens.front().getArity()).check(verbose);
         return;
     }
     std::stack<token> stack;
@@ -138,7 +138,7 @@ void expressionStatement::check(bool verbose) const
         }*/
     for (const auto &el : _tokens)
     {
-        switch (el.type)
+        switch (el.getType())
         {
         case token::tokenType::Name:
         case token::tokenType::StringLiteral:
@@ -150,16 +150,16 @@ void expressionStatement::check(bool verbose) const
 
         case token::tokenType::Operator:
         case token::tokenType::CallOperator:
-            args.resize(el.arity);
-            for (int i = el.arity - 1; i >= 0; i--)
+            args.resize(el.getArity());
+            for (int i = el.getArity() - 1; i >= 0; i--)
             {
                 guard(stack);
                 args[i] = stack.top();
                 stack.pop();
             }
-            temp = (std::string)el.name + "("s;
+            temp = (std::string)el.getName() + "("s;
             for (const auto &a : args)
-                temp += (std::string)a.name + ","s;
+                temp += (std::string)a.getName() + ","s;
             if (temp.back() == ',')
                 temp.pop_back();
             temp += ")"s;
@@ -167,16 +167,16 @@ void expressionStatement::check(bool verbose) const
             break;
 
         case token::tokenType::ReadOperator:
-            args.resize(el.arity);
-            for (int i = el.arity - 1; i >= 0; i--)
+            args.resize(el.getArity());
+            for (int i = el.getArity() - 1; i >= 0; i--)
             {
                 guard(stack);
                 args[i] = stack.top();
                 stack.pop();
             }
-            temp = (std::string)el.name + "["s;
+            temp = (std::string)el.getName() + "["s;
             for (const auto &a : args)
-                temp += (std::string)a.name + ","s;
+                temp += (std::string)a.getName() + ","s;
             if (temp.back() == ',')
                 temp.pop_back();
             temp += "]"s;
@@ -189,7 +189,7 @@ void expressionStatement::check(bool verbose) const
     }
     guard(stack);
     if (verbose)
-        console::writeLine(static_cast<std::string>(stack.top().name));
+        console::writeLine(static_cast<std::string>(stack.top().getName()));
 }
 
 compoundStatement& compoundStatement::get(int i)
@@ -220,14 +220,14 @@ void compoundStatement::operator()(stack *st) const
     for (auto it = _statements.begin(); it < _statements.end(); it++)
     {
         if (it->empty()) continue;
-        if (it->back().name == "if"_n && it+2 < _statements.end())
+        if (it->back().getName() == "if"_n && it+2 < _statements.end())
         {
             //TODO IMPLEMENT IF AND WHILE
             if ((*(it+1))(st).resolve(st)->getConverted<bool>())
                 (*(it+2))(st);
             it+=2;
         }
-        else if (it->back().name == "while"_n && it+2 < _statements.end())
+        else if (it->back().getName() == "while"_n && it+2 < _statements.end())
         {
             while ((*(it+1))(st).resolve(st)->getConverted<bool>())
                 (*(it+2))(st);

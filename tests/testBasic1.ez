@@ -49,5 +49,10 @@ console.writeLine(u.method2());
 let f3 = function { return f2; };
 
 f3.prototype.callOperator = function { return this(args[0]); };
-"TODO ... operator";
+"TODO ... operator, and COMMENTS";
 console.writeLine(f3().callOperator("function 3"));
+
+import("testBasic1secondFile");
+"cashe id working";
+let testBasic1secondFile = import("testBasic1secondFile");
+console.writeLine(testBasic1secondFile);

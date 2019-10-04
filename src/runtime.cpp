@@ -4,6 +4,8 @@
 #include "common.h"
 #include "console.h"
 #include "defines.h"
+#include "core.h"
+
 #pragma warning(disable : 4100)
 
 void runtime::init(stack *st)
@@ -97,11 +99,11 @@ void runtime::init(stack *st)
         return a;
     });
     addOperatorL("let"_n, {
-        return insertObject(args[0].name, nullptr);
+        return insertObject(args[0].getName(), nullptr);
     });
     addOperatorL("function"_n, {
         //args[0].arity special meaning: index
-        return makeObject(compoundStatement::get(args[0].arity));
+        return makeObject(compoundStatement::get(args[0].getArity()));
     });
     addOperatorL("return"_n, {
         throw args[0].resolve(st);
@@ -142,6 +144,8 @@ void runtime::init(stack *st)
 
     insertObject("true"_n, true);
     insertObject("false"_n, false);
+
+    insertObject("import"_n, import);
 
     auto Array = insertObject("Array"_n, nullptr);
 

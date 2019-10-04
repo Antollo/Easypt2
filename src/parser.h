@@ -15,6 +15,9 @@
 class parser
 {
 public:
+    static std::vector<std::vector<token>> parse(std::string &input);
+
+private:
     const static inline std::string basicOperatorRegexString = R"(((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>)=)|(\|\||&&|<<|>>|--|\+\+|->|==)|(\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\])|(\+u|-u|\*u))";
     const static inline std::string extendedOperatorRegexString = "(let|function|return)";
     const static inline std::string operatorRegexString = basicOperatorRegexString + "|"s + extendedOperatorRegexString;
@@ -23,9 +26,8 @@ public:
     const static inline std::string stringRegexString = R"(("[^"\\]*(\\.[^"\\]*)*"))";
     const static inline std::string tokenRegexString = operatorRegexString + "|" + numberRegexString + "|" + stringRegexString + "|" + nameRegexString;
 
-    static std::vector<std::vector<token>> parse(std::string &input);
+    static std::vector<std::string> literals;
 
-private:
     static void registerLiterals(std::string &input);
     static void registerConditionals(std::string &input);
     static void registerCompounds(std::string &input);
@@ -39,8 +41,6 @@ private:
     static int operatorArity(const std::string &token);
     static int operatorPrecedence(const std::string &token);
     static bool operatorAssociativity(const std::string &token); // true if left-associative
-
-    static std::vector<std::string> literals;
 };
 
 #endif /* !PARSER_H_ */

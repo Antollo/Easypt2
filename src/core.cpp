@@ -3,11 +3,12 @@
 #include "statement.h"
 #include "osDependent.h"
 #include "core.h"
+#include "common.h"
 
 object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
-    //TODO args guardian
     static std::unordered_map<std::string, object::objectPtr> imported;
+    argsConvertibleGuard<std::string>(args);
     std::filesystem::path fileName = args[0]->get<const std::string>();
     if (fileName.extension() != ".ez"s)
         fileName += ".ez"s;
@@ -24,7 +25,7 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
         {
             sourceFile.open((executablePath / fileName).string());
             if (!sourceFile.is_open())
-                throw std::runtime_error(fileName.string() + " cannot be opened");
+                throw std::runtime_error("file " + fileName.string() + " cannot be opened");
         }
         std::getline(sourceFile, source, (char)EOF);
         sourceFile.close();
@@ -35,5 +36,5 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
         return result;
     }
     else
-        throw std::runtime_error(fileName.string() + " not found");
+        throw std::runtime_error("file " + fileName.string() + " not found");
 }
