@@ -89,11 +89,12 @@ void runtime::init(stack *st)
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return token(makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>())));
 
-
         return token((*(*a)["=="_n])(a, {b}, st));
     });
     addOperatorL("="_n, {
         object::objectPtr &a = args[0].resolve(st);
+        if (a->isConst())
+            throw std::runtime_error("tried to modify constant value");
         *a = *args[1].resolve(st);
         a->setConst(false);
         return a;
@@ -126,7 +127,6 @@ void runtime::init(stack *st)
     object::functionPrototype = makeUndefined();
     (*object::functionPrototype)["prototype"_n] = object::objectPrototype;
 
-
     addFunctionL(object::arrayPrototype, "readOperator"_n, {
         argsConvertibleGuard<number>(args);
         return thisObj->get<const object::arrayType>().at(static_cast<int>(args[0]->getConverted<number>()));
@@ -140,6 +140,11 @@ void runtime::init(stack *st)
     addFunctionL(object::objectPrototype, "readOperator"_n, {
         argsConvertibleGuard<std::string>(args);
         return (*thisObj)[static_cast<name>(args[0]->getConverted<std::string>())];
+    });
+
+    addFunctionL(object::functionPrototype, "callOperator"_n, {
+        argsConvertibleGuard<std::string>(args);
+        return (*thisObj)(nullptr, std::move(args), st);
     });
 
     insertObject("true"_n, true);
@@ -158,6 +163,34 @@ void runtime::init(stack *st)
     addFunctionL(console, "write"_n, {
         for (auto &el : args)
             console::write(el->getConverted<std::string>());
+        return makeUndefined();
+    });
+    addFunctionL(console, "debug"_n, {
+        std::string temp;
+        for (auto &el : args)
+            temp += el->getConverted<std::string>();
+        console::debug(temp);
+        return makeUndefined();
+    });
+    addFunctionL(console, "log"_n, {
+        std::string temp;
+        for (auto &el : args)
+            temp += el->getConverted<std::string>();
+        console::log(temp);
+        return makeUndefined();
+    });
+    addFunctionL(console, "warn"_n, {
+        std::string temp;
+        for (auto &el : args)
+            temp += el->getConverted<std::string>();
+        console::warn(temp);
+        return makeUndefined();
+    });
+    addFunctionL(console, "error"_n, {
+        std::string temp;
+        for (auto &el : args)
+            temp += el->getConverted<std::string>();
+        console::error(temp);
         return makeUndefined();
     });
     addFunctionL(console, "writeLine"_n, {

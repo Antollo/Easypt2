@@ -26,7 +26,7 @@ public:
     using propertiesType = std::unordered_map<name, objectPtr>;
 
     template <class T>
-    explicit object(const T& t) : value(std::move(t)), beingDestructed(false), isConst(false)
+    explicit object(const T& t) : value(std::move(t)), beingDestructed(false), _isConst(false)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, nullptr_t>)
             properties["prototype"_n] = objectPrototype;
@@ -41,7 +41,7 @@ public:
         else if constexpr (std::is_same_v<std::decay_t<T>, compoundStatement> || std::is_same_v<std::decay_t<T>, nativeFunctionType>)
             properties["prototype"_n] = functionPrototype;
         else
-            throw std::runtime_error("wrong type");
+            throw std::runtime_error("wrong type "s + typeid(T).name());
     };
 
     object(object &&) = default;
@@ -66,7 +66,7 @@ public:
         }
         else
         {
-            if (isConst)
+            if (_isConst)
                 throw std::runtime_error("tried to modify constant value");
             return std::any_cast<remove_cref_t<T> &>(value);
         }
@@ -128,7 +128,8 @@ public:
         throw std::runtime_error("unsupported conversion: "s + value.type().name() + " to "s + typeid(T).name());
     }
 
-    inline void setConst(bool v = true) { isConst = v; }
+    inline void setConst(bool v = true) { _isConst = v; }
+    inline bool isConst() { return _isConst; }
     objectPtr &operator[](const name &n);
     objectPtr operator()(objectPtr thisObj, arrayType &&args, stack *st);
     void clear();
@@ -138,7 +139,7 @@ public:
 private:
     std::any value;
     propertiesType properties;
-    bool beingDestructed, isConst;
+    bool beingDestructed, _isConst;
 
     struct fakeDeleter
     {

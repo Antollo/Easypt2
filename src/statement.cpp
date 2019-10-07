@@ -56,11 +56,15 @@ token expressionStatement::operator()(stack *st) const
             {
                 object::objectPtr &caller = stack.top().resolve(st);
                 stack.pop();
+                st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*(*caller)[it->getName()])(caller, std::move(arr), st)));
                 it++;
             }
             else
+            {
+                st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*it->resolve(st))(nullptr, std::move(arr), st)));
+            }
             arr.clear();
             break;
         case token::tokenType::Operator:
@@ -83,9 +87,14 @@ token expressionStatement::operator()(stack *st) const
                 if (operators.count(it->getName()) == 0)
                 {
                     //TODO implement all operators
-                    throw std::runtime_error("unsupported operator " + static_cast<std::string>(it->getName()));
+                    arr.resize(args.size());
+                    for (size_t i = 0; i < args.size(); i++)
+                        arr[i] = args[i].resolve(st);
+                    stack.push(token((*(*st)[it->getName()])(nullptr, std::move(arr), st)));
+                    arr.clear();
+                    //throw std::runtime_error("unsupported operator " + static_cast<std::string>(it->getName()));
                 }
-                stack.push(operators[it->getName()](st, args));
+                else stack.push(operators[it->getName()](st, args));
             }
             break;
         default:

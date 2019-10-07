@@ -22,7 +22,6 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < argc; i++)
         {
-            std::cerr << "arg";
             if (isFlag(argv[i], "file") && i != argc - 1)
             {
                 import(nullptr, {makeObject(std::string(argv[++i]))}, &globalStack);

@@ -1,0 +1,113 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "easypt",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#literals"
+		},
+		{
+			"include": "#blockComments"
+		},
+		{
+			"include": "#lineComments"
+		},
+		{
+			"include": "#punctuation"
+		},
+		{
+			"include": "#entities"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.easypt",
+				"match": "\\b(if|while|for|let|throw|try|return|function)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.easypt",
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.easypt"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.easypt"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#escape-sequence"
+				}
+			]
+		},
+		"escape-sequence": {
+			"name": "constant.character.escape.easypt",
+			"match": "\\\\(([\"\\\\abfnrtv\\n])|([0-9][0-9][0-9]))",
+			"patterns": []
+		},
+		"blockComments": {
+			"name": "comment.block.easypt",
+			"begin": "/\\*",
+			"end": "\\*/",
+			"patterns": []
+		},
+		"lineComments": {
+			"name": "comment.line.easypt",
+			"match": "\/\/[^\n]*\n",
+			"patterns": []
+		},
+		"punctuation":
+		{
+			"patterns":[
+				{
+					"name": "markup.bold.easypt",
+					"match": "[;]"
+				}
+			]
+		},
+		"literals": {
+			"patterns":[
+				{
+					"name": "constant.numeric.easypt",
+					"match": "[-]?[0-9]+([.][0-9]+)?"
+				}
+			]
+		},
+		"operators": {
+			"name": "keyword.other.easypt",
+			"match": "@[_A-Za-z0-9]+@?|[_A-Za-z0-9]+@",
+			"patterns": []
+		},
+		"entities": {
+			"patterns": [
+				{
+					"name": "variable.name",
+					"match": "\\b[a-z]+[A-Za-z0-9]*\\b(?!\\s*\\()"
+				},
+				{
+					"name": "entity.name.class",
+					"match": "\\b[A-Z][A-Za-z0-9]*\\b"
+				},
+				{
+					"name": "entity.name.function",
+					"match": "[a-z]+[A-Za-z0-9]*(?=\\s*\\()"
+				}
+			]
+		}
+	},
+	"scopeName": "source.easypt"
+}

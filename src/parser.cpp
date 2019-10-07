@@ -9,6 +9,23 @@ inline void guard(const std::stack<T> &s, std::string message = "something is wr
         throw std::runtime_error(message);
 }
 
+inline std::string atOperator(std::string s)
+{
+    if (s.front() == '@')
+    {
+        s.erase(s.begin());
+        if (s.empty())
+            throw std::runtime_error("empty @ operator");
+    }
+    if (s.back() == '@')
+    {
+        s.pop_back();
+        if (s.empty())
+            throw std::runtime_error("empty @ operator");
+    }
+    return s;
+}
+
 std::vector<std::string> parser::literals;
 
 std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
@@ -26,7 +43,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
             while (!stack.empty() && (stack.top() != "("s && stack.top() != "["s))
             {
                 //res.push_back(stack.top());
-                res.push_back(token(stack.top(), operatorArity(stack.top()), token::tokenType::Operator));
+                res.push_back(token(atOperator(stack.top()), operatorArity(stack.top()), token::tokenType::Operator));
                 stack.pop();
             }
             guard(stack, "\"(\" or \"[\" not found");
@@ -56,7 +73,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
             while (!stack.empty() && stack.top() != "("s)
             {
                 //res.push_back(stack.top());
-                res.push_back(token(stack.top(), operatorArity(stack.top()), token::tokenType::Operator));
+                res.push_back(token(atOperator(stack.top()), operatorArity(stack.top()), token::tokenType::Operator));
                 stack.pop();
             }
             guard(stack, "\"(\" not found");
@@ -84,7 +101,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
             while (!stack.empty() && stack.top() != "["s)
             {
                 //res.push_back(stack.top());
-                res.push_back(token(stack.top(), operatorArity(stack.top()), token::tokenType::Operator));
+                res.push_back(token(atOperator(stack.top()), operatorArity(stack.top()), token::tokenType::Operator));
                 stack.pop();
             }
             guard(stack, "\"[\" not found");
@@ -107,7 +124,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
                 auto ai = a;
                 std::stack<token> helper;
 
-                while(ai--)
+                while (ai--)
                 {
                     helper.push(res.back());
                     res.pop_back();
@@ -119,7 +136,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
                 else
                     res.push_back(token(f));
 
-                while(!helper.empty())
+                while (!helper.empty())
                 {
                     res.push_back(helper.top());
                     helper.pop();
@@ -138,7 +155,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
                    ((operatorAssociativity(*it) && operatorPrecedence(*it) >= operatorPrecedence(stack.top())) ||
                     (!operatorAssociativity(*it) && operatorPrecedence(*it) > operatorPrecedence(stack.top()))))
             {
-                res.push_back(token(stack.top(), operatorArity(stack.top()), token::tokenType::Operator));
+                res.push_back(token(atOperator(stack.top()), operatorArity(stack.top()), token::tokenType::Operator));
                 stack.pop();
             }
             stack.push(*it);
@@ -175,7 +192,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
     }
     while (!stack.empty())
     {
-        res.push_back(token(stack.top(), operatorArity(stack.top()), token::tokenType::Operator));
+        res.push_back(token(atOperator(stack.top()), operatorArity(stack.top()), token::tokenType::Operator));
         if (stack.top() == "("s || stack.top() == ")"s)
             throw std::runtime_error("mismatched parenthesis");
         stack.pop();
@@ -186,6 +203,8 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
 std::vector<std::vector<token>> parser::parse(std::string &input)
 {
     registerLiterals(input);
+    removeComments(input);
+    fixParenthesis(input);
     registerConditionals(input);
     registerCompounds(input);
     return parseFlat(input);
@@ -207,6 +226,28 @@ void parser::registerLiterals(std::string &input)
         literals.push_back(string);
         counter++;
     }
+}
+
+void parser::removeComments(std::string &input)
+{
+    static std::regex blockComment(R"(\/\*([^*]*(\*[^\/])*)*\*\/)");
+    static std::regex lineComment(R"(\/\/[^\n]*\n)");
+    std::smatch sm;
+
+    while (std::regex_search(input, sm, blockComment))
+        input.erase(sm.position(), sm.length());
+
+    while (std::regex_search(input, sm, lineComment))
+        input.erase(sm.position(), sm.length());
+}
+
+void parser::fixParenthesis(std::string &input)
+{
+    static std::regex chainingParenthesis(R"(\)\()");
+    std::smatch sm;
+
+    while (std::regex_search(input, sm, chainingParenthesis))
+        input.replace(sm.position(), sm.length(), ").callOperator(");
 }
 
 void parser::registerConditionals(std::string &input)
@@ -274,8 +315,7 @@ bool parser::isOperator(const std::string &token)
 
 bool parser::isUnaryOperator(const std::string &token)
 {
-    return token.back() == 'u' || token == "++" || token == "--" || token == "!" 
-    || token == "~" || token == "let" || token == "function" || token == "return";
+    return token.back() == 'u' || token == "++" || token == "--" || token == "!" || token == "~" || token == "let" || token == "function" || token == "return" || (token.back() == '@' && token.front() != '@') || (token.back() != '@' && token.front() == '@');
 }
 
 bool parser::isNumberLiteral(const std::string &token)
@@ -287,7 +327,7 @@ int parser::operatorArity(const std::string &token)
 {
     //TODO REMOVE
     if (!isOperator(token))
-        throw std::runtime_error("this is not token: "s + token);
+        throw std::runtime_error("this is not operator: "s + token);
     return 1 + (int)(!isUnaryOperator(token));
 }
 
@@ -317,8 +357,10 @@ int parser::operatorPrecedence(const std::string &token)
         return 14;
     else if (token == "||")
         return 15;
-    else if (token.back() == '=' || token == ":" || token == "return")
+    else if (token.front() == '@' || token.back() == '@')
         return 16;
+    else if (token.back() == '=' || token == ":" || token == "return")
+        return 17;
     else
         throw std::runtime_error("operator has no precedence");
 }
@@ -326,10 +368,7 @@ int parser::operatorPrecedence(const std::string &token)
 // true if left-associative
 bool parser::operatorAssociativity(const std::string &token)
 {
-    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" 
-    || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" 
-    || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" 
-    || token == "^=" || token == "|=" || token == "let" || token == "function"  || token == "return")
+    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "return" || (token.back() == '@' && token.front() != '@'))
         return false;
     return true;
 }

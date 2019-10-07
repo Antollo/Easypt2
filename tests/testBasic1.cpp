@@ -38,6 +38,7 @@ this property: property
 return function 3
 log from second file
 return value from second file
+12
 )"s == out([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);
@@ -48,7 +49,7 @@ return value from second file
                    {
                        if (isFlag(argv[i], "file") && i != argc - 1)
                        {
-                           import(nullptr, {makeObject(std::string(argv[++i]))}, &globalStack);
+                           import(nullptr, {makeObject(std::string(argv[++i]))}, st);
                        }
                    }
                }));
