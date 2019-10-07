@@ -2,7 +2,10 @@
 #define CONSOLE_H_
 #include <type_traits>
 #include <iostream>
+#include <string>
 #include "osDependent.h"
+
+using namespace std::string_literals;
 
 class console
 {
