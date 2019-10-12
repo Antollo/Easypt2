@@ -52,7 +52,7 @@ let f3 = function { return f2; };
 console.writeLine(f3()("function 3"));
 
 import("testBasic1secondFile");
-"cashe id working";
+
 let testBasic1secondFile = import("testBasic1secondFile");
 console.writeLine(testBasic1secondFile);
 
@@ -60,4 +60,12 @@ let mul = function {
     return args[0]*args[1];
 };
 
-console.writeLine(3 @mul@ 4)
+console.writeLine(3 @mul@ 4);
+
+let obj = json {
+    ev : {
+        message : ["Info", "Something not important."];
+    };
+};
+
+console.writeLine(obj.ev.message[1]);

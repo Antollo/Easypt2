@@ -204,9 +204,9 @@ std::vector<std::vector<token>> parser::parse(std::string &input)
 {
     registerLiterals(input);
     removeComments(input);
-    fixParenthesis(input);
     registerConditionals(input);
     registerCompounds(input);
+    fixParenthesis(input);
     return parseFlat(input);
 }
 
@@ -244,10 +244,18 @@ void parser::removeComments(std::string &input)
 void parser::fixParenthesis(std::string &input)
 {
     static std::regex chainingParenthesis(R"(\)\()");
+    //TODO remove regexes, add normal find
+    static std::regex brackets1(R"(\[)");
+    static std::regex brackets2(R"(\])");
     std::smatch sm;
 
     while (std::regex_search(input, sm, chainingParenthesis))
         input.replace(sm.position(), sm.length(), ").callOperator(");
+
+    while (std::regex_search(input, sm, brackets1))
+        input.replace(sm.position(), sm.length(), ".readOperator(");
+    while (std::regex_search(input, sm, brackets2))
+        input.replace(sm.position(), sm.length(), ")");
 }
 
 void parser::registerConditionals(std::string &input)
@@ -262,14 +270,20 @@ void parser::registerConditionals(std::string &input)
 
 void parser::registerCompounds(std::string &input)
 {
+    static std::regex jsonRegex(R"(:\s*\{)");
+    static std::regex jsonArrayRegex(R"(:\s*\[)");
     static std::regex compoundRegex(R"(\{[^\{\}]*\})");
     static int counter = 0;
     std::smatch sm;
+    while (std::regex_search(input, sm, jsonRegex))
+        input.replace(sm.position(), sm.length(), ":json{"s);
+    while (std::regex_search(input, sm, jsonArrayRegex))
+        input.replace(sm.position(), sm.length(), ":Array["s);
     while (std::regex_search(input, sm, compoundRegex))
     {
         //compoundCallback(parseFlat(sm.str()));
         compoundStatement::_compoundStatements.push_back(parseFlat(sm.str()));
-        input.replace(sm.position(), sm.length(), " #c"s + std::to_string(counter) + ";"s);
+        input.replace(sm.position(), sm.length(), "#c"s + std::to_string(counter) + ";"s);
         counter++;
     }
 }
@@ -315,7 +329,7 @@ bool parser::isOperator(const std::string &token)
 
 bool parser::isUnaryOperator(const std::string &token)
 {
-    return token.back() == 'u' || token == "++" || token == "--" || token == "!" || token == "~" || token == "let" || token == "function" || token == "return" || (token.back() == '@' && token.front() != '@') || (token.back() != '@' && token.front() == '@');
+    return token.back() == 'u' || token == "++" || token == "--" || token == "!" || token == "~" || token == "let" || token == "function" || token == "return" || token == "json" || (token.back() == '@' && token.front() != '@') || (token.back() != '@' && token.front() == '@');
 }
 
 bool parser::isNumberLiteral(const std::string &token)
@@ -335,7 +349,7 @@ int parser::operatorPrecedence(const std::string &token)
 {
     if (token == "++" || token == "--" || token == "." || token == "(" || token == ")" || token == "[" || token == "]")
         return 2;
-    else if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "let" || token == "function")
+    else if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "let" || token == "function" || token == "json")
         return 3;
     else if (token == "*" || token == "/" || token == "%")
         return 5;
@@ -368,7 +382,7 @@ int parser::operatorPrecedence(const std::string &token)
 // true if left-associative
 bool parser::operatorAssociativity(const std::string &token)
 {
-    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "return" || (token.back() == '@' && token.front() != '@'))
+    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "json" || token == "return" || (token.back() == '@' && token.front() != '@'))
         return false;
     return true;
 }

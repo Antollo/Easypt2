@@ -6,6 +6,8 @@
 #include "defines.h"
 #include "core.h"
 
+#include "library.h"
+
 #pragma warning(disable : 4100)
 
 void runtime::init(stack *st)
@@ -102,9 +104,29 @@ void runtime::init(stack *st)
     addOperatorL("let"_n, {
         return insertObject(args[0].getName(), nullptr);
     });
+    addOperatorL(":"_n, {
+        if (args[0].getType() == token::tokenType::Name)
+            return st->insert(args[0].getName(), args[1].resolve(st));
+        else
+            return st->insert(static_cast<name>(args[0].resolve(st)->getConverted<std::string>()), args[1].resolve(st));
+        throw std::runtime_error("Invalid use of : operator");
+    });
     addOperatorL("function"_n, {
         //args[0].arity special meaning: index
+        if (args[0].getType() != token::tokenType::CompoundStatement)
+            throw std::runtime_error("wrong operand for function operator");
         return makeObject(compoundStatement::get(args[0].getArity()));
+    });
+    addOperatorL("json"_n, {
+        if (args[0].getType() != token::tokenType::CompoundStatement)
+            throw std::runtime_error("wrong operand for json operator");
+        stack localJsonStack(st);
+        compoundStatement::get(args[0].getArity())(localJsonStack);
+        
+        auto res = makeObject(nullptr);
+        for (auto x : localJsonStack)
+            (*res)[x.first] = x.second;
+        return res;
     });
     addOperatorL("return"_n, {
         throw args[0].resolve(st);
@@ -158,61 +180,7 @@ void runtime::init(stack *st)
         return makeObject(args);
     });
 
-    auto console = insertObject("console"_n, nullptr);
-
-    addFunctionL(console, "write"_n, {
-        for (auto &el : args)
-            console::write(el->getConverted<std::string>());
-        return makeUndefined();
-    });
-    addFunctionL(console, "debug"_n, {
-        std::string temp;
-        for (auto &el : args)
-            temp += el->getConverted<std::string>();
-        console::debug(temp);
-        return makeUndefined();
-    });
-    addFunctionL(console, "log"_n, {
-        std::string temp;
-        for (auto &el : args)
-            temp += el->getConverted<std::string>();
-        console::log(temp);
-        return makeUndefined();
-    });
-    addFunctionL(console, "warn"_n, {
-        std::string temp;
-        for (auto &el : args)
-            temp += el->getConverted<std::string>();
-        console::warn(temp);
-        return makeUndefined();
-    });
-    addFunctionL(console, "error"_n, {
-        std::string temp;
-        for (auto &el : args)
-            temp += el->getConverted<std::string>();
-        console::error(temp);
-        return makeUndefined();
-    });
-    addFunctionL(console, "writeLine"_n, {
-        for (auto &el : args)
-            console::write(el->getConverted<std::string>());
-        console::newLine();
-        return makeUndefined();
-    });
-    addFunctionL(console, "newLine"_n, {
-        console::newLine();
-        return makeUndefined();
-    });
-    addFunctionL(console, "read"_n, {
-        std::string temp;
-        console::read(temp);
-        return makeObject(temp);
-    });
-    addFunctionL(console, "readLine"_n, {
-        std::string temp;
-        console::readLine(temp);
-        return makeObject(temp);
-    });
+    consoleObj::init(st);
 }
 
 void runtime::fini(stack *st)

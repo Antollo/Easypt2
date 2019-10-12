@@ -39,6 +39,7 @@ return function 3
 log from second file
 return value from second file
 12
+Something not important.
 )"s == out([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);

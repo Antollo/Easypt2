@@ -25,7 +25,7 @@ token expressionStatement::operator()(stack *st) const
 {
     if (_tokens.empty())
         return token();
-    if (_tokens.front().getType() == token::tokenType::CompoundStatement)
+    if (_tokens.front().getType() == token::tokenType::CompoundStatement && _tokens.size() == 1)
     {
         compoundStatement::get(_tokens.front().getArity())(st);
         return token();
@@ -132,7 +132,7 @@ void expressionStatement::check(bool verbose) const
 {
     if (_tokens.empty())
         return;
-    if (_tokens.front().getType() == token::tokenType::CompoundStatement)
+    if (_tokens.front().getType() == token::tokenType::CompoundStatement && _tokens.size() == 1)
     {
         compoundStatement::get(_tokens.front().getArity()).check(verbose);
         return;
@@ -175,23 +175,6 @@ void expressionStatement::check(bool verbose) const
             stack.push(token(temp));
             break;
 
-        case token::tokenType::ReadOperator:
-            args.resize(el.getArity());
-            for (int i = el.getArity() - 1; i >= 0; i--)
-            {
-                guard(stack);
-                args[i] = stack.top();
-                stack.pop();
-            }
-            temp = (std::string)el.getName() + "["s;
-            for (const auto &a : args)
-                temp += (std::string)a.getName() + ","s;
-            if (temp.back() == ',')
-                temp.pop_back();
-            temp += "]"s;
-            stack.push(token(temp));
-            break;
-
         default:
             break;
         }
@@ -226,23 +209,28 @@ void compoundStatement::check(bool verbose) const
 void compoundStatement::operator()(stack *st) const
 {
     stack localStack(st);
+    (*this)(localStack);
+}
+
+void compoundStatement::operator()(stack &localStack) const
+{
     for (auto it = _statements.begin(); it < _statements.end(); it++)
     {
         if (it->empty()) continue;
         if (it->back().getName() == "if"_n && it+2 < _statements.end())
         {
             //TODO IMPLEMENT IF AND WHILE
-            if ((*(it+1))(st).resolve(st)->getConverted<bool>())
-                (*(it+2))(st);
+            if ((*(it+1))(&localStack).resolve(&localStack)->getConverted<bool>())
+                (*(it+2))(&localStack);
             it+=2;
         }
         else if (it->back().getName() == "while"_n && it+2 < _statements.end())
         {
-            while ((*(it+1))(st).resolve(st)->getConverted<bool>())
-                (*(it+2))(st);
+            while ((*(it+1))(&localStack).resolve(&localStack)->getConverted<bool>())
+                (*(it+2))(&localStack);
             it+=2;
         }
         else
-            (*it)(st);
+            (*it)(&localStack);
     }
 }

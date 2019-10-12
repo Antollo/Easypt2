@@ -18,3 +18,12 @@ void stack::clear()
 {
     storage.clear();
 }
+
+stack::iterator stack::begin()
+{
+    return storage.begin();
+}
+stack::iterator stack::end()
+{
+    return storage.end();
+}

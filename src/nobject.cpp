@@ -43,7 +43,7 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
         //TODO implement returning
         try
         {
-            get<compoundStatement>()(&localStack);
+            get<compoundStatement>()(localStack);
         }
         catch (const object::objectPtr &ret)
         {

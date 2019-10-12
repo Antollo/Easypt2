@@ -1,6 +1,6 @@
 message(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src)
-file(GLOB SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 list(REMOVE_ITEM SRC "${CMAKE_SOURCE_DIR}/src/main.cpp")
 
 add_executable (testUtils testUtils.cpp ${SRC})

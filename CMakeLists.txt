@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(Easypt2)
 
 if(MSVC)
-    add_compile_options(/O2 /W4 /MT /EHa)
+    add_compile_options(/O2 /W4 /MT /EHa /utf-8)
 else()
     add_compile_options(-O3 -static-libgcc -static-libstdc++)
     link_libraries(stdc++fs)

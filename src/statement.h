@@ -29,6 +29,7 @@ public:
     compoundStatement(std::vector<std::vector<token>> &&tokens);
     void check(bool verbose = false) const;
     void operator()(stack *st) const;
+    void operator()(stack &localStack) const;
     static compoundStatement& get(int i);
 
 private:

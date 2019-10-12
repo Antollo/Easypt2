@@ -4,9 +4,9 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 # Force MSVC to place artifacts where I want it
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR})
 
-file(GLOB SRC "*.cpp")
+#file(GLOB SRC "*.cpp")
 
-add_executable(easypt2 ${SRC})
+add_executable(easypt2 console.cpp core.cpp main.cpp name.cpp nobject.cpp number.cpp osDependent.cpp parser.cpp runtime.cpp stack.cpp statement.cpp token.cpp library/consoleObj.cpp)
 
 # Having fun with Profile-Guided Optimizations
 # set_target_properties(easypt2 PROPERTIES COMPILE_FLAGS "/GL")

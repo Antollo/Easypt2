@@ -9,15 +9,20 @@ class object;
 class stack
 {
 public:
+    using storageType = std::unordered_map<name, std::shared_ptr<object>>;
+    using iterator = storageType::iterator;
+
     stack() : previous(nullptr) {}
     stack(stack *st) : previous(st) {}
-    std::shared_ptr<object>& operator[](const name &n);
-    std::shared_ptr<object>& insert(const name &n, const std::shared_ptr<object> &obj);
+    std::shared_ptr<object> &operator[](const name &n);
+    std::shared_ptr<object> &insert(const name &n, const std::shared_ptr<object> &obj);
+    iterator begin();
+    iterator end();
     void clear();
 
 private:
     stack *previous;
-    std::unordered_map<name, std::shared_ptr<object>> storage;
+    storageType storage;
 };
 
 #endif /* !STACK_H_ */
