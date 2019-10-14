@@ -9,9 +9,26 @@
 #include "defines.h"
 #include "core.h"
 
+namespace operators
+{
+void init(stack *st);
+};
+
+namespace Object
+{
+void init(stack *st);
+};
+
+namespace Array
+{
+void init(stack *st);
+};
+
 namespace consoleObj
 {
 void init(stack *st);
 };
+
+
 
 #endif /* !LIBRARY_H_ */

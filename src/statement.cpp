@@ -54,7 +54,7 @@ token expressionStatement::operator()(stack *st) const
             }
             if (std::next(it) != _tokens.end() && std::next(it)->getName() == "."_n)
             {
-                object::objectPtr &caller = stack.top().resolve(st);
+                object::objectPtr caller = stack.top().resolve(st);
                 stack.pop();
                 st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*(*caller)[it->getName()])(caller, std::move(arr), st)));

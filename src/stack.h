@@ -3,19 +3,22 @@
 
 #include <memory>
 #include "name.h"
-
-class object;
+#include "objectPtrImpl.h"
 
 class stack
 {
 public:
-    using storageType = std::unordered_map<name, std::shared_ptr<object>>;
+    using storageType = std::unordered_map<name, objectPtrImpl>;
     using iterator = storageType::iterator;
 
     stack() : previous(nullptr) {}
     stack(stack *st) : previous(st) {}
-    std::shared_ptr<object> &operator[](const name &n);
-    std::shared_ptr<object> &insert(const name &n, const std::shared_ptr<object> &obj);
+
+    stack(const stack&) = delete;
+    stack& operator=(const stack&) = delete;
+
+    objectPtrImpl &operator[](const name &n);
+    objectPtrImpl &insert(const name &n, const objectPtrImpl &obj);
     iterator begin();
     iterator end();
     void clear();

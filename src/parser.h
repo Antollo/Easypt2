@@ -18,12 +18,12 @@ public:
     static std::vector<std::vector<token>> parse(std::string &input);
 
 private:
-    const static inline std::string basicOperatorRegexString = R"(((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>)=)|(\|\||&&|<<|>>|--|\+\+|->|==)|(\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\])|(\+u|-u|\*u))";
+    const static inline std::string basicOperatorRegexString = R"((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>)=|\|\||&&|<<|>>|--|\+\+|->|==|\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\]|\+u|-u|\*u)";
     const static inline std::string extendedOperatorRegexString = "(@[_A-Za-z0-9]+@?|[_A-Za-z0-9]+@|let|function|return|json)";
     const static inline std::string operatorRegexString = basicOperatorRegexString + "|"s + extendedOperatorRegexString;
-    const static inline std::string numberRegexString = R"(([0-9]+([.][0-9]+)?))";
-    const static inline std::string nameRegexString = R"(([#_A-Za-z0-9]+))";
-    const static inline std::string stringRegexString = R"(("[^"\\]*(\\.[^"\\]*)*"))";
+    const static inline std::string numberRegexString = R"([0-9]+([.][0-9]+)?)";
+    const static inline std::string nameRegexString = R"([#_A-Za-z0-9]+)";
+    const static inline std::string stringRegexString = R"("[^"\\]*(\\.[^"\\]*)*")";
     const static inline std::string tokenRegexString = operatorRegexString + "|" + numberRegexString + "|" + stringRegexString + "|" + nameRegexString;
 
     static std::vector<std::string> literals;

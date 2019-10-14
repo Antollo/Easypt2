@@ -1,7 +1,9 @@
-message(${CMAKE_SOURCE_DIR}/src)
+#message(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_SOURCE_DIR}/src)
-file(GLOB_RECURSE SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
-list(REMOVE_ITEM SRC "${CMAKE_SOURCE_DIR}/src/main.cpp")
+#file(GLOB_RECURSE SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
+#list(REMOVE_ITEM SRC "${CMAKE_SOURCE_DIR}/src/main.cpp")
+
+set(SRC ${CMAKE_SOURCE_DIR}/src/console.cpp ${CMAKE_SOURCE_DIR}/src/core.cpp ${CMAKE_SOURCE_DIR}/src/name.cpp ${CMAKE_SOURCE_DIR}/src/nobject.cpp ${CMAKE_SOURCE_DIR}/src/number.cpp ${CMAKE_SOURCE_DIR}/src/osDependent.cpp ${CMAKE_SOURCE_DIR}/src/parser.cpp ${CMAKE_SOURCE_DIR}/src/runtime.cpp ${CMAKE_SOURCE_DIR}/src/stack.cpp ${CMAKE_SOURCE_DIR}/src/statement.cpp ${CMAKE_SOURCE_DIR}/src/token.cpp ${CMAKE_SOURCE_DIR}/src/objectPtrImpl.cpp ${CMAKE_SOURCE_DIR}/src/library/consoleObj.cpp ${CMAKE_SOURCE_DIR}/src/library/operators.cpp ${CMAKE_SOURCE_DIR}/src/library/Object.cpp ${CMAKE_SOURCE_DIR}/src/library/Array.cpp)
 
 add_executable (testUtils testUtils.cpp ${SRC})
 add_test(Utils testUtils)

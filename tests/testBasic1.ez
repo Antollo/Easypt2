@@ -9,7 +9,7 @@ console.writeLine("1"+1);
 console.writeLine(1+"1");
 console.writeLine(1+2*3);
 
-let f = function { console.writeLine(args[0]); };
+let f = function { console.writeLine(args[0]); }
 f("function");
 
 if (true)  
@@ -37,16 +37,16 @@ let u;
 u.p = "property";
 console.writeLine(u.p);
 
-let f2 = function { return "return " + args[0]; };
+let f2 = function { return "return " + args[0]; }
 console.writeLine(f2("function 2"));
 
 u.method = f2;
 console.writeLine(u.method("method 1"));
 
-u.method2 = function { return "this property: " + this.p; };
+u.method2 = function { return "this property: " + this.p; }
 console.writeLine(u.method2());
 
-let f3 = function { return f2; };
+let f3 = function { return f2; }
 
 /*TODO ... operator, and COMMENTS*/
 console.writeLine(f3()("function 3"));
@@ -58,14 +58,36 @@ console.writeLine(testBasic1secondFile);
 
 let mul = function {
     return args[0]*args[1];
-};
+}
 
 console.writeLine(3 @mul@ 4);
 
 let obj = json {
     ev : {
         message : ["Info", "Something not important."];
-    };
-};
+    }
+}
 
 console.writeLine(obj.ev.message[1]);
+
+let u = Object();
+u.x = 1;
+Object.prototype.x = 2;
+console.writeLine(u.x);
+console.writeLine(u.prototype.hasOwnProperty("xx"));
+
+
+let fib = function {
+    if(args[0] == 0)
+        return 0;
+    if(args[0] == 1)
+        return 1;
+    return fib(args[0] - 1) + fib(args[0] - 2);
+}
+
+console.writeLine(u.getOwnPropertyNames()[0]);
+
+console.writeLine(fib(1));
+
+console.writeLine(Array[1,2,3].length());
+console.writeLine(Array().length());

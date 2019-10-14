@@ -9,6 +9,17 @@ inline void guard(const std::stack<T> &s, std::string message = "something is wr
         throw std::runtime_error(message);
 }
 
+void replaceAll(std::string& templ, const std::string& from, const std::string& to)
+{
+	size_t pos = 0;
+	while (true)
+	{
+		pos = templ.find(from, pos);
+		if (pos == std::string::npos) return;
+		templ.replace(pos, from.size(), to);
+	}
+}
+
 inline std::string atOperator(std::string s)
 {
     if (s.front() == '@')
@@ -244,18 +255,13 @@ void parser::removeComments(std::string &input)
 void parser::fixParenthesis(std::string &input)
 {
     static std::regex chainingParenthesis(R"(\)\()");
-    //TODO remove regexes, add normal find
-    static std::regex brackets1(R"(\[)");
-    static std::regex brackets2(R"(\])");
     std::smatch sm;
+
+    replaceAll(input, "["s, ".readOperator("s);
+    replaceAll(input, "]"s, ")"s);
 
     while (std::regex_search(input, sm, chainingParenthesis))
         input.replace(sm.position(), sm.length(), ").callOperator(");
-
-    while (std::regex_search(input, sm, brackets1))
-        input.replace(sm.position(), sm.length(), ".readOperator(");
-    while (std::regex_search(input, sm, brackets2))
-        input.replace(sm.position(), sm.length(), ")");
 }
 
 void parser::registerConditionals(std::string &input)

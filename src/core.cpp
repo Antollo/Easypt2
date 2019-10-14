@@ -12,10 +12,11 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
     std::filesystem::path fileName = args[0]->get<const std::string>();
     if (fileName.extension() != ".ez"s)
         fileName += ".ez"s;
-    std::filesystem::path executablePath = getExecutablePath().parent_path();
 
     if (imported.count(fileName.stem().string()))
         return imported[fileName.stem().string()];
+
+    std::filesystem::path executablePath = getExecutablePath().parent_path();
 
     if (std::filesystem::exists(fileName) || std::filesystem::exists(executablePath / fileName))
     {
@@ -37,4 +38,14 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
     }
     else
         throw std::runtime_error("file " + fileName.string() + " not found");
+}
+
+#include "console.h"
+object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+{
+    auto newObj = makeUndefined();
+    newObj->addProperty("prototype"_n, (*thisObj)["prototype"_n]);
+    if ((*newObj)["prototype"_n]->hasOwnProperty("constructor"_n))
+        (*(*newObj)["constructor"_n])(newObj, std::move(args), st);
+    return newObj;
 }

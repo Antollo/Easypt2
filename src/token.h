@@ -3,8 +3,8 @@
 
 #include <memory>
 #include "name.h"
+#include "objectPtrImpl.h"
 
-class object;
 class stack;
 
 class token
@@ -25,8 +25,8 @@ public:
     token() : _name("<no name>"s), arity(-1), type(tokenType::Invalid), value(nullptr){};
     token(const std::string &n, tokenType t = tokenType::Name);
     token(const std::string &n, int a, tokenType t = tokenType::CallOperator) : _name(n), arity(a), type(t), value(nullptr){};
-    token(const std::shared_ptr<object> &v) : _name("<no name>"s), arity(-1), type(tokenType::Value), value(v){};
-    std::shared_ptr<object> &resolve(stack *st) const;
+    token(const objectPtrImpl &v) : _name("<no name>"s), arity(-1), type(tokenType::Value), value(v){};
+    objectPtrImpl &resolve(stack *st) const;
     inline const name &getName() const { return _name; }
     inline const int &getArity() const { return arity; }
     inline const tokenType &getType() const { return type; }
@@ -35,7 +35,7 @@ private:
     name _name;
     int arity;
     tokenType type;
-    mutable std::shared_ptr<object> value;
+    mutable objectPtrImpl value;
 };
 
 #endif /* !TOKEN_H_ */
