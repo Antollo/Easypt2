@@ -59,7 +59,7 @@ public:
 
     template <class T>
     void setType() { _value = T(); }
-    
+
     template <class T>
     std::remove_reference_t<T> &get()
     {
@@ -144,7 +144,7 @@ public:
     static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype;
 
 private:
-    friend class objectPtr;
+    friend class objectPtrImpl;
     std::any _value;
     propertiesType _properties;
     bool _isConst;

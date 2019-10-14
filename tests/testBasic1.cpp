@@ -42,7 +42,7 @@ return value from second file
 Something not important.
 1
 false
-prototype
+[2]
 1
 3
 0
