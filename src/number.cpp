@@ -4,12 +4,14 @@
 #include "number.h"
 
 number::number(const int &n) : v(n){};
-number::number(const double &n) {
-    if(std::floor(n) == std::ceil(n))
+number::number(const double &n)
+{
+    if (std::floor(n) == std::ceil(n))
         v = static_cast<int>(n);
     else
         v = n;
 };
+number::number(const size_t &n) : v(static_cast<int>(n)){};
 number::number(const std::string &n)
 {
     if (n.find('.') == std::string::npos)
@@ -17,7 +19,7 @@ number::number(const std::string &n)
     else
         v = std::stod(n);
 };
-number::number(const char* n) : number(std::string(n)) {};
+number::number(const char *n) : number(std::string(n)){};
 number::number(const bool &n) : v(static_cast<int>(n)){};
 
 number &number::operator+=(const number &x)

@@ -1,6 +1,8 @@
 #ifndef LIBRARY_H_
 #define LIBRARY_H_
 
+#pragma warning(disable : 4100)
+
 #include "statement.h"
 #include "nobject.h"
 #include "runtime.h"

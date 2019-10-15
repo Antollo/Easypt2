@@ -46,6 +46,8 @@ prototype
 1
 3
 0
+56721
+2
 )"s == out([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);
