@@ -12,14 +12,14 @@ console.writeLine(1+2*3);
 let f = function { console.writeLine(args[0]); }
 f("function");
 
-if (true)  
+if (true)
     console.writeLine(true);
-if (false)  
+if (false)
     console.writeLine(false);
 
-if (1=="1")  
+if (1=="1")
     console.writeLine(true);
-if (1==2)  
+if (1==2)
     console.writeLine(false);
 
 console.writeLine("s"[0]);
@@ -85,7 +85,7 @@ let fib = function {
     return fib(args[0] - 1) + fib(args[0] - 2);
 }
 
-console.writeLine(u.getOwnPropertyNames()[0]);
+console.writeLine(u.getOwnPropertyNames());
 
 console.writeLine(fib(1));
 
