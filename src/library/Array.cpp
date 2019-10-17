@@ -17,7 +17,11 @@ void Array::init(stack *st)
 
     addFunctionL(object::arrayPrototype, "readOperator"_n, {
         argsConvertibleGuard<number>(args);
-        return thisObj->get<const object::arrayType>().at(static_cast<int>(args[0]->getConverted<number>()));
+        int pos = static_cast<int>(args[0]->getConverted<number>());
+        const object::arrayType& me = thisObj->get<const object::arrayType>();
+        assert<std::greater_equal>(pos, 0);
+        assert<std::less>(pos, me.size());
+        return me[pos];
     });
 
     addFunctionL(object::arrayPrototype, "length"_n, {
@@ -32,6 +36,11 @@ void Array::init(stack *st)
         int destPos = static_cast<int>(args[0]->getConverted<number>());
         int srcPos = static_cast<int>(args[2]->getConverted<number>());
         int srcLength = static_cast<int>(args[3]->getConverted<number>());
+        assert<std::greater_equal>(destPos, 0);
+        assert<std::less_equal>(destPos, dest.size());
+        assert<std::greater_equal>(srcPos, 0);
+        assert<std::greater_equal>(srcLength, 0);
+        assert<std::less_equal>(srcPos + srcLength, src.size());
         dest.insert(dest.begin() + destPos, src.begin() + srcPos, src.begin() + srcPos + srcLength);
         return thisObj;
     });
@@ -41,6 +50,9 @@ void Array::init(stack *st)
         const object::arrayType &me = thisObj->get<const object::arrayType>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
         int length = static_cast<int>(args[1]->getConverted<number>());
+        assert<std::greater_equal>(pos, 0);
+        assert<std::greater_equal>(length, 0);
+        assert<std::less_equal>(pos + length, me.size());
         return makeObject(object::arrayType(me.begin() + pos, me.begin() + pos + length));
     });
 
@@ -49,6 +61,9 @@ void Array::init(stack *st)
         object::arrayType &me = thisObj->get<object::arrayType>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
         int length = static_cast<int>(args[1]->getConverted<number>());
+        assert<std::greater_equal>(pos, 0);
+        assert<std::greater_equal>(length, 0);
+        assert<std::less_equal>(pos + length, me.size());
         me.erase(me.begin() + pos, me.begin() + pos + length);
         return thisObj;
     });

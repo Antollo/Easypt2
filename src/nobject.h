@@ -78,9 +78,11 @@ public:
     template <class T>
     bool isConvertible() const
     {
-        if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType>)
+        if (std::is_same_v<remove_cref_t<T>, bool> && isOfType<nullptr_t>())
+            return true;
+        if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
         {
-            return isOfType<number>() || isOfType<std::string>() || isOfType<arrayType>();
+            return isOfType<number>() || isOfType<std::string>() || isOfType<arrayType>() || isOfType<bool>();
         }
         // TODO user conversions
         else
@@ -127,6 +129,8 @@ public:
                 return static_cast<bool>(get<const std::string>().size());
             if (isOfType<arrayType>())
                 return static_cast<bool>(get<const arrayType>().size());
+            if (isOfType<nullptr_t>())
+                return !(hasOwnProperty("prototype"_n) && _properties.size() == 1);
         }
         //TODO user conversions
         throw std::runtime_error("unsupported conversion: "s + _value.type().name() + " to "s + typeid(T).name());

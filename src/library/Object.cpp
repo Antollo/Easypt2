@@ -25,4 +25,8 @@ void Object::init(stack *st)
         argsConvertibleGuard<std::string>(args);
         return (*thisObj)[static_cast<name>(args[0]->getConverted<std::string>())];
     });
+
+    addFunctionL(object::objectPrototype, "readOperator"_n, {
+        return makeObject(static_cast<int>(thisObj));
+    });
 }
