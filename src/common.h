@@ -12,7 +12,7 @@ void argsGuardHelper(const object::arrayType& arr, std::index_sequence<Is...>)
 {
 	if(!all((std::is_same_v<nullptr_t, Args> || arr[Is]->isOfType<Args>())... ))
     throw std::runtime_error("wrong type of argument");
-	
+
 }
 
 template <class... Args>
@@ -28,7 +28,7 @@ void argsConvertibleGuardHelper(const object::arrayType& arr, std::index_sequenc
 {
 	if(!all((std::is_same_v<nullptr_t, Args> || arr[Is]->isConvertible<Args>())... ))
     throw std::runtime_error("wrong type of argument");
-	
+
 }
 
 template <class... Args>
@@ -42,7 +42,7 @@ void argsConvertibleGuard(const object::arrayType& arr)
 template <template<class> class O, class T, class U>
 void assert(const T& a, const U& b)
 {
-	if(O()(a,b))
+	if(O<T>()(a,b))
 	return;
 	if constexpr(std::is_same_v<O<T>, std::less<T>>)
 		throw std::runtime_error("assertion error: " + std::to_string(a) + " < " + std::to_string(b));
@@ -56,7 +56,7 @@ void assert(const T& a, const U& b)
 		throw std::runtime_error("assertion error: " + std::to_string(a) + " == " + std::to_string(b));
 	else if constexpr(std::is_same_v<O<T>, std::not_equal_to<T>>)
 		throw std::runtime_error("assertion error: " + std::to_string(a) + " != " + std::to_string(b));
-	else 
+	else
 		throw std::runtime_error("assertion error: " + std::to_string(a) + " operator " + std::to_string(b));
 }
 
