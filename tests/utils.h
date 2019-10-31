@@ -5,15 +5,15 @@
 #include <algorithm>
 #include "console.h"
 
-bool __assert(std::string message)
+bool __staticAssert(std::string message)
 {
     std::cerr<<message;
     std::exit(1);
 }
 
-#define _assert(expression) (bool(expression)) || (__assert(#expression))
+#define _staticAssert(expression) (bool(expression)) || (__staticAssert(#expression))
 
-#define assert(...) _assert((__VA_ARGS__))
+#define staticAssert(...) _staticAssert((__VA_ARGS__))
 
 #if defined(_WIN32)
 template <class CB>

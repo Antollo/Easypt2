@@ -2,6 +2,7 @@
 #define EXPRESSION_H_
 
 #include <functional>
+#include <vector>
 #include "token.h"
 
 class stack;

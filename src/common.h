@@ -4,6 +4,11 @@
 #include <functional>
 #include "nobject.h"
 
+#ifdef assert
+#undef assert
+#endif
+
+
 template<class... Args>
 bool all(Args... args) { return (... && args); }
 

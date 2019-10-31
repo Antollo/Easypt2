@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 {
     try
     {
-        assert(
+        staticAssert(
 R"(a
 b
 3

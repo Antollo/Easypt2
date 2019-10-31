@@ -2,14 +2,14 @@
 
 int main()
 {
-    assert("abc" == out([]() {
+    staticAssert("abc" == out([]() {
                console::write("abc");
            }));
 
     in("xyz", []() {
         std::string input;
         console::read(input);
-        assert(input == "xyz");
+        staticAssert(input == "xyz");
     });
 
     return 0;

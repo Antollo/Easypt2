@@ -96,16 +96,16 @@ std::wstring utf8_decode(const std::string &str)
 // Solution from: https://stackoverflow.com/a/30169485
 static void sigaction_segv(int signal, siginfo_t *si, void *arg)
 {
-    ucontext_t *ctx = (ucontext_t *)arg;
+    //ucontext_t *ctx = (ucontext_t *)arg;
 
 #if __WORDSIZE == 64
     printf("Caught SIGSEGV, addr %p\n", si->si_addr);
     std::exit(1);
-    ctx->uc_mcontext.gregs[REG_RIP] += 10;
+    //ctx->uc_mcontext.gregs[REG_RIP] += 10;
 #else
     printf("Caught SIGSEGV, addr %p\n", si->si_addr);
     std::exit(1);
-    ctx->uc_mcontext.gregs[REG_EIP] += 10;
+    //ctx->uc_mcontext.gregs[REG_EIP] += 10;
 #endif
 }
 #endif
