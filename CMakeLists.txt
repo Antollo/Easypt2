@@ -6,11 +6,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(Easypt2)
 
-if(MSVC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     add_compile_options(/O2 /W4 /MT /EHa /utf-8)
-else()
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-O3 -static-libgcc -static-libstdc++)
     link_libraries(stdc++fs)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(-O3 -Wno-narrowing)
+    link_libraries(libc++experimental)
 endif()
 
 enable_testing()
