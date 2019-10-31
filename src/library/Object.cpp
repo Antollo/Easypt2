@@ -2,7 +2,7 @@
 
 void Object::init(stack *st)
 {
-    auto Object = insertObject("Object"_n, constructorCaller);
+    object::objectPtr Object = insertObject("Object"_n, constructorCaller);
 
     (*Object)["prototype"_n] = object::objectPrototype;
     
@@ -26,7 +26,7 @@ void Object::init(stack *st)
         return (*thisObj)[static_cast<name>(args[0]->getConverted<std::string>())];
     });
 
-    addFunctionL(object::objectPrototype, "readOperator"_n, {
-        return makeObject(static_cast<int>(thisObj));
+    addFunctionL(object::objectPrototype, "id"_n, {
+        return makeObject(static_cast<number>(reinterpret_cast<int>(thisObj.get())));
     });
 }

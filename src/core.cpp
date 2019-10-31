@@ -1,9 +1,10 @@
 #include <filesystem>
-#include <fstream>
 #include "statement.h"
 #include "osDependent.h"
 #include "core.h"
 #include "common.h"
+#include "file.h"
+#include "parser.h"
 
 object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
@@ -21,17 +22,21 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
     if (std::filesystem::exists(fileName) || std::filesystem::exists(executablePath / fileName))
     {
         std::string source;
-        std::ifstream sourceFile(fileName.string());
-        if (!sourceFile.is_open())
+        file sourceFile(fileName.string());
+        if (!sourceFile.isOpen())
         {
             sourceFile.open((executablePath / fileName).string());
-            if (!sourceFile.is_open())
+            if (!sourceFile.isOpen())
                 throw std::runtime_error("file " + fileName.string() + " cannot be opened");
         }
-        std::getline(sourceFile, source, (char)EOF);
+        source = sourceFile.readTo(EOF);
         sourceFile.close();
-
+        if (fileName.stem().extension() == ".min"s)
+            parser::registerLiterals(source);
+        else
+            parser::transpile(source);
         object::objectPtr sourceFunction = makeObject(compoundStatement(source));
+        parser::clearCache();
         object::objectPtr result = (*sourceFunction)(nullptr, std::move(args), st);
         imported.insert(std::make_pair(fileName.stem().string(), result));
         return result;
@@ -40,7 +45,27 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
         throw std::runtime_error("file " + fileName.string() + " not found");
 }
 
-#include "console.h"
+object::objectPtr parse(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+{
+    argsConvertibleGuard<std::string>(args);
+    std::string temp = args[0]->getConverted<std::string>();
+    parser::transpile(temp);
+    auto res = makeObject(compoundStatement(temp));
+    parser::clearCache();
+    return res;
+}
+
+object::objectPtr transpile(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+{
+    argsConvertibleGuard<std::string>(args);
+    std::string temp = args[0]->getConverted<std::string>();
+    parser::transpile(temp);
+    parser::restoreLiterals(temp);
+    auto res = makeObject(temp);
+    parser::clearCache();
+    return res;
+}
+
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
     auto newObj = makeUndefined();

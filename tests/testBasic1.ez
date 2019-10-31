@@ -48,7 +48,6 @@ console.writeLine(u.method2());
 
 let f3 = function { return f2; }
 
-/*TODO ... operator, and COMMENTS*/
 console.writeLine(f3()("function 3"));
 
 import("testBasic1secondFile");
@@ -66,7 +65,7 @@ let obj = json {
     ev : {
         message : ["Info", "Something not important."];
     }
-}
+};
 
 console.writeLine(obj.ev.message[1]);
 
@@ -104,4 +103,75 @@ while(i<arr.length())
 }
 console.newLine();
 console.writeLine(arr.subarray(1,3)[2]);
+let f = File();
+f.open("testBasic1.txt");
+let t = f.readTo("b");
+f.close();
+i = 0;
+console.writeLine(t[0]+t[1]);
+console.writeLine(t.byteAt(0));
+console.writeLine(t.byteAt(1));
 
+let name = function 
+{
+    args[0]["name"] = args[1];
+}
+
+let test = function 
+{
+    args[0]["test"] = parse(args[1]);
+}
+
+
+console @name@ "console";
+
+console @test@ "console.writeLine(\"example\")";
+
+//t=console.read();
+//console.writeLine(t[0]+t[1]);
+//console.writeLine(t.byteAt(0));
+//console.writeLine(t.byteAt(1));
+
+
+let f = function { 
+    if (args[0]%1000==0)
+    {
+        console.writeLine(args[0]);
+    }
+    f(args[0]+1);
+}
+
+//f(0);
+//console.debug(console.name);
+//console.test();
+
+let j = json {
+    "firstName": "John",
+    "lastName": "Smith",
+    "isAlive": true,
+    "age": 27,
+    "address": {
+        "streetAddress": "21 2nd Street",
+        "city": "New York",
+        "state": "NY",
+        "postalCode": "10021-3100"
+    },
+    "phoneNumbers": [
+        {
+            "type": "home",
+            "number": "212 555-1234"
+        },
+        {
+            "type": "office",
+            "number": "646 555-4567"
+        },
+        {
+            "type": "mobile",
+            "number": "123 456-7890"
+        }
+    ],
+    "children": [],
+    "spouse": 0
+};
+
+console.writeLine(j["phoneNumbers"][2]["type"]);

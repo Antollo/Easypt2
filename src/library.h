@@ -26,11 +26,21 @@ namespace Array
 void init(stack *st);
 };
 
+namespace String
+{
+void init(stack *st);
+};
+
+
 namespace consoleObj
 {
 void init(stack *st);
 };
 
+namespace File
+{
+void init(stack *st);
+};
 
 
 #endif /* !LIBRARY_H_ */

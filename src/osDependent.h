@@ -13,6 +13,12 @@
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
 #pragma comment(linker, "/STACK:134217728")
 #include <Windows.h>
 #include <eh.h>

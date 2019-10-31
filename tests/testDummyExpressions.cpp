@@ -11,25 +11,25 @@ int main()
     auto f = compoundStatement("A[\" str\" , 3.14]");
     auto g = compoundStatement("\"g\"[1, 2]");
 
-    assert("+(a,*(b,c))\n" == out([&a]() {
+    assert("+(a,*(b,c))\n" == console::getOutput([&a]() {
                a.check(true);
            }));
-    assert("+(a,-(b,c))\n" == out([&b]() {
+    assert("+(a,-(b,c))\n" == console::getOutput([&b]() {
                b.check(true);
            }));
-    assert("+(a,-u(b))\n" == out([&c]() {
+    assert("+(a,-u(b))\n" == console::getOutput([&c]() {
                c.check(true);
            }));
-    assert("f(x,y)\n" == out([&d]() {
+    assert("f(x,y)\n" == console::getOutput([&d]() {
                d.check(true);
            }));
-    assert("*u(f(g(x)))\n" == out([&e]() {
+    assert("*u(f(g(x)))\n" == console::getOutput([&e]() {
                e.check(true);
            }));
-    assert(".(A,readOperator(\" str\",3.14))\n" == out([&f]() {
+    assert(".(A,readOperator(\" str\",3.14))\n" == console::getOutput([&f]() {
                f.check(true);
            }));
-    assert(".(\"g\",readOperator(1,2))\n" == out([&g]() {
+    assert(".(\"g\",readOperator(1,2))\n" == console::getOutput([&g]() {
                g.check(true);
            }));
 

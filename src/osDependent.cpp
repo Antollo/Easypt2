@@ -1,5 +1,8 @@
+#include <io.h>
+#include <fcntl.h>
 #include "osDependent.h"
 #include "error.h"
+#include "console.h"
 
 std::filesystem::path getExecutablePath()
 {
@@ -65,7 +68,8 @@ void translateSEH(unsigned int u, EXCEPTION_POINTERS *)
             return "EXCEPTION_SINGLE_STEP";
         case EXCEPTION_STACK_OVERFLOW:
             _resetstkoflw();
-            return "EXCEPTION_STACK_OVERFLOW";
+            console::error("Win32 exception EXCEPTION_STACK_OVERFLOW");
+            std::exit(1);
         default:
             return "UNKNOWN EXCEPTION";
         }
@@ -101,23 +105,24 @@ static void sigaction_segv(int signal, siginfo_t *si, void *arg)
 #if __WORDSIZE == 64
     printf("Caught SIGSEGV, addr %p\n", si->si_addr);
     std::exit(1);
-    ctx->uc_mcontext.gregs[REG_RIP] += 10;
+    //ctx->uc_mcontext.gregs[REG_RIP] += 10;
 #else
     printf("Caught SIGSEGV, addr %p\n", si->si_addr);
     std::exit(1);
-    ctx->uc_mcontext.gregs[REG_EIP] += 10;
+    //ctx->uc_mcontext.gregs[REG_EIP] += 10;
 #endif
 }
 #endif
 
 void initialize()
 {
-    //std::ios_base::sync_with_stdio(false);
-    std::cout << std::boolalpha;
-    std::wcout << std::boolalpha;
+    std::ios_base::sync_with_stdio(false);
     initializeThread();
 #if defined(_WIN32)
-
+    setlocale(LC_ALL, ".65001");
+    _setmode(_fileno(stdout), _O_WTEXT);
+    _setmode(_fileno(stdin), _O_WTEXT);
+    std::wcout << std::boolalpha;
     //Colors in console
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE)
@@ -134,6 +139,8 @@ void initialize()
     {
         return;
     }
+#else
+    std::cout << std::boolalpha;
 #endif
 }
 
@@ -145,11 +152,11 @@ void initializeThread()
     _set_se_translator(translateSEH);
 
     //Prevent stack overflow
-    ULONG_PTR lowLimit;
+    /*ULONG_PTR lowLimit;
     ULONG_PTR highLimit;
     GetCurrentThreadStackLimits(&lowLimit, &highLimit);
     static ULONG size = (highLimit - lowLimit) / 32 * 29;
-    SetThreadStackGuarantee(&size);
+    SetThreadStackGuarantee(&size);*/
 #else
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));

@@ -187,6 +187,10 @@ addOperatorL("+"_n, {
         return insertObject(args[0].getName(), nullptr);
     });
     addOperatorL(":"_n, {
+        if (args[0].getType() == token::tokenType::StringLiteral)
+        {
+            console::log("StringLiteral");
+        }
         if (args[0].getType() == token::tokenType::Name)
             return st->insert(args[0].getName(), args[1].resolve(st));
         else

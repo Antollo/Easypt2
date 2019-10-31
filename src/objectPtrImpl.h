@@ -21,6 +21,7 @@ public:
     object *operator->();
     const object &operator*() const;
     const object *operator->() const;
+    inline object *get() { return _obj; }
 
 private:
     object *_obj;

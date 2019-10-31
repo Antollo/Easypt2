@@ -2,11 +2,11 @@
 
 int main()
 {
-    assert("abc" == out([]() {
+    assert("abc" == console::getOutput([]() {
                console::write("abc");
            }));
 
-    in("xyz", []() {
+    console::setInput("xyz", []() {
         std::string input;
         console::read(input);
         assert(input == "xyz");

@@ -38,6 +38,7 @@ inline std::string atOperator(std::string s)
 }
 
 std::vector<std::string> parser::literals;
+int parser::literalsCounter = 0;
 
 std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
 {
@@ -211,20 +212,42 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
     return res;
 }
 
+std::vector<std::vector<token>> parser::transpileAndParse(std::string &input)
+{
+    transpile(input);
+    return parse(input);
+}
+
+
 std::vector<std::vector<token>> parser::parse(std::string &input)
 {
+    registerCompounds(input);
+    return parseFlat(input);
+}
+#include "console.h"
+void parser::transpile(std::string &input)
+{
+    if (input.empty() || input.back() != '\n')
+        input += "\n";
     registerLiterals(input);
     removeComments(input);
-    registerConditionals(input);
-    registerCompounds(input);
-    fixParenthesis(input);
-    return parseFlat(input);
+    transformConditionals(input);
+    transformSyntacticSugar(input);
+    transformBrackets(input);
+}
+
+void parser::restoreLiterals(std::string &input)
+{
+    static std::regex stringMarkerRegex(R"(#s([0-9]+))");
+    std::smatch sm;
+
+    while (std::regex_search(input, sm, stringMarkerRegex))
+        input.replace(sm.position(), sm.length(), literals[std::stoi(sm[1].str())]);
 }
 
 void parser::registerLiterals(std::string &input)
 {
     static std::regex stringRegex(stringRegexString);
-    static int counter = 0;
     std::sregex_token_iterator begin(input.begin(), input.end(), stringRegex, 0), end;
     std::vector<std::string> res;
 
@@ -233,9 +256,9 @@ void parser::registerLiterals(std::string &input)
     for (auto &string : res)
     {
         pos = input.find(string, pos);
-        input.replace(pos, string.size(), "#s"s + std::to_string(counter));
+        input.replace(pos, string.size(), "#s"s + std::to_string(literalsCounter));
         literals.push_back(string);
-        counter++;
+        literalsCounter++;
     }
 }
 
@@ -252,7 +275,7 @@ void parser::removeComments(std::string &input)
         input.erase(sm.position(), sm.length());
 }
 
-void parser::fixParenthesis(std::string &input)
+void parser::transformBrackets(std::string &input)
 {
     static std::regex chainingParenthesis(R"(\)\()");
     std::smatch sm;
@@ -262,9 +285,10 @@ void parser::fixParenthesis(std::string &input)
 
     while (std::regex_search(input, sm, chainingParenthesis))
         input.replace(sm.position(), sm.length(), ").callOperator(");
+    
 }
 
-void parser::registerConditionals(std::string &input)
+void parser::transformConditionals(std::string &input)
 {
     static std::regex compoundRegex(R"((if|while)\s*\(([^;]+)\)[\ \r\t\f\v]*\n([^;]*);)");
     std::smatch sm;
@@ -274,27 +298,46 @@ void parser::registerConditionals(std::string &input)
     }
 }
 
-void parser::registerCompounds(std::string &input)
+void parser::transformSyntacticSugar(std::string &input)
 {
-    static std::regex jsonRegex(R"(:\s*\{)");
+    static std::regex jsonRegex(R"((:|\,|\(|\[)\s*\{)");
     static std::regex jsonArrayRegex(R"(:\s*\[)");
-    static std::regex compoundRegex(R"(\{[^\{\}]*\})");
-    static int counter = 0;
+    static std::regex jsonCommaColon(",(\\s)*(" + stringRegexString + "|" + nameRegexString + ")(\\s)*:");
+
     std::smatch sm;
     while (std::regex_search(input, sm, jsonRegex))
-        input.replace(sm.position(), sm.length(), ":json{"s);
+        input.replace(sm.position(), sm.length(), sm[1].str() + "json{"s);
     while (std::regex_search(input, sm, jsonArrayRegex))
         input.replace(sm.position(), sm.length(), ":Array["s);
+    while (std::regex_search(input, sm, jsonCommaColon))
+        input.replace(sm.position(), sm.length(), ";" + sm[2].str() + ":");
+}
+
+void parser::registerCompounds(std::string &input)
+{
+    static std::regex compoundRegex(R"(\{[^\{\}]*\})");
+    static std::regex compoundJsonRegex(R"(json\s*(\{[^\{\}]*\}))");
+    static int counter = 0;
+    std::smatch sm;
+    std::string temp;
+    while (std::regex_search(input, sm, compoundJsonRegex))
+    {
+        temp = sm[1].str();
+        compoundStatement::_compoundStatements.push_back(parseFlat(temp));
+        input.replace(sm[1].first, sm[1].second, "#c"s + std::to_string(counter));
+        counter++;
+    }
     while (std::regex_search(input, sm, compoundRegex))
     {
-        //compoundCallback(parseFlat(sm.str()));
-        compoundStatement::_compoundStatements.push_back(parseFlat(sm.str()));
+        temp = sm.str();
+        compoundStatement::_compoundStatements.push_back(parseFlat(temp));
         input.replace(sm.position(), sm.length(), "#c"s + std::to_string(counter) + ";"s);
         counter++;
     }
+    //console::log(input);
 }
 
-std::vector<std::vector<token>> parser::parseFlat(const std::string &input)
+std::vector<std::vector<token>> parser::parseFlat(std::string &input)
 {
     auto expressions = splitExpressions(input);
     std::vector<std::vector<token>> res;
@@ -315,8 +358,13 @@ std::vector<std::string> parser::splitExpressions(const std::string &input)
         res.push_back(temp);
         //std::cout<<"'"<<temp<<"'\n";
     }
-
     return res;
+}
+
+void parser::clearCache()
+{
+    literals.clear();
+    literalsCounter = 0;
 }
 
 std::vector<std::string> parser::tokenize(const std::string &input)

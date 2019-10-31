@@ -58,7 +58,7 @@ public:
     }
 
     template <class T>
-    void setType() { _value = T(); }
+    void setType() { _value = std::any(std::in_place_type_t<T>()); }
 
     template <class T>
     std::remove_reference_t<T> &get()
@@ -78,7 +78,7 @@ public:
     template <class T>
     bool isConvertible() const
     {
-        if (std::is_same_v<remove_cref_t<T>, bool> && isOfType<nullptr_t>())
+        if (isOfType<nullptr_t>() && std::is_same_v<remove_cref_t<T>, bool>)
             return true;
         if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
         {

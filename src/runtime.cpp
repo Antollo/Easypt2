@@ -29,11 +29,6 @@ void runtime::init(stack *st)
     object::functionPrototype = makeUndefined();
     (*object::functionPrototype)["prototype"_n] = object::objectPrototype;
 
-    addFunctionL(object::stringPrototype, "readOperator"_n, {
-        argsConvertibleGuard<number>(args);
-        return makeObject(std::string(1, thisObj->get<const std::string>().at(static_cast<int>(args[0]->getConverted<number>()))));
-    });
-
     addFunctionL(object::functionPrototype, "callOperator"_n, {
         argsConvertibleGuard<std::string>(args);
         return (*thisObj)(nullptr, std::move(args), st);
@@ -43,11 +38,15 @@ void runtime::init(stack *st)
     insertObject("false"_n, false);
 
     insertObject("import"_n, import);
+    insertObject("parse"_n, parse);
+    insertObject("transpile"_n, transpile);
 
     operators::init(st);
     Object::init(st);
     Array::init(st);
+    String::init(st);
     consoleObj::init(st);
+    File::init(st);
 }
 
 void runtime::fini(stack *st)

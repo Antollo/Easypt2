@@ -1,38 +1,47 @@
 #include "../library.h"
 
-void Array::init(stack *st)
+void String::init(stack *st)
 {
-    object::objectPtr Array = insertObject("Array"_n, constructorCaller);
+    object::objectPtr String = insertObject("String"_n, constructorCaller);
 
-    addFunctionL(Array, "readOperator"_n, {
+    addFunctionL(String, "readOperator"_n, {
         return makeObject(args);
     });
 
-    (*Array)["prototype"_n] = object::arrayPrototype;
+    (*String)["prototype"_n] = object::stringPrototype;
 
-    addFunctionL(object::arrayPrototype, "constructor"_n, {
-        thisObj->setType<object::arrayType>();
+    addFunctionL(object::stringPrototype, "constructor"_n, {
+        thisObj->setType<std::string>();
         return thisObj;
     });
 
-    addFunctionL(object::arrayPrototype, "readOperator"_n, {
+    addFunctionL(object::stringPrototype, "readOperator"_n, {
         argsConvertibleGuard<number>(args);
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        const object::arrayType& me = thisObj->get<const object::arrayType>();
+        const std::string& me = thisObj->get<const std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
-        return me[pos];
+        return makeObject(std::string(1, me[pos]));
     });
 
-    addFunctionL(object::arrayPrototype, "length"_n, {
-        return makeObject(static_cast<number>(thisObj->get<const object::arrayType>().size()));
+    addFunctionL(object::stringPrototype, "byteAt"_n, {
+        argsConvertibleGuard<number>(args);
+        int pos = static_cast<int>(args[0]->getConverted<number>());
+        const std::string& me = thisObj->get<const std::string>();
+        assert<std::greater_equal>(pos, 0);
+        assert<std::less>(pos, me.size());
+        return makeObject(number(static_cast<int>(static_cast<unsigned char>(me[pos]))));
     });
 
-    addFunctionL(object::arrayPrototype, "insertFrom"_n, {
-        argsConvertibleGuard<number, object::arrayType, number, number>(args);
-        argsGuard<nullptr_t, object::arrayType>(args);
-        object::arrayType &dest = thisObj->get<object::arrayType>();
-        const object::arrayType &src = args[1]->get<const object::arrayType>();
+    addFunctionL(object::stringPrototype, "length"_n, {
+        return makeObject(static_cast<number>(thisObj->get<const std::string>().size()));
+    });
+
+    addFunctionL(object::stringPrototype, "insertFrom"_n, {
+        argsConvertibleGuard<number, std::string, number, number>(args);
+        argsGuard<nullptr_t, std::string>(args);
+        std::string &dest = thisObj->get<std::string>();
+        const std::string &src = args[1]->get<const std::string>();
         int destPos = static_cast<int>(args[0]->getConverted<number>());
         int srcPos = static_cast<int>(args[2]->getConverted<number>());
         int srcLength = static_cast<int>(args[3]->getConverted<number>());
@@ -45,20 +54,20 @@ void Array::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::arrayPrototype, "subarray"_n, {
+    addFunctionL(object::stringPrototype, "substring"_n, {
         argsConvertibleGuard<number, number>(args);
-        const object::arrayType &me = thisObj->get<const object::arrayType>();
+        const std::string &me = thisObj->get<const std::string>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
         int length = static_cast<int>(args[1]->getConverted<number>());
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());
-        return makeObject(object::arrayType(me.begin() + pos, me.begin() + pos + length));
+        return makeObject(std::string(me.begin() + pos, me.begin() + pos + length));
     });
 
-    addFunctionL(object::arrayPrototype, "erase"_n, {
+    addFunctionL(object::stringPrototype, "erase"_n, {
         argsConvertibleGuard<number, number>(args);
-        object::arrayType &me = thisObj->get<object::arrayType>();
+        std::string &me = thisObj->get<std::string>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
         int length = static_cast<int>(args[1]->getConverted<number>());
         assert<std::greater_equal>(pos, 0);

@@ -2,7 +2,7 @@
 
 void consoleObj::init(stack *st)
 {
-    auto consoleObj = insertObject("console"_n, nullptr);
+    object::objectPtr consoleObj = insertObject("console"_n, nullptr);
 
     addFunctionL(consoleObj, "write"_n, {
         for (auto &el : args)
@@ -50,6 +50,11 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "read"_n, {
         std::string temp;
         console::read(temp);
+        return makeObject(temp);
+    });
+    addFunctionL(consoleObj, "readLine"_n, {
+        std::string temp;
+        console::readLine(temp);
         return makeObject(temp);
     });
     addFunctionL(consoleObj, "readLine"_n, {

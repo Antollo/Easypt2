@@ -48,7 +48,11 @@ false
 0
 56721
 2
-)"s == out([&argc, &argv]() {
+zz
+122
+122
+mobile
+)"s == console::getOutput([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);
 

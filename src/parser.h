@@ -15,7 +15,12 @@
 class parser
 {
 public:
+    static std::vector<std::vector<token>> transpileAndParse(std::string &input);
     static std::vector<std::vector<token>> parse(std::string &input);
+    static void transpile(std::string &input);
+    static void restoreLiterals(std::string &input);
+    static void registerLiterals(std::string &input);
+    static void clearCache();
 
 private:
     const static inline std::string basicOperatorRegexString = R"((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>)=|\|\||&&|<<|>>|--|\+\+|->|==|\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\]|\+u|-u|\*u)";
@@ -27,13 +32,14 @@ private:
     const static inline std::string tokenRegexString = operatorRegexString + "|" + numberRegexString + "|" + stringRegexString + "|" + nameRegexString;
 
     static std::vector<std::string> literals;
+    static int literalsCounter;
 
-    static void registerLiterals(std::string &input);
     static void removeComments(std::string &input);
-    static void fixParenthesis(std::string &input);
-    static void registerConditionals(std::string &input);
+    static void transformBrackets(std::string &input);
+    static void transformConditionals(std::string &input);
     static void registerCompounds(std::string &input);
-    static std::vector<std::vector<token>> parseFlat(const std::string &input);
+    static void transformSyntacticSugar(std::string &input);
+    static std::vector<std::vector<token>> parseFlat(std::string &input);
     static std::vector<std::string> splitExpressions(const std::string &input);
     static std::vector<std::string> tokenize(const std::string &input);
     static std::vector<token> shuntingYard(std::vector<std::string> &&input);

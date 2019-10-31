@@ -41,13 +41,13 @@ public:
         {
             std::wstring temp;
             std::wcin >> temp;
-            std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            //std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), std::wcin.peek());
             t = utf8_encode(temp);
         }
         else
         {
             std::wcin >> t;
-            std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            //std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), std::wcin.peek());
         }
         if constexpr (sizeof...(args))
             read(args...);
@@ -59,13 +59,13 @@ public:
         if constexpr (std::is_same_v<T, std::string>)
         {
             std::wstring temp;
-            std::getline(std::wcin, temp);
+            std::getline(std::wcin >> std::ws, temp);
             t = utf8_encode(temp);
         }
         else
         {
             std::wstring temp;
-            std::getline(std::wcin, temp);
+            std::getline(std::wcin >> std::ws, temp);
             t = static_cast<T>(utf8_encode(temp));
         }
         if constexpr (sizeof...(args))
@@ -113,12 +113,33 @@ public:
             std::wcerr << std::endl;
     }
 
+    template <class CB>
+    static void setInput(const std::string &str, CB cb)
+    {
+        std::wistringstream st(utf8_decode(str));
+        std::wstreambuf *buf = std::wcin.rdbuf();
+        std::wcin.rdbuf(st.rdbuf());
+        cb();
+        std::wcin.rdbuf(buf);
+    }
+
+    template <class CB>
+    static std::string getOutput(CB cb)
+    {
+        std::wostringstream st;
+        std::wstreambuf *buf = std::wcout.rdbuf();
+        std::wcout.rdbuf(st.rdbuf());
+        cb();
+        std::wcout.rdbuf(buf);
+        return utf8_encode(st.str());
+    }
+
 #else
     template <class T, class... Ts>
     static void read(T &t, Ts &... args)
     {
         std::cin >> t;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if constexpr (sizeof...(args))
             read(args...);
     }
@@ -127,7 +148,7 @@ public:
     static void readLine(T &t, Ts &... args)
     {
         std::string temp;
-        std::getline(std::cin, temp);
+        std::getline(std::cin >> std::ws, temp);
         t = static_cast<T>(temp);
         if constexpr (sizeof...(args))
             readLine(args...);
@@ -165,7 +186,29 @@ public:
             std::cerr << std::endl;
     }
 
+    template <class CB>
+    static void setInput(const std::string &str, CB cb)
+    {
+        std::istringstream st(str);
+        std::streambuf *buf = std::cin.rdbuf();
+        std::cin.rdbuf(st.rdbuf());
+        cb();
+        std::cin.rdbuf(buf);
+    }
+
+    template <class CB>
+    static std::string getOutput(CB cb)
+    {
+        std::ostringstream st;
+        std::streambuf *buf = std::cout.rdbuf();
+        std::cout.rdbuf(st.rdbuf());
+        cb();
+        std::cout.rdbuf(buf);
+        return st.str();
+    }
+
 #endif
+
 private:
     static std::string now();
 };
