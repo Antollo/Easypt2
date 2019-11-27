@@ -3,7 +3,7 @@
 
 #include <string>
 #include <fstream>
-
+#include <filesystem>
 class file
 {
 public:
@@ -11,10 +11,11 @@ public:
     file(const std::string &path);
     void open(const std::string &path);
     void create(const std::string &path);
+    void remove();
     std::string read();
     std::string readLine();
     std::string readTo(char delim);
-    std::string readBytes(const int& count);
+    std::string readBytes(const int &count);
     void write(const std::string &str);
     void writeLine(const std::string &str);
     void newLine();
@@ -24,14 +25,21 @@ public:
     void setWritePosition(const int &n);
     void clear();
     void close();
-    inline bool isOpen() {return _f->is_open();}
+    inline bool isOpen() { return _f->is_open(); }
+    inline std::filesystem::path getPath() { return _path; }
+
 private:
-#if defined(WIDE_FILES)
-    std::shared_ptr<std::wfstream> _f;
-#else 
     std::shared_ptr<std::fstream> _f;
-#endif
-    std::string _path;
+    std::filesystem::path _path;
+    enum class lastOperationType
+    {
+        read,
+        write,
+        openOrClose
+    };
+    lastOperationType lastOperation;
+    void readGuard();
+    void writeGuard();
 };
 
 #endif /* !FILE_H_ */

@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include "osDependent.h"
 
 using namespace std::string_literals;
@@ -31,6 +32,12 @@ public:
     static void error(const Ts &... args)
     {
         writeLineError("\033[91m\033[1m"s, now() + " ", args..., "\033[0m"s);
+    }
+
+    template <class T>
+    static inline void controlSequence(const T& code)
+    {
+        write("\033["s + code);
     }
 
 #if defined(_WIN32)

@@ -26,7 +26,9 @@ void Object::init(stack *st)
         return (*thisObj)[static_cast<name>(args[0]->getConverted<std::string>())];
     });
 
-    addFunctionL(object::objectPrototype, "id"_n, {
-        return makeObject(static_cast<number>(reinterpret_cast<int>(thisObj.get())));
+    addFunctionL(object::objectPrototype, "getId"_n, {
+        auto ptr = thisObj.get();
+	    std::string byteBuffer(reinterpret_cast<char*>(&ptr), reinterpret_cast<char*>(&ptr) + sizeof(decltype(ptr)));
+        return makeObject(byteBuffer);
     });
 }

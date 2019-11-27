@@ -78,7 +78,7 @@ public:
     template <class T>
     bool isConvertible() const
     {
-        if (isOfType<nullptr_t>() && std::is_same_v<remove_cref_t<T>, bool>)
+        if (std::is_same_v<remove_cref_t<T>, bool> && (isOfType<nullptr_t>() || isOfType<compoundStatement>() || isOfType<nativeFunctionType>()))
             return true;
         if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
         {
@@ -131,6 +131,8 @@ public:
                 return static_cast<bool>(get<const arrayType>().size());
             if (isOfType<nullptr_t>())
                 return !(hasOwnProperty("prototype"_n) && _properties.size() == 1);
+            if(isOfType<compoundStatement>() || isOfType<nativeFunctionType>())
+                return true;
         }
         //TODO user conversions
         throw std::runtime_error("unsupported conversion: "s + _value.type().name() + " to "s + typeid(T).name());
@@ -142,6 +144,7 @@ public:
     objectPtr operator()(objectPtr thisObj, arrayType &&args, stack *st);
     inline bool hasOwnProperty(const name &n) { return _properties.count(n); }
     inline void addProperty(const name &n, objectPtr ptr) { _properties.insert_or_assign(n, ptr); }
+    inline void addProperties(propertiesType::iterator begin, propertiesType::iterator end) { _properties.insert(begin, end); }
     arrayType getOwnPropertyNames();
     void clear();
 
@@ -162,7 +165,7 @@ public:
     objectException(object::objectPtr &&obj) : object::objectPtr(obj) {}
     objectException(const object::objectPtr &obj) : object::objectPtr(obj) {}
 
-    const char *what() const noexcept override { return "objectException"; }
+    const char *what() const noexcept override { return "object exception"; }
     object::objectPtr &getPtr()
     {
         return dynamic_cast<object::objectPtr &>(*this);

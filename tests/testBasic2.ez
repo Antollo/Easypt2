@@ -1,0 +1,11 @@
+let t = function {console.write(u);};
+
+
+let out = console.getOutput(function {
+    console.write("x");
+});
+
+console.writeLine(out);
+
+
+import("../library/docs");

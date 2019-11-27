@@ -54,7 +54,12 @@ void File::init(stack *st)
 
     addFunctionL(filePrototype, "create"_n, {
         argsConvertibleGuard<std::string>(args);
-        thisObj->get<file>().open(args[0]->getConverted<std::string>());
+        thisObj->get<file>().create(args[0]->getConverted<std::string>());
+        return thisObj;
+    });
+
+    addFunctionL(filePrototype, "remove"_n, {
+        thisObj->get<file>().remove();
         return thisObj;
     });
 

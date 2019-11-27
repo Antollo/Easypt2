@@ -218,13 +218,12 @@ std::vector<std::vector<token>> parser::transpileAndParse(std::string &input)
     return parse(input);
 }
 
-
 std::vector<std::vector<token>> parser::parse(std::string &input)
 {
     registerCompounds(input);
     return parseFlat(input);
 }
-#include "console.h"
+
 void parser::transpile(std::string &input)
 {
     if (input.empty() || input.back() != '\n')
@@ -234,6 +233,7 @@ void parser::transpile(std::string &input)
     transformConditionals(input);
     transformSyntacticSugar(input);
     transformBrackets(input);
+    //console::debug(input);
 }
 
 void parser::restoreLiterals(std::string &input)
@@ -290,11 +290,16 @@ void parser::transformBrackets(std::string &input)
 
 void parser::transformConditionals(std::string &input)
 {
-    static std::regex compoundRegex(R"((if|while)\s*\(([^;]+)\)[\ \r\t\f\v]*\n([^;]*);)");
+    static std::regex ifWhileRegex(R"((if|while)\s*\(([^\;\{]+)\)[\ \r\t\f\v]*[\n]+([^\;\{]*)\;)");
+    static std::regex ifWhileRegexSecond(R"((if|while)\s*\(([^\;\{]+)\)[\ \r\t\f\v]*[\n]*\{)");
     std::smatch sm;
-    while (std::regex_search(input, sm, compoundRegex))
+    while (std::regex_search(input, sm, ifWhileRegex))
     {
         input.replace(sm.position(), sm.length(), sm[1].str() + ";" + sm[2].str() + ";" + sm[3].str() + ";");
+    }
+    while (std::regex_search(input, sm, ifWhileRegexSecond))
+    {
+        input.replace(sm.position(), sm.length(), sm[1].str() + ";" + sm[2].str() + "; {");
     }
 }
 
@@ -316,15 +321,15 @@ void parser::transformSyntacticSugar(std::string &input)
 void parser::registerCompounds(std::string &input)
 {
     static std::regex compoundRegex(R"(\{[^\{\}]*\})");
-    static std::regex compoundJsonRegex(R"(json\s*(\{[^\{\}]*\}))");
+    static std::regex valuedCompoundRegex(R"((function|json)\s*(\{[^\{\}]*\}))");
     static int counter = 0;
     std::smatch sm;
     std::string temp;
-    while (std::regex_search(input, sm, compoundJsonRegex))
+    while (std::regex_search(input, sm, valuedCompoundRegex))
     {
-        temp = sm[1].str();
+        temp = sm[2].str();
         compoundStatement::_compoundStatements.push_back(parseFlat(temp));
-        input.replace(sm[1].first, sm[1].second, "#c"s + std::to_string(counter));
+        input.replace(sm[2].first, sm[2].second, "#c"s + std::to_string(counter));
         counter++;
     }
     while (std::regex_search(input, sm, compoundRegex))
@@ -383,7 +388,7 @@ bool parser::isOperator(const std::string &token)
 
 bool parser::isUnaryOperator(const std::string &token)
 {
-    return token.back() == 'u' || token == "++" || token == "--" || token == "!" || token == "~" || token == "let" || token == "function" || token == "return" || token == "json" || (token.back() == '@' && token.front() != '@') || (token.back() != '@' && token.front() == '@');
+    return token.back() == 'u' || token == "++" || token == "--" || token == "!" || token == "~" || token == "let" || token == "function" || token == "return" || token == "throw" || token == "json" || (token.back() == '@' && token.front() != '@') || (token.back() != '@' && token.front() == '@');
 }
 
 bool parser::isNumberLiteral(const std::string &token)
@@ -427,7 +432,7 @@ int parser::operatorPrecedence(const std::string &token)
         return 15;
     else if (token.front() == '@' || token.back() == '@')
         return 16;
-    else if (token.back() == '=' || token == ":" || token == "return")
+    else if (token.back() == '=' || token == ":" || token == "return" || token == "throw")
         return 17;
     else
         throw std::runtime_error("operator has no precedence");
@@ -436,7 +441,7 @@ int parser::operatorPrecedence(const std::string &token)
 // true if left-associative
 bool parser::operatorAssociativity(const std::string &token)
 {
-    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "json" || token == "return" || (token.back() == '@' && token.front() != '@'))
+    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "json" || token == "return" || token == "throw" || (token.back() == '@' && token.front() != '@'))
         return false;
     return true;
 }

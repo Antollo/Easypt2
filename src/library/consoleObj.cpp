@@ -62,4 +62,15 @@ void consoleObj::init(stack *st)
         console::readLine(temp);
         return makeObject(temp);
     });
+    addFunctionL(consoleObj, "controlSequence"_n, {
+        argsConvertibleGuard<std::string>(args);
+        console::controlSequence(args[0]->getConverted<std::string>());
+        return makeUndefined();
+    });
+    addFunctionL(consoleObj, "getOutput"_n, {
+        argsGuard<std::nullptr_t>(args);
+        return makeObject(console::getOutput([&args, &st]() {
+            (*args[0])(nullptr, {}, st);
+        }));
+    });
 }

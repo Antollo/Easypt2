@@ -30,7 +30,6 @@ void runtime::init(stack *st)
     (*object::functionPrototype)["prototype"_n] = object::objectPrototype;
 
     addFunctionL(object::functionPrototype, "callOperator"_n, {
-        argsConvertibleGuard<std::string>(args);
         return (*thisObj)(nullptr, std::move(args), st);
     });
 
@@ -40,11 +39,16 @@ void runtime::init(stack *st)
     insertObject("import"_n, import);
     insertObject("parse"_n, parse);
     insertObject("transpile"_n, transpile);
+    insertObject("getStack"_n, getStack);
 
+    object::objectPtr Function = insertObject("Function"_n, nullptr);
+    (*Function)["prototype"_n] = object::functionPrototype;
+    
     operators::init(st);
     Object::init(st);
     Array::init(st);
     String::init(st);
+    Number::init(st);
     consoleObj::init(st);
     File::init(st);
 }

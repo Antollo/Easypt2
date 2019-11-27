@@ -13,7 +13,7 @@ class number
 public:
     number(const int &n);
     number(const double &n);
-    number(const size_t &n);
+    number(const unsigned int &n);
     number(const std::string &n);
     number(const char* n);
     number(const bool &n);

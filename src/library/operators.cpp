@@ -66,6 +66,13 @@ addOperatorL("+"_n, {
             return token(makeObject(static_cast<number>(a->get<const number>() % b->getConverted<number>())));
         return token((*(*a)["%"_n])(a, {b}, st));
     });
+    addOperatorL("&&"_n, {
+        object::objectPtr &a = args[0].resolve(st);
+        object::objectPtr &b = args[1].resolve(st);
+        if (a->isOfType<bool>() && b->isConvertible<bool>())
+            return token(makeObject(static_cast<bool>(a->get<const bool>() && b->getConverted<bool>())));
+        return token((*(*a)["&&"_n])(a, {b}, st));
+    });
     addOperatorL("=="_n, {
         object::objectPtr &a = args[0].resolve(st);
         object::objectPtr &b = args[1].resolve(st);
@@ -82,6 +89,23 @@ addOperatorL("+"_n, {
             return token(makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>())));
 
         return token((*(*a)["=="_n])(a, {b}, st));
+    });
+    addOperatorL("!="_n, {
+        object::objectPtr &a = args[0].resolve(st);
+        object::objectPtr &b = args[1].resolve(st);
+        if (a->isOfType<number>() && b->isConvertible<number>())
+            return token(makeObject(static_cast<bool>(a->get<const number>() != b->getConverted<number>())));
+
+        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
+            return token(makeObject(static_cast<bool>(a->get<const std::string>() != b->getConverted<std::string>())));
+
+        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+            return token(makeObject(static_cast<bool>(a->get<const object::arrayType>() != b->getConverted<object::arrayType>())));
+
+        if (a->isOfType<bool>() && b->isConvertible<bool>())
+            return token(makeObject(static_cast<bool>(a->get<const bool>() != b->getConverted<bool>())));
+
+        return token((*(*a)["!="_n])(a, {b}, st));
     });
     addOperatorL("<"_n, {
         object::objectPtr &a = args[0].resolve(st);
@@ -175,6 +199,12 @@ addOperatorL("+"_n, {
             return token(makeObject(0_n-static_cast<number>(a->get<const number>())));
         return token((*(*a)["-"_n])(a, {}, st));
     });
+    addOperatorL("!"_n, {
+        object::objectPtr &a = args[0].resolve(st);
+        if (a->isConvertible<bool>())
+            return token(makeObject(!a->getConverted<bool>()));
+        return token((*(*a)["-"_n])(a, {}, st));
+    });
     addOperatorL("="_n, {
         object::objectPtr &a = args[0].resolve(st);
         if (a->isConst())
@@ -216,5 +246,8 @@ addOperatorL("+"_n, {
     });
     addOperatorL("return"_n, {
         throw args[0].resolve(st);
+    });
+    addOperatorL("throw"_n, {
+        throw objectException(args[0].resolve(st));
     });
 }

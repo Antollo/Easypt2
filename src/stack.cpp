@@ -28,3 +28,17 @@ stack::iterator stack::end()
 {
     return storage.end();
 }
+
+object::objectPtr stack::toObject()
+{
+    auto obj = makeUndefined();
+    toObject(obj);
+    return obj;
+}
+
+void stack::toObject(object::objectPtr& obj)
+{
+    if (previous != nullptr)
+        previous->toObject(obj);
+        obj->addProperties(begin(), end());
+}

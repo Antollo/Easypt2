@@ -21,9 +21,11 @@ public:
     objectPtrImpl &insert(const name &n, const objectPtrImpl &obj);
     iterator begin();
     iterator end();
+    objectPtrImpl toObject();
     void clear();
 
 private:
+    void toObject(objectPtrImpl& obj);
     stack *previous;
     storageType storage;
 };

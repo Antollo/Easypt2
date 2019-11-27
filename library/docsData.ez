@@ -1,0 +1,72 @@
+argc @description@
+"Number of the interpreter's command-line arguments.";
+argc @example@
+"// easypt2 -file f.ez
+// f.ez:
+let i = 0;
+while(i < argc) {
+    console.writeLine(argv[i]);
+    i++;
+}";
+
+argv @description@
+"Array of the interpreter's command-line arguments.";
+argv @example@
+"// easypt2 -file f.ez
+// f.ez:
+let i = 0;
+while(i < argc) {
+    console.writeLine(argv[i]);
+    i++;
+}";
+
+import @parameters@
+"file /*String or File*/";
+import @returns@
+"/*Object*/";
+import @description@
+"Imports source code from another *.ez file (source is transpiled, parsed, and called, return 
+value is returned as import return value). First and only parameters is filename (file is 
+searched in current working directory and then in interpreter directory) or opened File object.";
+import @example@
+"let module = File();
+module.create(\"module.ez\");
+module.write(\"let x = 7; let y = 3; return x*y+y;\");
+let result = import(module);
+module.remove();
+console.write(result);";
+import @expectedOutput@ "24";
+
+parse @parameters@
+"code /*String*/";
+parse @returns@
+"/*Function*/";
+parse @description@
+"Parses code from string to Function object. It is dangerous (it could parse malicious 
+code) and slow function.";
+parse @example@
+"let fun = parse(\"let x = 7; let y = 3; return x*y+y;\");
+let result = fun();
+console.write(result);";
+parse @expectedOutput@ "24";
+
+transpile @parameters@
+"code /*String*/";
+transpile @returns@
+"/*String*/";
+transpile @description@
+"Transpiles code to simplified form. Simplified form is faster to parse.";
+transpile @example@
+"console.write(transpile(\"if(true) { console.log(true); }\"))";
+transpile @expectedOutput@
+"if;true; { console.log(true); }\n";
+
+console @description@
+"`console` object provides standard input and output operations.";
+console @example@
+"console.write(\"1+3 is \", 1+3);
+if(1+3 != 4) {
+    console.warn(\"1+3 is not 4!\");
+}";
+console @expectedOutput@
+"1+3 is 4";

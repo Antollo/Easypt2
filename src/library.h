@@ -10,6 +10,7 @@
 #include "console.h"
 #include "defines.h"
 #include "core.h"
+#include "objectPtrImpl.h"
 
 namespace operators
 {
@@ -31,6 +32,10 @@ namespace String
 void init(stack *st);
 };
 
+namespace Number
+{
+void init(stack *st);
+};
 
 namespace consoleObj
 {

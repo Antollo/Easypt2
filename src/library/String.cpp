@@ -24,13 +24,24 @@ void String::init(stack *st)
         return makeObject(std::string(1, me[pos]));
     });
 
-    addFunctionL(object::stringPrototype, "byteAt"_n, {
+    addFunctionL(object::stringPrototype, "getByteAt"_n, {
         argsConvertibleGuard<number>(args);
         int pos = static_cast<int>(args[0]->getConverted<number>());
         const std::string& me = thisObj->get<const std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         return makeObject(number(static_cast<int>(static_cast<unsigned char>(me[pos]))));
+    });
+
+    addFunctionL(object::stringPrototype, "setByteAt"_n, {
+        argsConvertibleGuard<number, number>(args);
+        int pos = static_cast<int>(args[0]->getConverted<number>());
+        int byte = static_cast<int>(args[0]->getConverted<number>());
+        std::string& me = thisObj->get<std::string>();
+        assert<std::greater_equal>(pos, 0);
+        assert<std::less>(pos, me.size());
+        me[pos] = static_cast<unsigned char>(byte);
+        return makeUndefined();
     });
 
     addFunctionL(object::stringPrototype, "length"_n, {

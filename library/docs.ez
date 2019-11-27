@@ -1,0 +1,71 @@
+let returns = function {
+    args[0].addProperty("returns", args[1]);
+};
+
+let parameters = function {
+    args[0].addProperty("parameters", args[1]);
+};
+
+let description = function {
+    args[0].addProperty("description", args[1]);
+};
+
+let example = function {
+    args[0].addProperty("example", args[1]);
+};
+
+let expectedOutput = function {
+    args[0].addProperty("expectedOutput", args[1]);
+};
+
+let help = function {
+    let printPairShort = function {
+        console.controlSequence("7m");
+        console.write(args[0]);
+        console.controlSequence("0m");
+        console.writeLine(" ", args[1]);
+    };
+    let printPair = function {
+        console.controlSequence("7m");
+        console.write(args[0]);
+        console.controlSequence("0m");
+        console.writeLine("\n", args[1]);
+    };
+    if(args[0].prototype.hasOwnProperty("name"))
+        printPairShort("Name:", args[0].prototype.name);
+    if(args[0].prototype.hasOwnProperty("prototypeName"))
+        printPairShort("Instance of:", args[0].prototype.prototypeName);
+    if(args[0].hasOwnProperty("parameters"))
+        printPairShort("Parameters:", args[0].parameters);
+    if(args[0].hasOwnProperty("returns"))
+        printPairShort("Return value:", args[0].returns);
+    if(args[0].hasOwnProperty("description"))
+        printPair("Description:", args[0].description);
+    if(args[0].hasOwnProperty("example"))
+        printPair("Example:", args[0].example);
+    if(args[0].hasOwnProperty("expectedOutput"))
+        printPairShort("Expected output:", args[0].expectedOutput);
+};
+
+let testExample = function {
+    if (args[0].hasOwnProperty("example") && args[0].hasOwnProperty("expectedOutput")) {
+        
+        if (console.getOutput(parse(args[0].example)) != args[0].expectedOutput) {
+            throw "Example not passed:\n" + args[0].example;
+        }
+    }
+    return false;
+};
+
+import("../library/docsData.ez");
+
+let i = 0;
+let stackNames = getStack().getOwnPropertyNames();
+let stack = getStack();
+while(i<stackNames.length()){
+    if(getStack()[stackNames[i]].example) {
+        console.log(stackNames[i]);
+        testExample(stack[stackNames[i]]);
+    }
+    i++;
+}

@@ -219,7 +219,6 @@ void compoundStatement::operator()(stack &localStack) const
         if (it->empty()) continue;
         if (it->back().getName() == "if"_n && it+2 < _statements.end())
         {
-            //TODO IMPLEMENT IF AND WHILE
             if ((*(it+1))(&localStack).resolve(&localStack)->getConverted<bool>())
                 (*(it+2))(&localStack);
             it+=2;

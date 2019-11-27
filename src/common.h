@@ -41,7 +41,7 @@ void argsConvertibleGuard(const object::arrayType& arr)
 {
 	if (arr.size() < sizeof...(Args))
         throw std::runtime_error("wrong number of arguments");
-	argsGuardHelper<Args...>(arr, std::index_sequence_for<Args...>());
+	argsConvertibleGuardHelper<Args...>(arr, std::index_sequence_for<Args...>());
 }
 
 template <class T>
