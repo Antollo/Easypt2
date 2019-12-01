@@ -37,6 +37,11 @@ namespace Number
 void init(stack *st);
 };
 
+namespace Boolean
+{
+void init(stack *st);
+};
+
 namespace consoleObj
 {
 void init(stack *st);

@@ -18,14 +18,14 @@ void Array::init(stack *st)
     addFunctionL(object::arrayPrototype, "readOperator"_n, {
         argsConvertibleGuard<number>(args);
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        const object::arrayType& me = thisObj->get<const object::arrayType>();
+        const object::arrayType &me = thisObj->get<const object::arrayType>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         return me[pos];
     });
 
     addFunctionL(object::arrayPrototype, "length"_n, {
-        return makeObject(static_cast<number>(thisObj->get<const object::arrayType>().size()));
+        return makeObject(static_cast<number>(static_cast<int>(thisObj->get<const object::arrayType>().size())));
     });
 
     addFunctionL(object::arrayPrototype, "insertFrom"_n, {
@@ -65,6 +65,14 @@ void Array::init(stack *st)
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());
         me.erase(me.begin() + pos, me.begin() + pos + length);
+        return thisObj;
+    });
+
+    addFunctionL(object::arrayPrototype, "forEach"_n, {
+        argsConvertibleGuard<nullptr_t>(args);
+        object::arrayType &me = thisObj->get<object::arrayType>();
+        for (int i = 0; i < me.size(); i++)
+            (*args[0])(nullptr, {me[i], makeObject(static_cast<number>(i)), thisObj}, st);
         return thisObj;
     });
 }

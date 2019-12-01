@@ -1,5 +1,3 @@
-#include <io.h>
-#include <fcntl.h>
 #include "osDependent.h"
 #include "error.h"
 #include "console.h"

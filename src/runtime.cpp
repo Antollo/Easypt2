@@ -48,6 +48,7 @@ void runtime::init(stack *st)
     Object::init(st);
     Array::init(st);
     String::init(st);
+    Boolean::init(st);
     Number::init(st);
     consoleObj::init(st);
     File::init(st);

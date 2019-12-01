@@ -70,3 +70,14 @@ if(1+3 != 4) {
 }";
 console @expectedOutput@
 "1+3 is 4";
+
+Array @description@
+"Array lists provides metods for manipulating arrays (list-like
+objects). Array elements are indexed with integers.";
+Array @example@
+"let arr = Array[36.6, \"Harry\", true];
+arr.forEach(function {
+    console.write(args[0], \" is element with index \", args[1], \", \");
+});";
+Array @expectedOutput@
+"36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, ";
