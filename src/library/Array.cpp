@@ -25,7 +25,7 @@ void Array::init(stack *st)
     });
 
     addFunctionL(object::arrayPrototype, "length"_n, {
-        return makeObject(static_cast<number>(static_cast<int>(thisObj->get<const object::arrayType>().size())));
+        return makeObject(static_cast<number>(thisObj->get<const object::arrayType>().size()));
     });
 
     addFunctionL(object::arrayPrototype, "insertFrom"_n, {

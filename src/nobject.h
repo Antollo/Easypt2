@@ -99,7 +99,7 @@ public:
             if (isOfType<std::string>())
                 return static_cast<number>(get<const std::string>());
             if (isOfType<arrayType>())
-                return static_cast<number>(static_cast<int>(get<const arrayType>().size()));
+                return static_cast<number>(get<const arrayType>().size());
             if (isOfType<bool>())
                 return static_cast<number>(get<const bool>());
         }
