@@ -15,8 +15,8 @@ test_script:
     - ps: ctest --output-on-failure
 artifacts:
     - path: '*Linux.sh'
-      name: artifacts
+      name: linux
       type: zip
     - path: '*win32.exe'
-      name: artifacts
+      name: windows
       type: zip
