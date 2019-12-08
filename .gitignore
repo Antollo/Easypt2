@@ -3,6 +3,10 @@
 #!*.*
 core.*
 *.js
+*.exe
+CPack*
+install*
+_CPack_Packages
 
 *.vcxproj
 *.vcxproj.filters

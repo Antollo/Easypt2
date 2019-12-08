@@ -4,7 +4,7 @@
         {
             "label": "Build and test",
             "type": "shell",
-            "command": "cmake . ; cmake --build . --config Release ; ctest --output-on-failure",
+            "command": "cmake . ; cmake --build . --config Release ; ctest --output-on-failure ; cpack",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

@@ -90,6 +90,12 @@
     "files.exclude": {
         "**/*.vcproj*": true,
         "**/*.vcproj": true,
+        "easypt_vsce/**/node_modules": true,
+        "easypt_vsce/**/*.vsix": true,
+        "easypt_vsce/**/.vscode\\": true,
+        "**/core.*": true,
+        "**/*.js": true,
+        "**/*.exe": true,
         "**/*.vcxproj": true,
         "**/*.vcxproj.filters": true,
         "**/*.sln": true,
@@ -217,7 +223,6 @@
         "**/PublishScripts/": true,
         "**/*.nupkg": true,
         "**/*.snupkg": true,
-        "**/[Pp]ackages/*": true,
         "**/[Pp]ackages/build/": false,
         "**/*.nuget.props": true,
         "**/*.nuget.targets": true,
@@ -292,6 +297,8 @@
         "**/.mfractor/": true,
         "**/.localhistory/": true,
         "**/healthchecksdb": true,
-        "**/MigrationBackup/": true
+        "**/MigrationBackup/": true,
+        "**/CPack*": true,
+        "**/install*": true
     }
 }
