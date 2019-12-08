@@ -11,6 +11,5 @@ set(CPACK_OUTPUT_FILE_PREFIX "packages")
 set(CPACK_NSIS_MODIFY_PATH "ON")
 set(CPACK_MONOLITHIC_INSTALL "ON")
 
-set (CPACK_COMPONENTS_ALL binaries)
 set (CPACK_COMPONENT_BINARIES_DISPLAY_NAME "Easypt interpreter")
 set (CPACK_COMPONENT_BINARIES_DESCRIPTION "Precompiled Easypt interpreter binary files")

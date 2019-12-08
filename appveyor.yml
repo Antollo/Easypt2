@@ -11,12 +11,13 @@ before_build:
     - cmake .
 build_script:
     - cmake --build . --config Release
+    - cpack
 test_script:
     - ps: ctest --output-on-failure
 artifacts:
     - path: '*Linux.sh'
-      name: linux
+      name: linux_installer
       type: zip
     - path: '*win32.exe'
-      name: windows
+      name: windows_installer
       type: zip
