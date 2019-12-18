@@ -1,4 +1,3 @@
-#include <filesystem>
 #include "statement.h"
 #include "osDependent.h"
 #include "core.h"

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <fstream>
-#include <filesystem>
+#include "osDependent.h"
 class file
 {
 public:

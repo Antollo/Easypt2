@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstring>
 #include "common.h"
-#include "osDependent.h"
 #include "file.h"
 
 file::file()
