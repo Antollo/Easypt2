@@ -12,7 +12,7 @@ object::objectPtr& stack::operator[] (const name& n)
 
 object::objectPtr& stack::insert(const name& n, const object::objectPtr& obj)
 {
-    return storage.insert(std::make_pair(n, obj)).first->second;
+    return storage.insert_or_assign(n, obj).first->second;
 }
 
 void stack::clear()

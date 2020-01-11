@@ -84,8 +84,8 @@ objectPtrImpl::~objectPtrImpl()
 object &objectPtrImpl::operator*()
 {
     //TODO remove check;
-    if (_obj == nullptr)
-        throw std::runtime_error("getting pointer to NULL");
+    //if (_obj == nullptr)
+    //    throw std::runtime_error("getting pointer to NULL");
     _obj->_thisPtr = this;
     return *_obj;
 }
@@ -93,8 +93,8 @@ object &objectPtrImpl::operator*()
 object *objectPtrImpl::operator->()
 {
     //TODO remove check;
-    if (_obj == nullptr)
-        throw std::runtime_error("getting pointer to NULL");
+    //if (_obj == nullptr)
+    //    throw std::runtime_error("getting pointer to NULL");
     _obj->_thisPtr = this;
     return _obj;
 }
@@ -102,16 +102,16 @@ object *objectPtrImpl::operator->()
 const object &objectPtrImpl::operator*() const
 {
     //TODO remove check;
-    if (_obj == nullptr)
-        throw std::runtime_error("getting pointer to NULL");
+    //if (_obj == nullptr)
+    //    throw std::runtime_error("getting pointer to NULL");
     _obj->_thisPtr = this;
     return *_obj;
 }
 const object *objectPtrImpl::operator->() const
 {
     //TODO remove check;
-    if (_obj == nullptr)
-        throw std::runtime_error("getting pointer to NULL");
+    //if (_obj == nullptr)
+    //    throw std::runtime_error("getting pointer to NULL");
     _obj->_thisPtr = this;
     return _obj;
 }

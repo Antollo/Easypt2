@@ -19,5 +19,7 @@ endif()
 enable_testing()
 add_subdirectory(src)
 add_subdirectory(tests)
+
+install(DIRECTORY library DESTINATION bin COMPONENT library)
 include(packages.cmake)
 include(CPack)

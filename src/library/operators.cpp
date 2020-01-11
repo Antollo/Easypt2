@@ -217,10 +217,10 @@ addOperatorL("+"_n, {
         return insertObject(args[0].getName(), nullptr);
     });
     addOperatorL(":"_n, {
-        if (args[0].getType() == token::tokenType::StringLiteral)
+        /*if (args[0].getType() == token::tokenType::StringLiteral)
         {
-            console::log("StringLiteral");
-        }
+            console::log((int)args[0].getType());
+        }*/
         if (args[0].getType() == token::tokenType::Name)
             return st->insert(args[0].getName(), args[1].resolve(st));
         else
@@ -231,13 +231,13 @@ addOperatorL("+"_n, {
         //args[0].arity special meaning: index
         if (args[0].getType() != token::tokenType::CompoundStatement)
             throw std::runtime_error("wrong operand for function operator");
-        return makeObject(compoundStatement::get(args[0].getArity()));
+        return makeObject(compoundStatement::get(args[0].getCompoundStatementIndex()));
     });
     addOperatorL("json"_n, {
         if (args[0].getType() != token::tokenType::CompoundStatement)
             throw std::runtime_error("wrong operand for json operator");
         stack localJsonStack(st);
-        compoundStatement::get(args[0].getArity())(localJsonStack);
+        compoundStatement::get(args[0].getCompoundStatementIndex())(localJsonStack);
         
         auto res = makeObject(nullptr);
         for (auto x : localJsonStack)

@@ -1,11 +1,30 @@
 let t = function {console.write(u);};
 
-
+console.writeLine(getStack()["#called"]);
 let out = console.getOutput(function {
     console.write("x");
 });
 
 console.writeLine(out);
-
+console.writeLine(getStack()["#called"]);
 
 import("../library/docs");
+
+let a;
+let b;
+a.static = true;
+
+if(a.static) {
+    console.log("a is static");
+}
+
+if(!b.static) {
+    console.log("b is not static");
+}
+
+let c = "x";
+let x = json {
+    c:"a";
+};
+
+console.log(x.c);

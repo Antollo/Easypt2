@@ -62,12 +62,12 @@ std::string parseString(const std::string &source)
     return ret;
 }
 
-token::token(const std::string &n, tokenType t) : _name(n), arity(-1), type(t), value(nullptr)
+token::token(const std::string &n, tokenType t) : _name(n), arityOrIndex(-1), type(t), value(nullptr)
 {
     switch (type)
     {
     case tokenType::NumberLiteral:
-        type = tokenType::Value;
+        type = tokenType::NumberLiteral;
         if (n.find('.') == std::string::npos)
             value = makeObject(static_cast<number>(std::stoi(n)));
         else
@@ -76,7 +76,7 @@ token::token(const std::string &n, tokenType t) : _name(n), arity(-1), type(t), 
         break;
 
     case tokenType::StringLiteral:
-        type = tokenType::Value;
+        type = tokenType::StringLiteral;
         value = makeObject(parseString(n));
         value->setConst();
         break;
@@ -96,6 +96,8 @@ object::objectPtr& token::resolve(stack *st) const
         break;
 
     case token::tokenType::Value:
+    case token::tokenType::StringLiteral:
+    case token::tokenType::NumberLiteral:
         return value;
         break;
 

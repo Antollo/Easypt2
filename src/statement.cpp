@@ -27,7 +27,7 @@ token expressionStatement::operator()(stack *st) const
         return token();
     if (_tokens.front().getType() == token::tokenType::CompoundStatement && _tokens.size() == 1)
     {
-        compoundStatement::get(_tokens.front().getArity())(st);
+        compoundStatement::get(_tokens.front().getCompoundStatementIndex())(st);
         return token();
     }
     std::stack<token> stack;
@@ -42,6 +42,8 @@ token expressionStatement::operator()(stack *st) const
         {
         case token::tokenType::Name:
         case token::tokenType::Value:
+        case token::tokenType::StringLiteral:
+        case token::tokenType::NumberLiteral:
         case token::tokenType::CompoundStatement:
             stack.push(*it);
             break;
@@ -134,7 +136,7 @@ void expressionStatement::check(bool verbose) const
         return;
     if (_tokens.front().getType() == token::tokenType::CompoundStatement && _tokens.size() == 1)
     {
-        compoundStatement::get(_tokens.front().getArity()).check(verbose);
+        compoundStatement::get(_tokens.front().getCompoundStatementIndex()).check(verbose);
         return;
     }
     std::stack<token> stack;

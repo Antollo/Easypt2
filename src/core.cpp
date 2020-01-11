@@ -11,7 +11,7 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
 {
     static std::unordered_map<std::string, object::objectPtr> imported;
     argsConvertibleGuard<std::nullptr_t>(args);
-    std::string source;
+    std::string source, fileNameString;
     std::filesystem::path fileName;
     if (args[0]->isOfType<std::string>())
     {
@@ -33,6 +33,7 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
                     throw std::runtime_error("file " + fileName.string() + " cannot be opened");
             }
             source = sourceFile.readTo(EOF);
+            fileNameString = sourceFile.getPath().string();
             sourceFile.close();
             if (fileName.stem().extension() == ".min"s)
                 parser::registerLiterals(source);
@@ -53,6 +54,7 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
         if (!sourceFile.isOpen())
             throw std::runtime_error("file " + fileName.string() + " is not opened");
         source = sourceFile.readTo(EOF);
+        fileNameString = sourceFile.getPath().string();
         sourceFile.close();
         if (fileName.stem().extension() == ".min"s)
             parser::registerLiterals(source);
@@ -64,7 +66,12 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
 
     object::objectPtr sourceFunction = makeObject(compoundStatement(source));
     parser::clearCache();
-    object::objectPtr result = (*sourceFunction)(nullptr, std::move(args), st);
+    object::objectPtr result;
+    {
+        stack s(st);
+        s.insert("fileName"_n, makeObject(fileNameString));
+        result = (*sourceFunction)(nullptr, std::move(args), &s);
+    }
     imported.insert(std::make_pair(fileName.stem().string(), result));
     return result;
 }

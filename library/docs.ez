@@ -59,11 +59,12 @@ let testExample = function {
 
 import("../library/docsData.ez");
 
+
 let i = 0;
 let stackNames = getStack().getOwnPropertyNames();
 let stack = getStack();
 while(i<stackNames.length()){
-    if(getStack()[stackNames[i]].hasOwnProperty("description")) {
+    if(!getStack()[stackNames[i]].hasOwnProperty("description")) {
         console.log(stackNames[i]);
         testExample(stack[stackNames[i]]);
     }

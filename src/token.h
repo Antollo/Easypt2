@@ -22,18 +22,21 @@ public:
         CompoundStatement,
         Invalid
     };
-    token() : _name("<no name>"s), arity(-1), type(tokenType::Invalid), value(nullptr){};
+    token() : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Invalid), value(nullptr){};
     token(const std::string &n, tokenType t = tokenType::Name);
-    token(const std::string &n, int a, tokenType t = tokenType::CallOperator) : _name(n), arity(a), type(t), value(nullptr){};
-    token(const objectPtrImpl &v) : _name("<no name>"s), arity(-1), type(tokenType::Value), value(v){};
+    token(const std::string &n, int a, tokenType t = tokenType::CallOperator) : _name(n), arityOrIndex(a), type(t), value(nullptr){};
+    token(std::string &&n, tokenType t = tokenType::Name);
+    token(std::string &&n, int a, tokenType t = tokenType::CallOperator) : _name(n), arityOrIndex(a), type(t), value(nullptr){};
+    token(const objectPtrImpl &v) : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Value), value(v){};
     objectPtrImpl &resolve(stack *st) const;
     inline const name &getName() const { return _name; }
-    inline const int &getArity() const { return arity; }
+    inline const int &getArity() const { return arityOrIndex; }
+    inline const int &getCompoundStatementIndex() const { return arityOrIndex; }
     inline const tokenType &getType() const { return type; }
 
 private:
     name _name;
-    int arity;
+    int arityOrIndex;
     tokenType type;
     mutable objectPtrImpl value;
 };

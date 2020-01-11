@@ -33,8 +33,8 @@ void runtime::init(stack *st)
         return (*thisObj)(nullptr, std::move(args), st);
     });
 
-    insertObject("true"_n, true);
-    insertObject("false"_n, false);
+    insertObject("true"_n, true)->setConst();
+    insertObject("false"_n, false)->setConst();
 
     insertObject("import"_n, import);
     insertObject("parse"_n, parse);
