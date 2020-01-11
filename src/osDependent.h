@@ -3,11 +3,20 @@
 
 #include <string>
 #include <algorithm>
-#include <filesystem>
+
 #include <iostream>
 #include <string>
 #include <locale>
 #include <codecvt>
+
+#if __GNUC__ == 7
+#include <experimental/filesystem>
+namespace std{
+    namespace filesystem = std::experimental::filesystem;
+};
+#else
+#include <filesystem>
+#endif
 
 #if defined(_WIN32)
 #define NOMINMAX
