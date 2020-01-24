@@ -14,6 +14,8 @@ public:
     objectPtrImpl &operator=(const objectPtrImpl &ptr);
     objectPtrImpl(objectPtrImpl &&ptr);
     objectPtrImpl &operator=(objectPtrImpl &&ptr);
+    bool operator==(std::nullptr_t) const;
+    bool operator!=(std::nullptr_t) const;
     ~objectPtrImpl();
 
     inline operator bool() const { return _obj != nullptr; }

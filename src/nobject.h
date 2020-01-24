@@ -15,7 +15,7 @@ template <class T>
 using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
 #define makeObject(...) objectPtrImpl(new object{__VA_ARGS__})
-#define makeUndefined(...) objectPtrImpl(new object{nullptr})
+#define makeEmptyObject(...) objectPtrImpl(new object{nullptr})
 
 class object
 {
@@ -49,7 +49,6 @@ public:
     object &operator=(object &&) = default;
     object(const object &) = default;
     object &operator=(const object &) = default;
-    ~object();
 
     template <class T>
     bool isOfType() const
@@ -131,7 +130,7 @@ public:
                 return static_cast<bool>(get<const arrayType>().size());
             if (isOfType<nullptr_t>())
                 return !(hasOwnProperty("prototype"_n) && _properties.size() == 1);
-            if(isOfType<compoundStatement>() || isOfType<nativeFunctionType>())
+            if (isOfType<compoundStatement>() || isOfType<nativeFunctionType>())
                 return true;
         }
         //TODO user conversions
@@ -145,10 +144,15 @@ public:
     inline bool hasOwnProperty(const name &n) { return _properties.count(n); }
     inline void addProperty(const name &n, objectPtr ptr) { _properties.insert_or_assign(n, ptr); }
     inline void addProperties(propertiesType::iterator begin, propertiesType::iterator end) { _properties.insert(begin, end); }
+    inline void removeProperty(const name &n) { _properties.erase(n); }
     arrayType getOwnPropertyNames();
     void clear();
 
     static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype;
+    static void setGlobalStack(stack *newGlobalStack)
+    {
+        globalStack = newGlobalStack;
+    }
 
 private:
     friend class objectPtrImpl;
@@ -156,6 +160,7 @@ private:
     propertiesType _properties;
     bool _isConst;
     const objectPtrImpl *_thisPtr;
+    static stack *globalStack;
     objectPtr &read(const name &n);
 };
 

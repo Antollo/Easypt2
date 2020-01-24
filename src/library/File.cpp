@@ -4,7 +4,7 @@
 void File::init(stack *st)
 {
     object::objectPtr File = insertObject("File"_n, constructorCaller);
-    object::objectPtr filePrototype = makeUndefined();
+    object::objectPtr filePrototype = makeEmptyObject();
 
     (*File)["prototype"_n] = filePrototype;
 

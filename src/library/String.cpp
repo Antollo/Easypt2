@@ -41,7 +41,7 @@ void String::init(stack *st)
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         me[pos] = static_cast<unsigned char>(byte);
-        return makeUndefined();
+        return makeEmptyObject();
     });
 
     addFunctionL(object::stringPrototype, "length"_n, {

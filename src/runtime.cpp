@@ -12,21 +12,22 @@
 
 void runtime::init(stack *st)
 {
-    object::objectPrototype = makeUndefined();
+    object::setGlobalStack(st);
+    object::objectPrototype = makeEmptyObject();
 
-    object::arrayPrototype = makeUndefined();
+    object::arrayPrototype = makeEmptyObject();
     (*object::arrayPrototype)["prototype"_n] = object::objectPrototype;
 
-    object::stringPrototype = makeUndefined();
+    object::stringPrototype = makeEmptyObject();
     (*object::stringPrototype)["prototype"_n] = object::objectPrototype;
 
-    object::numberPrototype = makeUndefined();
+    object::numberPrototype = makeEmptyObject();
     (*object::numberPrototype)["prototype"_n] = object::objectPrototype;
 
-    object::booleanPrototype = makeUndefined();
+    object::booleanPrototype = makeEmptyObject();
     (*object::booleanPrototype)["prototype"_n] = object::objectPrototype;
 
-    object::functionPrototype = makeUndefined();
+    object::functionPrototype = makeEmptyObject();
     (*object::functionPrototype)["prototype"_n] = object::objectPrototype;
 
     addFunctionL(object::functionPrototype, "callOperator"_n, {
@@ -57,4 +58,5 @@ void runtime::init(stack *st)
 void runtime::fini(stack *st)
 {
     st->clear();
+    object::setGlobalStack(nullptr);
 }

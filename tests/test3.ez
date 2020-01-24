@@ -1,0 +1,12 @@
+{
+    throw "Exception";
+} catch {
+    console.error(exception);
+}
+
+let fakePrototype = json {
+    constructor: function { console.log("constructor"); },
+    destructor: function { console.log("destructor"); }
+};
+
+File.prototype = fakePrototype;

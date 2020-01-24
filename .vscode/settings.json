@@ -85,7 +85,8 @@
         "unordered_set": "cpp",
         "*.ipp": "cpp",
         "fstream": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "concepts": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,

@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <utility>
 #include <string>
+#include <stdexcept>
 
 using namespace std::string_literals;
 

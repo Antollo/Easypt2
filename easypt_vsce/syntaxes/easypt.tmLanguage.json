@@ -31,7 +31,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.easypt",
-				"match": "\\b(if|while|for|let|throw|try|return|function)\\b"
+				"match": "\\b(if|while|for|let|throw|try|return|function|json|catch|class)\\b"
 			}]
 		},
 		"strings": {

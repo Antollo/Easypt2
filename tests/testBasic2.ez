@@ -27,4 +27,12 @@ let x = json {
     c:"a";
 };
 
+let y = function {
+    let dog;
+    dog.console = console;
+    dog.destructor = function { console.log("died"); };
+};
+
+y();
+
 console.log(x.c);

@@ -7,45 +7,45 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "write"_n, {
         for (auto &el : args)
             console::write(el->getConverted<std::string>());
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "debug"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::debug(temp);
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "log"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::log(temp);
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "warn"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::warn(temp);
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "error"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::error(temp);
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "writeLine"_n, {
         for (auto &el : args)
             console::write(el->getConverted<std::string>());
         console::newLine();
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "newLine"_n, {
         console::newLine();
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "read"_n, {
         std::string temp;
@@ -65,7 +65,7 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "controlSequence"_n, {
         argsConvertibleGuard<std::string>(args);
         console::controlSequence(args[0]->getConverted<std::string>());
-        return makeUndefined();
+        return makeEmptyObject();
     });
     addFunctionL(consoleObj, "getOutput"_n, {
         argsGuard<std::nullptr_t>(args);

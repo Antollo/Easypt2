@@ -98,7 +98,7 @@ object::objectPtr transpile(object::objectPtr thisObj, object::arrayType &&args,
 
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
-    auto newObj = makeUndefined();
+    auto newObj = makeEmptyObject();
     newObj->addProperty("prototype"_n, (*thisObj)["prototype"_n]);
     if ((*newObj)["prototype"_n]->hasOwnProperty("constructor"_n))
         (*(*newObj)["constructor"_n])(newObj, std::move(args), st);

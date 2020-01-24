@@ -2,7 +2,7 @@
 
 void operators::init(stack *st)
 {
-addOperatorL("+"_n, {
+    addOperatorL("+"_n, {
         object::objectPtr &a = args[0].resolve(st);
         object::objectPtr &b = args[1].resolve(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
@@ -196,7 +196,7 @@ addOperatorL("+"_n, {
     addOperatorL("-u"_n, {
         object::objectPtr &a = args[0].resolve(st);
         if (a->isOfType<number>())
-            return token(makeObject(0_n-static_cast<number>(a->get<const number>())));
+            return token(makeObject(0_n - static_cast<number>(a->get<const number>())));
         return token((*(*a)["-"_n])(a, {}, st));
     });
     addOperatorL("!"_n, {
@@ -228,7 +228,6 @@ addOperatorL("+"_n, {
         throw std::runtime_error("Invalid use of : operator");
     });
     addOperatorL("function"_n, {
-        //args[0].arity special meaning: index
         if (args[0].getType() != token::tokenType::CompoundStatement)
             throw std::runtime_error("wrong operand for function operator");
         return makeObject(compoundStatement::get(args[0].getCompoundStatementIndex()));
@@ -238,7 +237,7 @@ addOperatorL("+"_n, {
             throw std::runtime_error("wrong operand for json operator");
         stack localJsonStack(st);
         compoundStatement::get(args[0].getCompoundStatementIndex())(localJsonStack);
-        
+
         auto res = makeObject(nullptr);
         for (auto x : localJsonStack)
             res->addProperty(x.first, x.second);
@@ -249,5 +248,22 @@ addOperatorL("+"_n, {
     });
     addOperatorL("throw"_n, {
         throw objectException(args[0].resolve(st));
+    });
+    addOperatorL("catch"_n, {
+        if (args[0].getType() != token::tokenType::CompoundStatement)
+            throw std::runtime_error("wrong operand for catch operator");
+        if (args[1].getType() != token::tokenType::CompoundStatement)
+            throw std::runtime_error("wrong operand for catch operator");
+        try
+        {
+            compoundStatement::get(args[0].getCompoundStatementIndex())(st);
+        }
+        catch (objectException &e)
+        {
+            stack localStack(st);
+            localStack.insert("exception"_n, e.getPtr());
+            compoundStatement::get(args[1].getCompoundStatementIndex())(localStack);
+        }
+        return makeEmptyObject();
     });
 }

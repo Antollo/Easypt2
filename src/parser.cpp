@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "statement.h"
 #include <queue>
+//#include "console.h"
 
 template <class T>
 inline void guard(const std::stack<T> &s, std::string message = "something is wrong"s)
@@ -221,6 +222,7 @@ std::vector<std::vector<token>> parser::transpileAndParse(std::string &input)
 std::vector<std::vector<token>> parser::parse(std::string &input)
 {
     registerCompounds(input);
+    //console::debug(input);
     return parseFlat(input);
 }
 
@@ -322,6 +324,7 @@ void parser::registerCompounds(std::string &input)
 {
     static std::regex compoundRegex(R"(\{[^\{\}]*\})");
     static std::regex valuedCompoundRegex(R"((function|json)\s*(\{[^\{\}]*\}))");
+    static std::regex catchCompoundRegex(R"((\{[^\{\}]*\})\s*(catch))");
     static int counter = 0;
     std::smatch sm;
     std::string temp;
@@ -330,6 +333,13 @@ void parser::registerCompounds(std::string &input)
         temp = sm[2].str();
         compoundStatement::_compoundStatements.push_back(parseFlat(temp));
         input.replace(sm[2].first, sm[2].second, "#c"s + std::to_string(counter));
+        counter++;
+    }
+    while (std::regex_search(input, sm, catchCompoundRegex))
+    {
+        temp = sm[1].str();
+        compoundStatement::_compoundStatements.push_back(parseFlat(temp));
+        input.replace(sm[1].first, sm[1].second, "#c"s + std::to_string(counter));
         counter++;
     }
     while (std::regex_search(input, sm, compoundRegex))
@@ -412,7 +422,7 @@ int parser::operatorPrecedence(const std::string &token)
         return 3;
     else if (token == "*" || token == "/" || token == "%")
         return 5;
-    else if (token == "+" || token == "-")
+    else if (token == "+" || token == "-" || token == "catch")
         return 6;
     else if (token == "<<" || token == ">>")
         return 7;
@@ -432,7 +442,7 @@ int parser::operatorPrecedence(const std::string &token)
         return 15;
     else if (token.front() == '@' || token.back() == '@')
         return 16;
-    else if (token.back() == '=' || token == ":" || token == "return" || token == "throw")
+    else if (token.back() == '=' || token == ":" || token == "return" || token == "throw" )
         return 17;
     else
         throw std::runtime_error("operator has no precedence");

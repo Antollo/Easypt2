@@ -31,7 +31,7 @@ stack::iterator stack::end()
 
 object::objectPtr stack::toObject()
 {
-    auto obj = makeUndefined();
+    auto obj = makeEmptyObject();
     toObject(obj);
     return obj;
 }

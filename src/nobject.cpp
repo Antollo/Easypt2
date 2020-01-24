@@ -2,10 +2,7 @@
 #include "statement.h"
 
 object::objectPtr object::numberPrototype, object::stringPrototype, object::booleanPrototype, object::arrayPrototype, object::objectPrototype, object::functionPrototype;
-
-object::~object()
-{
-}
+stack *object::globalStack;
 
 object::objectPtr &object::operator[](const name &n)
 {
@@ -17,11 +14,13 @@ object::objectPtr &object::operator[](const name &n)
         if (res)
             return res;
     }
-    return (_properties[n] = makeUndefined());
+    return (_properties[n] = makeEmptyObject());
 }
 
 object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack *st)
 {
+    if (st == nullptr)
+        st = globalStack;
     if (isOfType<nativeFunctionType>())
     {
         if (thisObj)
@@ -43,7 +42,7 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
         {
             return ret;
         }
-        return makeUndefined();
+        return makeEmptyObject();
     }
     throw std::runtime_error("object is not a function");
 

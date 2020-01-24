@@ -13,6 +13,7 @@ number::number(const double &n)
 };
 number::number(const unsigned int &n) : v(static_cast<int>(n)){};
 number::number(const unsigned long &n) : v(static_cast<int>(n)){};
+number::number(const unsigned long long &n) : v(static_cast<int>(n)){};
 number::number(const std::string &n)
 {
     if (n.find('.') == std::string::npos)

@@ -15,8 +15,9 @@ public:
     number(const double &n);
     number(const unsigned int &n);
     number(const unsigned long &n);
+    number(const unsigned long long &n);
     number(const std::string &n);
-    number(const char* n);
+    number(const char *n);
     number(const bool &n);
 
     number(number &&) = default;
