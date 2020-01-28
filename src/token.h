@@ -23,6 +23,7 @@ public:
         Invalid
     };
     token() : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Invalid), value(nullptr){};
+    token(const name &n) : _name(n), arityOrIndex(-1), type(tokenType::Name), value(nullptr){};
     token(const std::string &n, tokenType t = tokenType::Name);
     token(const std::string &n, int a, tokenType t = tokenType::CallOperator) : _name(n), arityOrIndex(a), type(t), value(nullptr){};
     token(std::string &&n, tokenType t = tokenType::Name);

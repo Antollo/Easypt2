@@ -213,8 +213,18 @@ void operators::init(stack *st)
         a->setConst(false);
         return a;
     });
+    addOperatorL("<-"_n, {
+        if(args[0].getType() != token::tokenType::Name)
+            throw std::runtime_error("assigned reference not to variable symbol");
+        object::objectPtr &a = args[0].resolve(st);
+        if (a->isConst())
+            throw std::runtime_error("tried to modify constant value");
+        a = args[1].resolve(st);
+        return a;
+    });
     addOperatorL("let"_n, {
-        return insertObject(args[0].getName(), nullptr);
+        insertObject(args[0].getName(), nullptr);
+        return args[0].getName();
     });
     addOperatorL(":"_n, {
         /*if (args[0].getType() == token::tokenType::StringLiteral)

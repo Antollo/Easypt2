@@ -54,6 +54,7 @@ std::string parseString(const std::string &source)
             case '8':
             case '9':
                 ret.push_back((source[i] - '0') * 100 + (source[i + 1] - '0') * 10 + (source[i + 2] - '0'));
+                // TODO throw if too short
                 i += 2;
                 break;
             }
@@ -84,9 +85,9 @@ token::token(const std::string &n, tokenType t) : _name(n), arityOrIndex(-1), ty
     default:
         break;
     }
-};
+}
 
-object::objectPtr& token::resolve(stack *st) const
+object::objectPtr &token::resolve(stack *st) const
 {
     switch (type)
     {

@@ -57,6 +57,6 @@ void runtime::init(stack *st)
 
 void runtime::fini(stack *st)
 {
-    st->clear();
     object::setGlobalStack(nullptr);
+    st->clear();
 }

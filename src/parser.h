@@ -23,7 +23,7 @@ public:
     static void clearCache();
 
 private:
-    const static inline std::string basicOperatorRegexString = R"((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>|\!)=|\|\||&&|<<|>>|--|\+\+|->|==|\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\]|\+u|-u|\*u)";
+    const static inline std::string basicOperatorRegexString = R"((<<|>>|\+|-|\*|\/|%|&|\||\^|<|>|\!)=|\|\||&&|<<|>>|--|\+\+|<-|->|==|\%|\&|\+|\-|\=|\/|\||\.|\*|\:|>|<|\!|\?|~|\^|\(|\)|\,|\[|\]|\+u|-u|\*u)";
     const static inline std::string extendedOperatorRegexString = R"((@[_A-Za-z0-9]+@?|[_A-Za-z0-9]+@|\blet\b|\bfunction\b|\breturn\b|\bjson\b|\bthrow\b|\bcatch\b))";
     const static inline std::string operatorRegexString = basicOperatorRegexString + "|"s + extendedOperatorRegexString;
     const static inline std::string numberRegexString = R"([0-9]+([.][0-9]+)?)";

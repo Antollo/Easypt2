@@ -1,6 +1,7 @@
 #include "objectPtrImpl.h"
 #include "nobject.h"
 #include "console.h"
+#include "core.h"
 
 objectPtrImpl::objectPtrImpl(object *obj)
 {
@@ -92,14 +93,14 @@ objectPtrImpl::~objectPtrImpl()
         {
             if (_obj != nullptr)
             {
-                auto obj = _obj->read("destructor"_n);
-                if (obj != nullptr)
+                auto obj = _obj->read("prototype"_n);
+                if (obj) obj = obj->read("destructor"_n);
+                if (object::globalStack != nullptr && obj != nullptr && (!_obj->isOfType<object::nativeFunctionType>() || _obj->get<object::nativeFunctionType>() != constructorCaller))
                 {
+                    (*_refCount)++;
                     try
                     {
-                        (*_refCount)++;
                         (*obj)(*this, {}, nullptr);
-                        (*_refCount)--;
                     }
                     catch (objectException &e)
                     {
@@ -117,6 +118,7 @@ objectPtrImpl::~objectPtrImpl()
                     {
                         console::error("Unknown error in destructor");
                     }
+                    (*_refCount)--;
                     if (*_refCount == 0)
                     {
                         delete _obj;

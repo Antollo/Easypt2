@@ -442,7 +442,7 @@ int parser::operatorPrecedence(const std::string &token)
         return 15;
     else if (token.front() == '@' || token.back() == '@')
         return 16;
-    else if (token.back() == '=' || token == ":" || token == "return" || token == "throw" )
+    else if (token.back() == '=' || token == ":" || token == "return" || token == "throw" || token == "<-")
         return 17;
     else
         throw std::runtime_error("operator has no precedence");
@@ -451,7 +451,7 @@ int parser::operatorPrecedence(const std::string &token)
 // true if left-associative
 bool parser::operatorAssociativity(const std::string &token)
 {
-    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "json" || token == "return" || token == "throw" || (token.back() == '@' && token.front() != '@'))
+    if (token == "+u" || token == "-u" || token == "!" || token == "~" || token == "*u" || token == "=" || token == "<-" || token == ":" || token == "+=" || token == "-=" || token == "*=" || token == "/=" || token == "%=" || token == "<<=" || token == ">>=" || token == "&=" || token == "^=" || token == "|=" || token == "let" || token == "function" || token == "json" || token == "return" || token == "throw" || (token.back() == '@' && token.front() != '@'))
         return false;
     return true;
 }
