@@ -29,6 +29,7 @@ public:
     token(std::string &&n, tokenType t = tokenType::Name);
     token(std::string &&n, int a, tokenType t = tokenType::CallOperator) : _name(n), arityOrIndex(a), type(t), value(nullptr){};
     token(const objectPtrImpl &v) : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Value), value(v){};
+    token(objectPtrImpl &&v) : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Value), value(v){};
     objectPtrImpl &resolve(stack *st) const;
     inline const name &getName() const { return _name; }
     inline const int &getArity() const { return arityOrIndex; }

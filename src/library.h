@@ -52,5 +52,9 @@ namespace File
 void init(stack *st);
 };
 
+namespace Class
+{
+void init(stack *st);
+};
 
 #endif /* !LIBRARY_H_ */

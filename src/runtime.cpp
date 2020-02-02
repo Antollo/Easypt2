@@ -44,7 +44,7 @@ void runtime::init(stack *st)
 
     object::objectPtr Function = insertObject("Function"_n, nullptr);
     (*Function)["prototype"_n] = object::functionPrototype;
-    
+
     operators::init(st);
     Object::init(st);
     Array::init(st);
@@ -53,6 +53,7 @@ void runtime::init(stack *st)
     Number::init(st);
     consoleObj::init(st);
     File::init(st);
+    Class::init(st);
 }
 
 void runtime::fini(stack *st)

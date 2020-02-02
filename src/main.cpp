@@ -41,9 +41,7 @@ int main(int argc, char **argv)
                 console::writeLine("See project's repository (there are tutorial and language reference): https://github.com/Antollo/Easypt2"s);
             }
         }
-        console::warn("before");
         runtime::fini(&globalStack);
-        console::warn("after");
     }
     catch (objectException &e)
     {

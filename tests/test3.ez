@@ -4,12 +4,23 @@
     console.error(exception);
 }
 
-let fakePrototype <- json {
-    constructor: function { console.log("constructor"); },
+
+let Myclass = Class(json {
+    constructor: function {
+        this.sth = args[0];
+        console.log("constructor");
+    },
+    writeSth: function { console.writeLine(this.sth); },
     destructor: function { console.log("destructor"); }
-};
-File.prototype = fakePrototype;
+});
 
 {
-    let f <- File();
+    let m = Myclass(12);
+    m["zażółć"] = "gęślą";
+    console.debug(m["zażółć"]);
+    //console.debug(m.zażółć);
+    console.debug(m.getId());
+    m.writeSth();
 }
+
+//import("../library/docs")

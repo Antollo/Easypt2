@@ -8,7 +8,8 @@ ${CMAKE_SOURCE_DIR}/src/parser.cpp ${CMAKE_SOURCE_DIR}/src/runtime.cpp ${CMAKE_S
 ${CMAKE_SOURCE_DIR}/src/statement.cpp ${CMAKE_SOURCE_DIR}/src/token.cpp ${CMAKE_SOURCE_DIR}/src/objectPtrImpl.cpp
 ${CMAKE_SOURCE_DIR}/src/file.cpp ${CMAKE_SOURCE_DIR}/src/library/consoleObj.cpp ${CMAKE_SOURCE_DIR}/src/library/operators.cpp
 ${CMAKE_SOURCE_DIR}/src/library/Object.cpp ${CMAKE_SOURCE_DIR}/src/library/Array.cpp ${CMAKE_SOURCE_DIR}/src/library/File.cpp
-${CMAKE_SOURCE_DIR}/src/library/String.cpp ${CMAKE_SOURCE_DIR}/src/library/Number.cpp ${CMAKE_SOURCE_DIR}/src/library/Boolean.cpp)
+${CMAKE_SOURCE_DIR}/src/library/String.cpp ${CMAKE_SOURCE_DIR}/src/library/Number.cpp ${CMAKE_SOURCE_DIR}/src/library/Boolean.cpp
+${CMAKE_SOURCE_DIR}/src/library/Class.cpp)
 
 add_executable (testUtils testUtils.cpp ${SRC})
 add_test(Utils testUtils)
