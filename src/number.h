@@ -40,6 +40,12 @@ public:
     bool operator==(const number &x) const;
     bool operator<(const number &x) const;
 
+    template<class F>
+    auto visit(F &&f) const
+    {
+        return std::visit([f](auto &&t) { return f(t); }, v);
+    }
+
     number operator++(int);
     number operator--(int);
     number &operator++();

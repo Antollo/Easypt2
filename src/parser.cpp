@@ -10,15 +10,16 @@ inline void guard(const std::stack<T> &s, std::string message = "something is wr
         throw std::runtime_error(message);
 }
 
-void replaceAll(std::string& templ, const std::string& from, const std::string& to)
+void replaceAll(std::string &templ, const std::string &from, const std::string &to)
 {
-	size_t pos = 0;
-	while (true)
-	{
-		pos = templ.find(from, pos);
-		if (pos == std::string::npos) return;
-		templ.replace(pos, from.size(), to);
-	}
+    size_t pos = 0;
+    while (true)
+    {
+        pos = templ.find(from, pos);
+        if (pos == std::string::npos)
+            return;
+        templ.replace(pos, from.size(), to);
+    }
 }
 
 inline std::string atOperator(std::string s)
@@ -61,7 +62,7 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
             }
             guard(stack, "\"(\" or \"[\" not found");
             guard(wereValues);
-            auto w = wereValues.top();
+            /*auto w = wereValues.top();
             wereValues.pop();
             if (w)
             {
@@ -71,7 +72,13 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
                 a++;
                 argCount.push(a);
             }
-            wereValues.push(false);
+            wereValues.push(false);*/
+            if (wereValues.top())
+            {
+                wereValues.top() = false;
+                guard(argCount);
+                argCount.top()++;
+            }
         }
         else if (*it == "("s)
         {
@@ -134,14 +141,17 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
                     a++;
                 ///res.push_back(f + std::to_string(a));
 
-                auto ai = a;
+                /*auto ai = a;
                 std::stack<token> helper;
 
                 while (ai--)
                 {
                     helper.push(res.back());
                     res.pop_back();
-                }
+                }*/
+                std::vector<token> helper(res.end() - a, res.end());
+                res.erase(res.end() - a, res.end());
+
                 if (f.find("#s"s) == 0)
                     res.push_back(token(literals[std::stoi(f.substr(2))], token::tokenType::StringLiteral));
                 else if (isNumberLiteral(f))
@@ -149,11 +159,13 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
                 else
                     res.push_back(token(f));
 
-                while (!helper.empty())
+                /*while (!helper.empty())
                 {
                     res.push_back(helper.top());
                     helper.pop();
-                }
+                }*/
+                res.insert(res.end(), helper.begin(), helper.end());
+
                 res.push_back(token("readOperator", a, token::tokenType::CallOperator));
 
                 res.push_back(token(".", operatorArity("."), token::tokenType::Operator));
@@ -179,10 +191,11 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
             stack.push(*it + *std::next(it));
             argCount.push(0);
             if (!wereValues.empty())
-            {
+            wereValues.top() = true;
+            /*{
                 wereValues.pop();
                 wereValues.push(true);
-            }
+            }*/
             wereValues.push(false);
         }
         // normal token
@@ -197,10 +210,11 @@ std::vector<token> parser::shuntingYard(std::vector<std::string> &&input)
             else
                 res.push_back(token(*it));
             if (!wereValues.empty())
-            {
+                wereValues.top() = true;
+            /*{
                 wereValues.pop();
                 wereValues.push(true);
-            }
+            }*/
         }
     }
     while (!stack.empty())
@@ -287,13 +301,12 @@ void parser::transformBrackets(std::string &input)
 
     while (std::regex_search(input, sm, chainingParenthesis))
         input.replace(sm.position(), sm.length(), ").callOperator(");
-    
 }
 
 void parser::transformConditionals(std::string &input)
 {
-    static std::regex ifWhileRegex(R"((if|while)\s*\(([^\;\{]+)\)[\ \r\t\f\v]*[\n]+([^\;\{]*)\;)");
-    static std::regex ifWhileRegexSecond(R"((if|while)\s*\(([^\;\{]+)\)[\ \r\t\f\v]*[\n]*\{)");
+    static std::regex ifWhileRegex(R"((if|while|for)\s*\(([^\;\{]+)\)[\ \r\t\f\v]*[\n]+([^\;\{]*)\;)");
+    static std::regex ifWhileRegexSecond(R"((if|while|for)\s*\(([^\;\{]+)\)[\ \r\t\f\v]*[\n]*\{)");
     std::smatch sm;
     while (std::regex_search(input, sm, ifWhileRegex))
     {
@@ -322,32 +335,48 @@ void parser::transformSyntacticSugar(std::string &input)
 
 void parser::registerCompounds(std::string &input)
 {
-    static std::regex compoundRegex(R"(\{[^\{\}]*\})");
-    static std::regex valuedCompoundRegex(R"((function|json)\s*(\{[^\{\}]*\}))");
-    static std::regex catchCompoundRegex(R"((\{[^\{\}]*\})\s*(catch))");
+    static std::regex compoundRegex(R"(\{[^\{\}]*\})", std::regex::ECMAScript | std::regex::optimize);
+    static std::regex classRegex(R"(class\s+([#_A-Za-z0-9]+)\s+(\{[^\{\}]*\}))", std::regex::ECMAScript | std::regex::optimize);
+    static std::regex valuedCompoundRegex(R"((function|json)\s*(\{[^\{\}]*\}))", std::regex::ECMAScript | std::regex::optimize);
+    static std::regex catchCompoundRegex(R"((\{[^\{\}]*\})\s*(catch))", std::regex::ECMAScript | std::regex::optimize);
     static int counter = 0;
     std::smatch sm;
     std::string temp;
-    while (std::regex_search(input, sm, valuedCompoundRegex))
+    bool continuation = true, foundCompound = false;
+    while (continuation)
     {
-        temp = sm[2].str();
-        compoundStatement::_compoundStatements.push_back(parseFlat(temp));
-        input.replace(sm[2].first, sm[2].second, "#c"s + std::to_string(counter));
-        counter++;
-    }
-    while (std::regex_search(input, sm, catchCompoundRegex))
-    {
-        temp = sm[1].str();
-        compoundStatement::_compoundStatements.push_back(parseFlat(temp));
-        input.replace(sm[1].first, sm[1].second, "#c"s + std::to_string(counter));
-        counter++;
-    }
-    while (std::regex_search(input, sm, compoundRegex))
-    {
-        temp = sm.str();
-        compoundStatement::_compoundStatements.push_back(parseFlat(temp));
-        input.replace(sm.position(), sm.length(), "#c"s + std::to_string(counter) + ";"s);
-        counter++;
+        foundCompound = false;
+        while (std::regex_search(input, sm, classRegex))
+        {
+            input.replace(sm.position(), sm.length(), "let "s + std::string(sm[1].first, sm[1].second) + " <- Class(json "s + std::string(sm[2].first, sm[2].second) + ");"s);
+        }
+        while (std::regex_search(input, sm, valuedCompoundRegex))
+        {
+            temp = sm[2].str();
+            compoundStatement::_compoundStatements.push_back(parseFlat(temp));
+            input.replace(sm[2].first, sm[2].second, "#c"s + std::to_string(counter));
+            counter++;
+            foundCompound = true;
+        }
+        while (std::regex_search(input, sm, catchCompoundRegex))
+        {
+            temp = sm[1].str();
+            compoundStatement::_compoundStatements.push_back(parseFlat(temp));
+            input.replace(sm[1].first, sm[1].second, "#c"s + std::to_string(counter));
+            counter++;
+            foundCompound = true;
+        }
+        if (foundCompound)
+            continue;
+        continuation = false;
+        if (std::regex_search(input, sm, compoundRegex))
+        {
+            temp = sm.str();
+            compoundStatement::_compoundStatements.push_back(parseFlat(temp));
+            input.replace(sm.position(), sm.length(), "#c"s + std::to_string(counter) + ";"s);
+            counter++;
+            continuation = true;
+        }
     }
     //console::log(input);
 }
@@ -393,7 +422,8 @@ std::vector<std::string> parser::tokenize(const std::string &input)
 
 bool parser::isOperator(const std::string &token)
 {
-    return std::regex_match(token, std::regex(operatorRegexString));
+	static std::regex operatorRegex(operatorRegexString);
+    return std::regex_match(token, operatorRegex);
 }
 
 bool parser::isUnaryOperator(const std::string &token)

@@ -16,10 +16,20 @@ number::number(const unsigned long &n) : v(static_cast<int>(n)){};
 number::number(const unsigned long long &n) : v(static_cast<int>(n)){};
 number::number(const std::string &n)
 {
+    try{
     if (n.find('.') == std::string::npos)
         v = std::stoi(n);
     else
         v = std::stod(n);
+    }
+    catch (const std::invalid_argument&)
+    {
+        throw std::runtime_error("cannot convert \"" + n + "\" to number");
+    }
+    catch (const std::out_of_range&)
+    {
+        throw std::runtime_error("cannon convert \"" + n + "\" to number, converted value would overflow the number");
+    }
 };
 number::number(const char *n) : number(std::string(n)){};
 number::number(const bool &n) : v(static_cast<int>(n)){};

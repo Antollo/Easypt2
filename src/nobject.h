@@ -5,26 +5,39 @@
 #include <unordered_map>
 #include <vector>
 #include <type_traits>
+#include <cstddef>
+#include <array>
 #include "objectPtrImpl.h"
 #include "name.h"
 #include "stack.h"
 #include "number.h"
 #include "statement.h"
+#include "promise.h"
+#include "file.h"
+
+template<class T> struct always_false : std::false_type {};
+
+#define makeObject(...) objectPtrImpl(new object{__VA_ARGS__})
+#define makeEmptyObject(...) objectPtrImpl(new object{nullptr})
 
 template <class T>
 using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
-#define makeObject(...) objectPtrImpl(new object{__VA_ARGS__})
-#define makeEmptyObject(...) objectPtrImpl(new object{nullptr})
+//object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st);
+objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl> &&args, stack *st);
+class objectMemory;
 
 class object
 {
 public:
     using objectPtr = objectPtrImpl;
-    //using objectRawPtr = object *;
     using arrayType = std::vector<objectPtr>;
     using nativeFunctionType = objectPtr (*)(objectPtr, arrayType &&, stack *);
     using propertiesType = std::unordered_map<name, objectPtr>;
+    using objectPromise = promise<objectPtr>;
+
+    //void *operator new(size_t size);
+    //void operator delete(void *p);
 
     template <class T>
     explicit object(const T &t) : _value(std::move(t)), _isConst(false)
@@ -39,8 +52,20 @@ public:
             _properties["prototype"_n] = arrayPrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
             _properties["prototype"_n] = booleanPrototype;
+        else if constexpr (std::is_same_v<std::decay_t<T>, objectPromise::promisePtr>)
+            _properties["prototype"_n] = promisePrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, compoundStatement> || std::is_same_v<std::decay_t<T>, nativeFunctionType>)
-            _properties["prototype"_n] = functionPrototype;
+        {
+            if constexpr (std::is_same_v<std::decay_t<T>, nativeFunctionType>)
+            {
+                if (t == constructorCaller)
+                    _properties["prototype"_n] = classPrototype;
+                else
+                    _properties["prototype"_n] = functionPrototype;
+            }
+            else
+                _properties["prototype"_n] = functionPrototype;
+        }
         else
             throw std::runtime_error("wrong type "s + typeid(T).name());
     };
@@ -53,32 +78,46 @@ public:
     template <class T>
     bool isOfType() const
     {
-        return typeid(remove_cref_t<T>).hash_code() == _value.type().hash_code();
+        //return typeid(remove_cref_t<T>).hash_code() == _value.type().hash_code();
+        return typeid(remove_cref_t<T>).hash_code() == getTypeHashCode();
     }
 
     template <class T>
-    void setType() { _value = std::any(std::in_place_type_t<T>()); }
+    void setType()
+    {
+        //_value = std::any(std::in_place_type_t<T>());
+        _value.emplace<remove_cref_t<T>>();
+    }
 
     template <class T>
     std::remove_reference_t<T> &get()
     {
         if constexpr (std::is_const_v<T>)
         {
-            return std::any_cast<remove_cref_t<T> &>(_value);
+            //return std::any_cast<remove_cref_t<T> &>(_value);
+            return std::get<remove_cref_t<T>>(_value);
         }
         else
         {
             if (_isConst)
                 throw std::runtime_error("tried to modify constant value");
-            return std::any_cast<remove_cref_t<T> &>(_value);
+            //return std::any_cast<remove_cref_t<T> &>(_value);
+            return std::get<remove_cref_t<T>>(_value);
         }
+    }
+
+    template <class T>
+    const remove_cref_t<T> &get() const
+    {
+        return std::get<remove_cref_t<T>>(_value);
     }
 
     template <class T>
     bool isConvertible() const
     {
-        if (std::is_same_v<remove_cref_t<T>, bool> && (isOfType<nullptr_t>() || isOfType<compoundStatement>() || isOfType<nativeFunctionType>()))
-            return true;
+        if constexpr(std::is_same_v<remove_cref_t<T>, bool>)
+            if (isOfType<nullptr_t>() || isOfType<compoundStatement>() || isOfType<nativeFunctionType>())
+                return true;
         if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
         {
             return isOfType<number>() || isOfType<std::string>() || isOfType<arrayType>() || isOfType<bool>();
@@ -91,7 +130,64 @@ public:
     template <class T>
     remove_cref_t<T> getConverted()
     {
-        if (isOfType<T>())
+        return std::visit([this](auto &&value) -> remove_cref_t<T> {
+            using A = std::decay_t<decltype(value)>;
+
+            if constexpr (std::is_same_v<remove_cref_t<T>, A>)
+                return value;
+
+            else if constexpr (std::is_same_v<remove_cref_t<T>, number>)
+            {
+                if constexpr (std::is_same_v<A, std::string>)
+                    return static_cast<number>(value);
+                else if constexpr (std::is_same_v<A, arrayType>)
+                    return static_cast<number>(value.size());
+                else if constexpr (std::is_same_v<A, bool>)
+                    return static_cast<number>(value);
+                else return static_cast<number>(0);
+            }
+
+            else if constexpr (std::is_same_v<remove_cref_t<T>, std::string>)
+            {
+                if constexpr (std::is_same_v<A, number>)
+                    return static_cast<std::string>(value);
+                else if constexpr (std::is_same_v<A, arrayType>)
+                    return "["s + std::to_string(value.size()) + "]"s;
+                else if constexpr (std::is_same_v<A, bool>)
+                    return value ? "true"s : "false"s;
+                else return ""s;
+            }
+
+            else if constexpr (std::is_same_v<remove_cref_t<T>, arrayType>)
+            {
+                if constexpr (std::is_same_v<A, number>)
+                    return arrayType{makeObject(value)};
+                else if constexpr (std::is_same_v<A, std::string>)
+                    return arrayType{makeObject(value)};
+                else if constexpr (std::is_same_v<A, bool>)
+                    return arrayType{makeObject(value)};
+                else return arrayType{};
+            }
+
+            else if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
+            {
+                if constexpr (std::is_same_v<A, number>)
+                    return static_cast<bool>(value);
+                else if constexpr (std::is_same_v<A, std::string>)
+                    return static_cast<bool>(value.size());
+                else if constexpr (std::is_same_v<A, arrayType>)
+                    return static_cast<bool>(value.size());
+                else if constexpr (std::is_same_v<A, nullptr_t>)
+                    return !(hasOwnProperty("prototype"_n) && _properties.size() == 1);
+                else if constexpr (std::is_same_v<A, compoundStatement> || std::is_same_v<A, nativeFunctionType>)
+                    return true;
+                else return false;
+            }
+            
+            else throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
+        }, _value);
+
+        /*if (isOfType<T>())
             return get<const remove_cref_t<T>>();
         if constexpr (std::is_same_v<remove_cref_t<T>, number>)
         {
@@ -132,9 +228,8 @@ public:
                 return !(hasOwnProperty("prototype"_n) && _properties.size() == 1);
             if (isOfType<compoundStatement>() || isOfType<nativeFunctionType>())
                 return true;
-        }
+        }*/
         //TODO user conversions
-        throw std::runtime_error("unsupported conversion: "s + _value.type().name() + " to "s + typeid(T).name());
     }
 
     inline void setConst(bool v = true) { _isConst = v; }
@@ -148,7 +243,7 @@ public:
     arrayType getOwnPropertyNames();
     void clear();
 
-    static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype;
+    static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
     static void setGlobalStack(stack *newGlobalStack)
     {
         globalStack = newGlobalStack;
@@ -156,15 +251,33 @@ public:
 
 private:
     friend class objectPtrImpl;
-    std::any _value;
+    //std::any _value;
+    std::variant<nullptr_t, bool, number, std::string, arrayType, objectPromise::promisePtr, compoundStatement, nativeFunctionType, file> _value;
     propertiesType _properties;
     bool _isConst;
     const objectPtrImpl *_thisPtr;
     static stack *globalStack;
     objectPtr &read(const name &n);
+    const char *getTypeName() const
+    {
+        return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
+    }
+    std::size_t getTypeHashCode() const
+    {
+        return std::visit([](auto &&v) { return typeid(v).hash_code(); }, _value);
+    }
 };
 
-class objectException : public std::exception, object::objectPtr
+/*class objectMemory
+{
+private:
+    static std::vector<std::array<std::byte, sizeof(object)>> memoryBlock;
+    static std::vector<void*> freeElements;
+    friend class object;
+};*/
+
+class objectException : public std::exception,
+                        object::objectPtr
 {
 public:
     objectException(object::objectPtr &&obj) : object::objectPtr(obj) {}

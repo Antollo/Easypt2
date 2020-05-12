@@ -30,7 +30,7 @@ public:
     token(std::string &&n, int a, tokenType t = tokenType::CallOperator) : _name(n), arityOrIndex(a), type(t), value(nullptr){};
     token(const objectPtrImpl &v) : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Value), value(v){};
     token(objectPtrImpl &&v) : _name("<no name>"s), arityOrIndex(-1), type(tokenType::Value), value(v){};
-    objectPtrImpl &resolve(stack *st) const;
+    objectPtrImpl &resolve(stack *st);
     inline const name &getName() const { return _name; }
     inline const int &getArity() const { return arityOrIndex; }
     inline const int &getCompoundStatementIndex() const { return arityOrIndex; }
@@ -40,7 +40,7 @@ private:
     name _name;
     int arityOrIndex;
     tokenType type;
-    mutable objectPtrImpl value;
+    objectPtrImpl value;
 };
 
 #endif /* !TOKEN_H_ */

@@ -271,8 +271,16 @@ void operators::init(stack *st)
         catch (objectException &e)
         {
             stack localStack(st);
+            executionMemory memory;
             localStack.insert("exception"_n, e.getPtr());
-            compoundStatement::get(args[1].getCompoundStatementIndex())(localStack);
+            compoundStatement::get(args[1].getCompoundStatementIndex())(localStack, memory);
+        }
+        catch (std::exception &e)
+        {
+            stack localStack(st);
+            executionMemory memory;
+            localStack.insert("exception"_n, makeObject((std::string)e.what()));
+            compoundStatement::get(args[1].getCompoundStatementIndex())(localStack, memory);
         }
         return makeEmptyObject();
     });

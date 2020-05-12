@@ -23,6 +23,7 @@ public:
     void setReadPosition(const int &n);
     int getWritePosition();
     void setWritePosition(const int &n);
+    int size();
     void clear();
     void close();
     inline bool isOpen() { return _f->is_open(); }

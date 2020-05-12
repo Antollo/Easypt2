@@ -4,15 +4,14 @@
     console.error(exception);
 }
 
-
-let Myclass = Class(json {
+class Myclass {
     constructor: function {
         this.sth = args[0];
         console.log("constructor");
     },
     writeSth: function { console.writeLine(this.sth); },
     destructor: function { console.log("destructor"); }
-});
+}
 
 {
     let m = Myclass(12);
@@ -23,4 +22,34 @@ let Myclass = Class(json {
     m.writeSth();
 }
 
+
+let file = File();
+file.open("test3.ez");
+let tr = transpile(file.readBytes(file.size()));
+
+let x = function { console.debug(args[0]); };
+x(5);
+//console.writeLine(tr);
 //import("../library/docs")
+
+
+let p1 = Promise(function { console.log(1); });
+let p2 = Promise(function { console.log(2); });
+let p3 = Promise(function { console.log(3); });
+let p4 = Promise(function { console.log(4); });
+let p5 = Promise(function { console.log(5); });
+
+console.log(0);
+Object.condition = 3;
+Timeout(7005).then(function { console.log(75); Object.condition = "conditional"; });
+Timeout(20).then(function { console.log(20); });
+
+ConditionalPromise(function { console.log(Object.condition); }, function { return "conditional" == Object.condition; });
+
+console.readAsync().then( function{ console.log(args[0]); });
+console.readAsync().then( function{ console.log(args[0]); });
+console.readAsync().then( function{ console.log(args[0]); });
+console.readAsync().then( function{ console.log(args[0]); });
+console.readAsync().then( function{ console.log(args[0]); });
+
+console.log(10);

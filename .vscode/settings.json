@@ -91,5 +91,8 @@
     "files.exclude": {
         "**/*.vcproj*": true,
         "**/*.vcproj": true
-    }
+    },
+    "cSpell.words": [
+        "sregex"
+    ]
 }

@@ -1,25 +1,23 @@
+//import("../library/docs");
+
 let t = function {console.write(u);};
 
-console.writeLine(getStack()["#called"]);
 let out = console.getOutput(function {
     console.write("x");
 });
 
 console.writeLine(out);
-console.writeLine(getStack()["#called"]);
-
-import("../library/docs");
 
 let a;
 let b;
-a.static = true;
+a.good = true;
 
-if(a.static) {
-    console.log("a is static");
+if(a.good) {
+    console.writeLine("a is good");
 }
 
-if(!b.static) {
-    console.log("b is not static");
+if(!b.good) {
+    console.writeLine("b is not good");
 }
 
 let c = "x";
@@ -27,12 +25,52 @@ let x = json {
     c:"a";
 };
 
-let y = function {
-    let dog;
-    dog.console = console;
-    dog.destructor = function { console.log("died"); };
+class Myclass {
+    constructor: function {
+        this.sth = args[0];
+        console.writeLine("constructor");
+    },
+    writeSth: function { console.writeLine(this.sth); },
+    destructor: function { console.writeLine("destructor" + this.sth); }
+}
+
+{
+    let m <- Myclass(12);
+    m.writeSth();
+    m["sth"] = "_g";
+    console.writeLine(m["sth"]);
+    console.writeLine(m.sth);
+    //console.writeLine(m.getId());
+    m.writeSth();
+}
+
+console.writeLine(x.c);
+
+let searchResult = "a a a".searchAll("a");
+searchResult.forEach(function {
+    console.writeLine(args[0].position, " ", args[0].length);
+});
+
+let nwd = function {
+    let a = args[0];
+    let b = args[1];
+    while (a != b) {
+        if (a < b)
+            b = b - a;
+        if (a > b)
+            a = a - b;
+    }
+    return a;
 };
 
-y();
-
-console.log(x.c);
+let arr = Array();
+let i = 0;
+while(i<1000) {
+    let x;
+    arr.insert(0, x);
+    i++;
+}
+let time = Time.sinceEpoch.asFloatingPoint();
+let x = nwd(144, 2048000);
+//console.log(Time.sinceEpoch.asFloatingPoint() - time);
+//console.log(x);

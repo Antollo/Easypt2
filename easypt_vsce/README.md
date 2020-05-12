@@ -44,7 +44,7 @@ Now you can run your code with `Ctrl+Shift+B`.
 
 ## Last changes
 
-- `@` operators and `function` highlights
+- `json` and `class` highlights
 
 ## For more information
 

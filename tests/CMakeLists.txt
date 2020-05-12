@@ -9,7 +9,7 @@ ${CMAKE_SOURCE_DIR}/src/statement.cpp ${CMAKE_SOURCE_DIR}/src/token.cpp ${CMAKE_
 ${CMAKE_SOURCE_DIR}/src/file.cpp ${CMAKE_SOURCE_DIR}/src/library/consoleObj.cpp ${CMAKE_SOURCE_DIR}/src/library/operators.cpp
 ${CMAKE_SOURCE_DIR}/src/library/Object.cpp ${CMAKE_SOURCE_DIR}/src/library/Array.cpp ${CMAKE_SOURCE_DIR}/src/library/File.cpp
 ${CMAKE_SOURCE_DIR}/src/library/String.cpp ${CMAKE_SOURCE_DIR}/src/library/Number.cpp ${CMAKE_SOURCE_DIR}/src/library/Boolean.cpp
-${CMAKE_SOURCE_DIR}/src/library/Class.cpp)
+${CMAKE_SOURCE_DIR}/src/library/Class.cpp ${CMAKE_SOURCE_DIR}/src/library/Promise.cpp ${CMAKE_SOURCE_DIR}/src/library/Time.cpp)
 
 add_executable (testUtils testUtils.cpp ${SRC})
 add_test(Utils testUtils)
@@ -25,3 +25,6 @@ add_test(Conversions testConversions)
 
 add_executable (testBasic1 testBasic1.cpp ${SRC})
 add_test(Basic1 testBasic1 -file testBasic1.ez)
+
+add_executable (testBasic2 testBasic2.cpp ${SRC})
+add_test(Basic2 testBasic2 -file testBasic2.ez)

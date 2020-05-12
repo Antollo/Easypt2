@@ -3,15 +3,15 @@
 void Class::init(stack *st)
 {
     object::objectPtr Class = insertObject("Class"_n, constructorCaller);
-    object::objectPtr classPrototype = makeEmptyObject();
+    (*object::classPrototype)["prototype"_n] = object::functionPrototype;
 
-    (*Class)["prototype"_n] = classPrototype;
+    (*Class)["classPrototype"_n] = object::classPrototype;
 
-    addFunctionL(classPrototype, "constructor"_n, {
+    addFunctionL(object::classPrototype, "constructor"_n, {
         argsConvertibleGuard<nullptr_t>(args);
         thisObj->setType<object::nativeFunctionType>();
         thisObj->get<object::nativeFunctionType&>() = constructorCaller;
-        thisObj->addProperty("prototype"_n, args[0]);
+        thisObj->addProperty("classPrototype"_n, args[0]);
         return thisObj;
     });
 }

@@ -3,6 +3,7 @@
 #include "runtime.h"
 #include "statement.h"
 #include "defines.h"
+#include "osDependent.h"
 
 inline bool isFlag(std::string a, std::string f)
 {
@@ -11,9 +12,10 @@ inline bool isFlag(std::string a, std::string f)
 
 int main(int argc, char **argv)
 {
+    stack globalStack;
     try
     {
-        stack globalStack;
+    initialize();
         runtime::init(&globalStack);
 
         auto st = &globalStack;
@@ -50,10 +52,12 @@ int main(int argc, char **argv)
             console::error(obj->getConverted<std::string>());
         else
             console::error((std::string)e.what());
+        runtime::fini(&globalStack);
     }
     catch (std::exception &e)
     {
         console::error((std::string)e.what());
+        runtime::fini(&globalStack);
     }
     return 0;
 }

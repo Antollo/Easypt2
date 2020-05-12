@@ -4,7 +4,8 @@ void Object::init(stack *st)
 {
     object::objectPtr Object = insertObject("Object"_n, constructorCaller);
 
-    (*Object)["prototype"_n] = object::objectPrototype;
+    (*Object)["classPrototype"_n] = object::objectPrototype;
+    (*object::objectPrototype)["prototype"_n] = object::objectPrototype;
     
     addFunctionL(object::objectPrototype, "hasOwnProperty"_n, {
         argsConvertibleGuard<std::string>(args);

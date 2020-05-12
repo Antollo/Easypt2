@@ -1,5 +1,5 @@
-#include <stack>
 #include "stack.h"
+#include "defines.h"
 #include "statement.h"
 #include "error.h"
 #include "parser.h"
@@ -21,22 +21,20 @@ void expressionStatement::addOperator(name n, token (*op)(stack *st, std::vector
     operators.insert(std::make_pair(n, op));
 }
 
-token expressionStatement::operator()(stack *st) const
+token expressionStatement::operator()(stack *st, executionMemory &memory)
 {
     if (_tokens.empty())
         return token();
     if (_tokens.front().getType() == token::tokenType::CompoundStatement && _tokens.size() == 1)
     {
-        compoundStatement::get(_tokens.front().getCompoundStatementIndex())(st);
+        compoundStatement::get(_tokens.front().getCompoundStatementIndex())(st, memory);
         return token();
     }
-    std::stack<token> stack;
-    std::vector<token> args;
-    std::string temp;
+    std::stack<token> &stack = memory.stack;
+    std::vector<token> &args = memory.args;
+    object::arrayType &arr = memory.arr;
 
-    object::arrayType arr;
-
-    for (auto it = _tokens.begin(); it != _tokens.end(); it++)
+    for (std::vector<token>::iterator it = _tokens.begin(); it != _tokens.end(); it++)
     {
         switch (it->getType())
         {
@@ -58,16 +56,15 @@ token expressionStatement::operator()(stack *st) const
             {
                 object::objectPtr caller = stack.top().resolve(st);
                 stack.pop();
-                st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
+                //st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*(*caller)[it->getName()])(caller, std::move(arr), st)));
                 it++;
             }
             else
             {
-                st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
+                //st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*it->resolve(st))(nullptr, std::move(arr), st)));
             }
-            arr.clear();
             break;
         case token::tokenType::Operator:
             if (it->getName() == "."_n)
@@ -88,7 +85,6 @@ token expressionStatement::operator()(stack *st) const
                 }
                 if (operators.count(it->getName()) == 0)
                 {
-                    //TODO implement all operators
                     arr.resize(args.size());
                     for (size_t i = 0; i < args.size(); i++)
                         arr[i] = args[i].resolve(st);
@@ -213,31 +209,94 @@ void compoundStatement::check(bool verbose) const
     }
 }
 
-void compoundStatement::operator()(stack *st) const
+void compoundStatement::operator()(stack *st)
 {
+    executionMemory memory;
     stack localStack(st);
-    (*this)(localStack);
+    (*this)(localStack, memory);
 }
 
-void compoundStatement::operator()(stack &localStack) const
+void compoundStatement::operator()(stack &st)
 {
-    for (auto it = _statements.begin(); it < _statements.end(); it++)
+    executionMemory memory;
+    (*this)(st, memory);
+}
+
+void compoundStatement::operator()(stack *st, executionMemory &memory)
+{
+    stack localStack(st);
+    (*this)(localStack, memory);
+}
+
+void compoundStatement::operator()(stack &localStack, executionMemory &memory)
+{
+    for (std::vector<expressionStatement>::iterator it = _statements.begin(); it < _statements.end(); it++)
     {
         if (it->empty())
             continue;
-        if (it->back().getName() == "if"_n && it + 2 < _statements.end())
+        if (it->back().getName() == "if"_n || it->back().getName() == "while"_n || it->back().getName() == "for"_n)
         {
-            if ((*(it + 1))(&localStack).resolve(&localStack)->getConverted<bool>())
-                (*(it + 2))(&localStack);
-            it += 2;
-        }
-        else if (it->back().getName() == "while"_n && it + 2 < _statements.end())
-        {
-            while ((*(it + 1))(&localStack).resolve(&localStack)->getConverted<bool>())
-                (*(it + 2))(&localStack);
-            it += 2;
+            if (it->back().getName() == "if"_n && it + 2 < _statements.end())
+            {
+                if ((*(it + 1))(&localStack, memory).resolve(&localStack)->getConverted<bool>())
+                    (*(it + 2))(&localStack, memory);
+                it += 2;
+            }
+            else if (it->back().getName() == "while"_n && it + 2 < _statements.end())
+            {
+                while ((*(it + 1))(&localStack, memory).resolve(&localStack)->getConverted<bool>())
+                    (*(it + 2))(&localStack, memory);
+                it += 2;
+            }
+            else if (it->back().getName() == "for"_n && it + 2 < _statements.end())
+            {
+                auto cp = *(it + 1);
+                std::vector<token> &t = cp._tokens;
+                if (t.size() >= 3)
+                {
+                    if (t[1].getName() == "of"_n)
+                    {
+                        auto name = t[0].getName();
+                        t.erase(t.begin(), t.begin() + 2);
+                        auto arrObj = cp(&localStack, memory).resolve(&localStack);
+                        if (arrObj->isOfType<object::arrayType>())
+                        {
+                            object::arrayType &arr = arrObj->get<object::arrayType>();
+                            stack loopStack(&localStack);
+                            loopStack.insert(name, nullptr);
+                            for (const auto &el : arr)
+                            {
+                                loopStack[name] = el;
+                                (*(it + 2))(&loopStack, memory);
+                            }
+                        }
+                        console::log((std::string)t[0].getName(), (std::string)t[2].getName());
+                    }
+                    else if (t[1].getName() == "in"_n)
+                    {
+                        auto name = t[0].getName();
+                        t.erase(t.begin(), t.begin() + 2);
+                        auto arrObj = cp(&localStack, memory).resolve(&localStack);
+                        object::arrayType &arr = arrObj->getOwnPropertyNames();
+                        stack loopStack(&localStack);
+                        loopStack.insert(name, nullptr);
+                        for (const auto &el : arr)
+                        {
+                            if (el->isOfType<std::string>() && el->get<std::string>() == "prototype" || el->get<std::string>() == "classPrototype")
+                                continue;
+                            loopStack[name] = el;
+                            (*(it + 2))(&loopStack, memory);
+                        }
+                    }
+                    else
+                        throw std::runtime_error("unsupported for loop type");
+                }
+                else
+                    throw std::runtime_error("wrong number of arguments for for loop");
+                it += 2;
+            }
         }
         else
-            (*it)(&localStack);
+            (*it)(&localStack, memory);
     }
 }

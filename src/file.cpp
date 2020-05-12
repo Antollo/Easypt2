@@ -156,3 +156,7 @@ void file::writeGuard()
         lastOperation = lastOperationType::write;
     }
 }
+int file::size()
+{
+    return std::filesystem::file_size(_path);
+}

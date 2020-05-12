@@ -26,14 +26,14 @@ import @returns@
 "/*Object*/";
 import @description@
 "Imports source code from another *.ez file (source is transpiled, parsed, and called, return 
-value is returned as import return value). First and only parameters is filename (file is 
+value is returned as import return value). First and only parameter is filename (file is 
 searched in current working directory and then in interpreter directory) or opened File object.";
 import @example@
-"let module = File();
-module.create(\"module.ez\");
-module.write(\"let x = 7; let y = 3; return x*y+y;\");
-let result = import(module);
-module.remove();
+"let file = File();
+file.create(\"module.ez\");
+file.write(\"let x = 7; let y = 3; return x*y+y;\");
+let result = import(file);
+file.remove();
 console.write(result);";
 import @expectedOutput@ "24";
 
@@ -65,15 +65,15 @@ console @description@
 "`console` object provides standard input and output operations.";
 console @example@
 "console.write(\"1+3 is \", 1+3);
-if(1+3 != 4) {
+if (1+3 != 4) {
     console.warn(\"1+3 is not 4!\");
 }";
 console @expectedOutput@
 "1+3 is 4";
 
 Array @description@
-"Array lists provides metods for manipulating arrays (list-like
-objects). Array elements are indexed with integers.";
+"Array lists provides methods for manipulating arrays (list-like
+objects). Array elements are indexed with non-negative integers.";
 Array @example@
 "let arr = Array[36.6, \"Harry\", true];
 arr.forEach(function {
@@ -81,3 +81,156 @@ arr.forEach(function {
 });";
 Array @expectedOutput@
 "36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, ";
+
+Array.forEach @parameters@
+"calback /*Function*/";
+Array.forEach @description@
+"Executes a callback for each array element. Arguments of callback are:
+element, index of element, array.";
+Array.forEach @example@
+"let arr = Array[36.6, \"Harry\", true];
+arr.forEach(function {
+    console.write(args[0], \" is element with index \", args[1], \", \");
+});";
+Array.forEach @expectedOutput@
+"36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, ";
+
+Array.length @returns@
+"/*Number*/";
+Array.length @description@
+"Returns the number of elements in that array.";
+Array.length @example@
+"let arr = Array[36.6, \"Harry\", true];
+console.write(arr.length());";
+Array.forEach @expectedOutput@ "3";
+
+Array.insert @parameters@
+"n /*Number*/, element";
+Array.insert @description@
+"Inserts new element before n-th element.";
+Array.insert @example@
+"let arr = Array[36.6, \"Harry\", true];
+arr.insert(1, \"Dirty \");
+console.write(arr[1], arr[2]);";
+Array.insert @expectedOutput@
+"Dirty Harry";
+
+Array.insertFrom @parameters@
+"n /*Number*/, array /*Array*/, [position = 0 /*Number*/], [length = array.length() /*Number*/]";
+Array.insertFrom @description@
+"Inserts new elements before n-th element from subarray of second
+argument starting at given position ad of given length.";
+Array.insertFrom @example@
+"let arr = Array[36.6, \"Harry\", true];
+arr.insertFrom(3, Array[1, 2, 3, 4, 5, 6], 2, 4);
+console.write(arr[3], arr[4], arr[5], arr[6]);";
+Array.insertFrom @expectedOutput@
+"3456";
+
+Array.erase @parameters@
+"position /*Number*/, length /*Number*/";
+Array.erase @description@
+"Erases elements from range [position, position + length).";
+Array.erase @example@
+"let arr = Array[1, 2, 3];
+arr.erase(1, 1);
+console.write(arr[0], arr[1]);";
+Array.erase @expectedOutput@
+"13";
+
+Array.subarray @parameters@
+"position /*Number*/, length /*Number*/";
+Array.subarray @returns@
+"/*Array*/";
+Array.subarray @description@
+"Creates subarray of given length starting at given position.";
+Array.subarray @example@
+"let arr = Array[1, 2, 3];
+let subarr = arr.subarray(1, 1);
+console.write(subarr[0]);";
+Array.subarray @expectedOutput@
+"2";
+
+Array.prototype.readOperator @parameters@
+"position /*Number*/";
+Array.prototype.readOperator @description@
+"Read operator (arrayInstance[n]) returns element at given position.
+Not to be confused with static method Array.readOperator.";
+Array.prototype.readOperator @example@
+"let arr = Array[36.6, \"Harry\", true];
+console.write(arr[1]);";
+Array.prototype.readOperator @expectedOutput@
+"Harry";
+
+Array.readOperator @parameters@
+"...";
+Array.readOperator @description@
+"Static read operator (Array[1, \"A\"]) constructs new Array.
+Not to be confused with method Array.prototype.readOperator.";
+Array.readOperator @example@
+"let arr = Array[36.6, \"Harry\", true];
+console.write(arr[1]);";
+Array.readOperator @expectedOutput@
+"Harry";
+
+Object.getId @returns@
+"/*String*/";
+Object.getId @description@
+"Returns array of bytes unique for each Object instance.
+It may consist of non printable characters.";
+Object.getId @example@
+"console.writeLine(1.getId());
+console.writeLine(\"ABC\".getId());
+console.writeLine(Object().getId());";
+
+Object.addProperty @parameters@
+"key /*String*/, value";
+Object.addProperty @description@
+"Adds new property to object.";
+Object.addProperty @example@
+"let obj = Object();
+obj.addProperty(\"first\", 1);
+obj.addProperty(\"second\", \"a\");
+console.write(obj.first, \" \", obj.second);";
+Object.addProperty @expectedOutput@
+"1 a";
+
+Object.hasOwnProperty @parameters@
+"key /*String*/";
+Object.hasOwnProperty @returns@
+"/*Boolean*/";
+Object.hasOwnProperty @description@
+"Checks whether the object has own property.";
+Object.hasOwnProperty @example@
+"let obj = Object();
+obj.addProperty(\"first\", 1);
+console.write(obj.hasOwnProperty(\"first\"), \" \", obj.hasOwnProperty(\"second\"));";
+Object.hasOwnProperty @expectedOutput@
+"true false";
+
+Object.getOwnPropertyNames @returns@
+"/*Array*/";
+Object.getOwnPropertyNames @description@
+"Returns array of all own properties. Order is not specified.
+Possible output for following example is:
+\"secondNumber prototype number thirdNumber\"";
+Object.getOwnPropertyNames @example@
+"let obj = Object();
+obj.number = 21;
+obj[\"secondNumber\"] = 22;
+obj.addProperty(\"thirdNumber\", 1);
+obj.getOwnPropertyNames().forEach(function {
+    console.write(args[0], " ");
+});";
+
+Object.readOperator @parameters@
+"key /*String*/";
+Object.readOperator @description@
+"Read operator (string[key]) returns property.";
+Object.readOperator @example@
+"let obj = Object();
+obj.number = 21;
+obj[\"secondNumber\"] = 22;
+console.write(obj[\"number\"], \" \", obj.secondNumber);";
+Object.readOperator @expectedOutput@
+"21 22";

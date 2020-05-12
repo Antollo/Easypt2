@@ -68,7 +68,8 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
     object::objectPtr result;
     {
         stack s(st);
-        s.insert("fileName"_n, makeObject(fileNameString));
+        auto module = s.insert("module"_n, makeEmptyObject());
+        module->addProperty("name"_n, makeObject(fileNameString));
         result = (*sourceFunction)(nullptr, std::move(args), &s);
     }
     imported.insert(std::make_pair(fileName.stem().string(), result));
@@ -99,7 +100,7 @@ object::objectPtr transpile(object::objectPtr thisObj, object::arrayType &&args,
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
     auto newObj = makeEmptyObject();
-    newObj->addProperty("prototype"_n, (*thisObj)["prototype"_n]);
+    newObj->addProperty("prototype"_n, (*thisObj)["classPrototype"_n]);
     if ((*newObj)["prototype"_n]->hasOwnProperty("constructor"_n))
         (*(*newObj)["constructor"_n])(newObj, std::move(args), st);
     return newObj;

@@ -26,7 +26,8 @@ public:
     template <class... Ts>
     static void warn(const Ts &... args)
     {
-        writeLine("\033[93m\033[1m"s, now() + " ", args..., "\033[0m"s);    }
+        writeLine("\033[93m\033[1m"s, now() + " ", args..., "\033[0m"s);
+    }
 
     template <class... Ts>
     static void error(const Ts &... args)

@@ -8,7 +8,7 @@ void Array::init(stack *st)
         return makeObject(args);
     });
 
-    (*Array)["prototype"_n] = object::arrayPrototype;
+    (*Array)["classPrototype"_n] = object::arrayPrototype;
 
     addFunctionL(object::arrayPrototype, "constructor"_n, {
         thisObj->setType<object::arrayType>();
@@ -28,14 +28,34 @@ void Array::init(stack *st)
         return makeObject(static_cast<number>(thisObj->get<const object::arrayType>().size()));
     });
 
+    addFunctionL(object::arrayPrototype, "insert"_n, {
+        argsConvertibleGuard<number, nullptr_t>(args);
+        object::arrayType &dest = thisObj->get<object::arrayType>();
+        int destPos = static_cast<int>(args[0]->getConverted<number>());
+        assert<std::greater_equal>(destPos, 0);
+        assert<std::less_equal>(destPos, dest.size());
+        dest.insert(dest.begin() + destPos, args[1]);
+        return thisObj;
+    });
+
     addFunctionL(object::arrayPrototype, "insertFrom"_n, {
-        argsConvertibleGuard<number, object::arrayType, number, number>(args);
+        argsConvertibleGuard<number, object::arrayType>(args);
         argsGuard<nullptr_t, object::arrayType>(args);
         object::arrayType &dest = thisObj->get<object::arrayType>();
         const object::arrayType &src = args[1]->get<const object::arrayType>();
         int destPos = static_cast<int>(args[0]->getConverted<number>());
-        int srcPos = static_cast<int>(args[2]->getConverted<number>());
-        int srcLength = static_cast<int>(args[3]->getConverted<number>());
+        int srcPos = 0;
+        int srcLength = src.size();
+        if (args.size() > 2)
+        {
+            argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
+            srcPos = static_cast<int>(args[2]->getConverted<number>());
+            if (args.size() > 3)
+            {
+                argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
+                srcLength = static_cast<int>(args[3]->getConverted<number>());
+            }
+        }
         assert<std::greater_equal>(destPos, 0);
         assert<std::less_equal>(destPos, dest.size());
         assert<std::greater_equal>(srcPos, 0);

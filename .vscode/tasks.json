@@ -10,6 +10,23 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Run Easypt source",
+            "type": "process",
+            "command": "./src/Release/easypt2.exe",
+            "args": [
+                "-file",
+                "${file}"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build"
+            }
         }
     ]
 }

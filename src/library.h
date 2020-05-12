@@ -57,4 +57,14 @@ namespace Class
 void init(stack *st);
 };
 
+namespace Promise
+{
+void init(stack *st);
+};
+
+namespace Time
+{
+void init(stack *st);
+};
+
 #endif /* !LIBRARY_H_ */

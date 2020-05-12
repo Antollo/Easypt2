@@ -18,33 +18,50 @@ let expectedOutput = function {
     args[0].addProperty("expectedOutput", args[1]);
 };
 
+let printPair = function {
+    console.controlSequence("7m");
+    console.write(args[0]);
+    console.controlSequence("0m");
+    console.writeLine("\n", args[1]);
+};
+
+let findObjectName = function {
+    let stack = getStack();
+    for (name in stack) {
+        if (stack[name].getId() == args[0].getId())
+            return name;
+    }
+    return "c";
+};
+
+let findObjectClassName = function {
+    let stack = getStack();
+    for (name in stack) {
+        if (stack[name].classPrototype.getId() == args[0].prototype.getId())
+            return name;
+    }
+    return "c";
+};
+
 let help = function {
-    let printPairShort = function {
-        console.controlSequence("7m");
-        console.write(args[0]);
-        console.controlSequence("0m");
-        console.writeLine(" ", args[1]);
-    };
-    let printPair = function {
-        console.controlSequence("7m");
-        console.write(args[0]);
-        console.controlSequence("0m");
-        console.writeLine("\n", args[1]);
-    };
-    if(args[0].prototype.hasOwnProperty("name"))
-        printPairShort("Name:", args[0].prototype.name);
-    if(args[0].prototype.hasOwnProperty("prototypeName"))
-        printPairShort("Instance of:", args[0].prototype.prototypeName);
-    if(args[0].hasOwnProperty("parameters"))
-        printPairShort("Parameters:", args[0].parameters);
-    if(args[0].hasOwnProperty("returns"))
-        printPairShort("Return value:", args[0].returns);
-    if(args[0].hasOwnProperty("description"))
+    if (findObjectName(args[0]).length() != 0)
+        printPair("Name:", findObjectName(args[0]));
+    if (findObjectClassName(args[0]).length() != 0)
+        printPair("Instance of:", findObjectClassName(args[0]));
+    //if (args[0].prototype.hasOwnProperty("prototypeName"))
+    //    printPair("Instance of:", args[0].prototype.prototypeName);
+    if (args[0].hasOwnProperty("parameters"))
+        printPair("Parameters:", args[0].parameters);
+    if (args[0].hasOwnProperty("returns"))
+        printPair("Return value:", args[0].returns);
+    if (args[0].hasOwnProperty("description"))
         printPair("Description:", args[0].description);
-    if(args[0].hasOwnProperty("example"))
+    if (args[0].hasOwnProperty("example"))
         printPair("Example:", args[0].example);
-    if(args[0].hasOwnProperty("expectedOutput"))
-        printPairShort("Expected output:", args[0].expectedOutput);
+    if (args[0].hasOwnProperty("expectedOutput"))
+        printPair("Expected output:", args[0].expectedOutput);
+    let ownPropertyNames = args[0].getOwnPropertyNames();
+    
 };
 
 let testExample = function {
@@ -59,14 +76,56 @@ let testExample = function {
 
 import("../library/docsData.ez");
 
-
 let i = 0;
-let stackNames = getStack().getOwnPropertyNames();
 let stack = getStack();
-while(i<stackNames.length()){
-    if(!getStack()[stackNames[i]].hasOwnProperty("description")) {
-        console.log(stackNames[i]);
-        testExample(stack[stackNames[i]]);
+let stackNames = stack.getOwnPropertyNames();
+
+while (i < stackNames.length()) {
+    let obj <- stack[stackNames[i]];
+    if (!obj.hasOwnProperty("description"))
+        console.controlSequence("91m");
+    console.writeLine(stackNames[i]);
+    console.controlSequence("0m");
+    let objNames = obj.getOwnPropertyNames();
+    if (obj.hasOwnProperty("prototype")) {
+        let prototypeNames = obj.prototype.getOwnPropertyNames();
+        objNames.insertFrom(objNames.length(), prototypeNames, 0, prototypeNames.length());
+    }
+    let j = 0;
+    while (j < objNames.length()) {
+        if (!Object.readOperator.call(obj, objNames[j]).hasOwnProperty("description"))
+            console.controlSequence("91m");
+        console.writeLine("\t", objNames[j]);
+        console.controlSequence("0m");
+        j++;
     }
     i++;
 }
+
+console.log("");
+help(Array);
+
+Class.classPrototype.name  = "Class";
+
+class Con {
+    constructor: function {
+        console.log("con");
+    }
+}
+
+
+console.log(Con.name);
+let arr = Array[1,2,3];
+for(a of arr) {
+    console.writeLine(a);
+}
+
+let obj = json{
+    a:1,
+    b:"b",
+    c:3
+};
+for(a in obj) {
+    console.writeLine(a);
+}
+//console.log(transpile(File().open("testBasic2.ez").readTo("\000")));

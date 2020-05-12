@@ -1,5 +1,9 @@
 # Change Log
 
+### 2.0.2
+
+- `json` and `class` highlights
+
 ### 2.0.1
 
 - `@` operators and `function` highlights

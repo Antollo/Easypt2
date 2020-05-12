@@ -6,10 +6,12 @@ void File::init(stack *st)
     object::objectPtr File = insertObject("File"_n, constructorCaller);
     object::objectPtr filePrototype = makeEmptyObject();
 
-    (*File)["prototype"_n] = filePrototype;
+    (*File)["classPrototype"_n] = filePrototype;
 
     addFunctionL(filePrototype, "constructor"_n, {
         thisObj->setType<file>();
+        if (args.size() > 1 && args[0]->isConvertible<std::string>())
+            thisObj->get<file>().open(args[0]->getConverted<std::string>());
         return thisObj;
     });
 
@@ -66,5 +68,9 @@ void File::init(stack *st)
     addFunctionL(filePrototype, "close"_n, {
         thisObj->get<file>().close();
         return thisObj;
+    });
+
+    addFunctionL(filePrototype, "size"_n, {
+        return makeObject(static_cast<number>(thisObj->get<file>().size()));
     });
 }

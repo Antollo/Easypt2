@@ -33,6 +33,7 @@ namespace std{
 #include <eh.h>
 #include <io.h>
 #include <fcntl.h>
+using libraryType = HMODULE;
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
@@ -42,6 +43,7 @@ namespace std{
 #include <unistd.h>
 #include <linux/limits.h>
 #include <dlfcn.h>
+using libraryType = void*;
 
 #include <cstdio>
 #include <cstring>
@@ -49,11 +51,23 @@ namespace std{
 #include <ucontext.h>
 #else
 #pragma message("OS not fully supported")
+using libraryType = bool;
 #endif
 
 std::filesystem::path getExecutablePath();
 void initialize();
 void initializeThread();
+
+class dynamicLibrary
+{
+public:
+    dynamicLibrary();
+    void loadLibrary(const std::string& fileName);
+    void* getFunction(const std::string& functionName);
+    ~dynamicLibrary();
+private:
+    libraryType library;
+};
 
 #if defined(_WIN32)
 std::string utf8_encode(const std::wstring &wstr);

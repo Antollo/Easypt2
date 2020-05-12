@@ -14,6 +14,7 @@ void runtime::init(stack *st)
 {
     object::setGlobalStack(st);
     object::objectPrototype = makeEmptyObject();
+    object::classPrototype = makeEmptyObject();
 
     object::arrayPrototype = makeEmptyObject();
     (*object::arrayPrototype)["prototype"_n] = object::objectPrototype;
@@ -30,8 +31,18 @@ void runtime::init(stack *st)
     object::functionPrototype = makeEmptyObject();
     (*object::functionPrototype)["prototype"_n] = object::objectPrototype;
 
+    object::promisePrototype = makeEmptyObject();
+    (*object::promisePrototype)["prototype"_n] = object::objectPrototype;
+
     addFunctionL(object::functionPrototype, "callOperator"_n, {
         return (*thisObj)(nullptr, std::move(args), st);
+    });
+
+    addFunctionL(object::functionPrototype, "call"_n, {
+        argsConvertibleGuard<nullptr_t>(args);
+        auto thisArg = args[0];
+        args.erase(args.begin());
+        return (*thisObj)(thisArg, std::move(args), st);
     });
 
     insertObject("true"_n, true)->setConst();
@@ -43,7 +54,7 @@ void runtime::init(stack *st)
     insertObject("getStack"_n, getStack);
 
     object::objectPtr Function = insertObject("Function"_n, nullptr);
-    (*Function)["prototype"_n] = object::functionPrototype;
+    (*Function)["classPrototype"_n] = object::functionPrototype;
 
     operators::init(st);
     Object::init(st);
@@ -54,10 +65,14 @@ void runtime::init(stack *st)
     consoleObj::init(st);
     File::init(st);
     Class::init(st);
+    Promise::init(st);
+    Time::init(st);
 }
 
 void runtime::fini(stack *st)
 {
+    while (!object::objectPromise::loopEmpty())
+        object::objectPromise::loop();
     object::setGlobalStack(nullptr);
     st->clear();
 }
