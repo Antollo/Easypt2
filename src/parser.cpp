@@ -1,7 +1,8 @@
+#error "deprecated"
+
 #include "parser.h"
 #include "statement.h"
 #include <queue>
-//#include "console.h"
 
 template <class T>
 inline void guard(const std::stack<T> &s, std::string message = "something is wrong"s)

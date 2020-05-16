@@ -35,6 +35,8 @@ public:
         writeLineError("\033[91m\033[1m"s, now() + " ", args..., "\033[0m"s);
     }
 
+    static void stackTrace();
+
     template <class T>
     static inline void controlSequence(const T& code)
     {

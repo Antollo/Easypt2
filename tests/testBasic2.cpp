@@ -2,7 +2,7 @@
 #include "core.h"
 #include "console.h"
 #include "runtime.h"
-#include "statement.h"
+#include "Node.h"
 #include "defines.h"
 
 inline bool isFlag(std::string a, std::string f)
@@ -23,11 +23,11 @@ constructor
 _g
 _g
 _g
+destructor_g
 a
 0 1
 2 1
 4 1
-destructor_g
 )"s == console::getOutput([&argc, &argv]() {
                    stack globalStack;
                    runtime::init(&globalStack);

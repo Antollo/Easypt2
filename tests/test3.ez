@@ -1,3 +1,4 @@
+try
 {
     throw "Exception";
 } catch {
@@ -11,7 +12,7 @@ class Myclass {
     },
     writeSth: function { console.writeLine(this.sth); },
     destructor: function { console.log("destructor"); }
-}
+};
 
 {
     let m = Myclass(12);
@@ -25,7 +26,7 @@ class Myclass {
 
 let file = File();
 file.open("test3.ez");
-let tr = transpile(file.readBytes(file.size()));
+//let tr = transpile(file.readBytes(file.size()));
 
 let x = function { console.debug(args[0]); };
 x(5);
@@ -39,12 +40,12 @@ let p3 = Promise(function { console.log(3); });
 let p4 = Promise(function { console.log(4); });
 let p5 = Promise(function { console.log(5); });
 
-console.log(0);
-Object.condition = 3;
-Timeout(7005).then(function { console.log(75); Object.condition = "conditional"; });
+console.log("start");
+Object.condition = "one";
+Timeout(7005).then(function { console.log(75); Object.condition = "two"; });
 Timeout(20).then(function { console.log(20); });
 
-ConditionalPromise(function { console.log(Object.condition); }, function { return "conditional" == Object.condition; });
+ConditionalPromise(function { console.log(Object.condition); }, function { return "one" == Object.condition; });
 
 console.readAsync().then( function{ console.log(args[0]); });
 console.readAsync().then( function{ console.log(args[0]); });

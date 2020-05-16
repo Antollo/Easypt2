@@ -1,3 +1,5 @@
+#error "deprecated"
+
 #include "token.h"
 #include "nobject.h"
 

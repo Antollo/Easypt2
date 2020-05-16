@@ -105,6 +105,7 @@ objectPtrImpl::~objectPtrImpl()
                     catch (objectException &e)
                     {
                         auto obj = e.getPtr();
+                        console::stackTrace();
                         if (obj->isConvertible<std::string>())
                             console::error(obj->getConverted<std::string>());
                         else
@@ -112,10 +113,12 @@ objectPtrImpl::~objectPtrImpl()
                     }
                     catch (std::exception &e)
                     {
+                        console::stackTrace();
                         console::error((std::string)e.what());
                     }
                     catch (...)
                     {
+                        console::stackTrace();
                         console::error("Unknown error in destructor");
                     }
                     (*_refCount)--;

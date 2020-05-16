@@ -1,3 +1,5 @@
+#error "deprecated"
+
 #ifndef EXPRESSION_H_
 #define EXPRESSION_H_
 

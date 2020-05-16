@@ -1,0 +1,68 @@
+let text = "xd";
+text = text = "b";
+console.log(text, "działa");
+console.error(2137.5);
+let f = function (a, b) {
+    console.log("funkcja", a, b);
+};
+f(7,8);
+parse("console.log(1000);")();
+{
+    let obj = Number();
+    //obj.prototype.destructor = f;
+}
+console.log("f");
+
+let arr = ["a", 7, 4.3, false];
+for (let i = 0; i<arr.length(); i++)
+{
+    console.debug(arr[i]);
+}
+
+let nwd = function {
+    let a = args[0];
+    let b = args[1];
+    while (a != b) {
+        if (a < b)
+            b <- b - a;
+        else
+            a <- a - b;
+    }
+    return a;
+};
+
+let arr = Array();
+let i = 0;
+while(i<1000) {
+    let x;
+    arr.insert(0, x);
+    i++;
+}
+console.warn("Zażółć gęślą jaźń.\n");
+let time = Time.sinceEpoch.asFloatingPoint();
+let x = nwd(144, 20480000);
+// 1170 - old time
+// 580 - new time
+console.log(Time.sinceEpoch.asFloatingPoint() - time);
+
+let u = {a:7, b:8};
+console.log(u.a);
+
+class Myclass {
+    constructor: function {
+        this.sth = args[0];
+        console.writeLine("constructor");
+    },
+    writeSth: function { console.writeLine(this.sth); },
+    destructor: function { console.writeLine("destructor" + this.sth); }
+};
+
+{
+    let m <- Myclass(12);
+    m.writeSth();
+    m["sth"] = "_g";
+    console.writeLine(m["sth"]);
+    console.writeLine(m.sth);
+    //console.writeLine(m.getId());
+    m.writeSth();
+}

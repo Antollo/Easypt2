@@ -1,23 +1,30 @@
-include_directories(${CMAKE_SOURCE_DIR}/src)
-#file(GLOB_RECURSE SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
-#list(REMOVE_ITEM SRC "${CMAKE_SOURCE_DIR}/src/main.cpp")
+include_directories(../src)
+include_directories(../src/parser)
 
-set(SRC ${CMAKE_SOURCE_DIR}/src/console.cpp ${CMAKE_SOURCE_DIR}/src/core.cpp ${CMAKE_SOURCE_DIR}/src/name.cpp
-${CMAKE_SOURCE_DIR}/src/nobject.cpp ${CMAKE_SOURCE_DIR}/src/number.cpp ${CMAKE_SOURCE_DIR}/src/osDependent.cpp
-${CMAKE_SOURCE_DIR}/src/parser.cpp ${CMAKE_SOURCE_DIR}/src/runtime.cpp ${CMAKE_SOURCE_DIR}/src/stack.cpp
-${CMAKE_SOURCE_DIR}/src/statement.cpp ${CMAKE_SOURCE_DIR}/src/token.cpp ${CMAKE_SOURCE_DIR}/src/objectPtrImpl.cpp
-${CMAKE_SOURCE_DIR}/src/file.cpp ${CMAKE_SOURCE_DIR}/src/library/consoleObj.cpp ${CMAKE_SOURCE_DIR}/src/library/operators.cpp
-${CMAKE_SOURCE_DIR}/src/library/Object.cpp ${CMAKE_SOURCE_DIR}/src/library/Array.cpp ${CMAKE_SOURCE_DIR}/src/library/File.cpp
-${CMAKE_SOURCE_DIR}/src/library/String.cpp ${CMAKE_SOURCE_DIR}/src/library/Number.cpp ${CMAKE_SOURCE_DIR}/src/library/Boolean.cpp
-${CMAKE_SOURCE_DIR}/src/library/Class.cpp ${CMAKE_SOURCE_DIR}/src/library/Promise.cpp ${CMAKE_SOURCE_DIR}/src/library/Time.cpp)
+set_source_files_properties(../src/parser/gram.c PROPERTIES LANGUAGE CXX)
+set_source_files_properties(../src/parser/lex.yy.c PROPERTIES LANGUAGE CXX)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    include_directories(SYSTEM parser)
+endif ()
+
+set(SRC ../src/console.cpp ../src/core.cpp ../src/name.cpp
+../src/nobject.cpp ../src/number.cpp ../src/osDependent.cpp
+../src/runtime.cpp ../src/stack.cpp ../src/objectPtrImpl.cpp
+../src/file.cpp ../src/library/consoleObj.cpp ../src/library/operators.cpp
+../src/library/Object.cpp ../src/library/Array.cpp ../src/library/File.cpp
+../src/library/String.cpp ../src/library/Number.cpp ../src/library/Boolean.cpp
+../src/library/Class.cpp ../src/library/Promise.cpp ../src/library/Time.cpp
+../src/parser/gram.c ../src/parser/lex.yy.c ../src/parser/gramUtility.cpp 
+../src/parser/treeParser.cpp ../src/parser/Node.cpp)
 
 add_executable (testUtils testUtils.cpp ${SRC})
 add_test(Utils testUtils)
 
-add_executable (testDummyExpressions testDummyExpressions.cpp ${SRC})
-add_test(DummyExpressions testDummyExpressions)
+#add_executable (testDummyExpressions testDummyExpressions.cpp ${SRC})
+#add_test(DummyExpressions testDummyExpressions)
 
-add_executable (testNumbers testNumbers.cpp ${CMAKE_SOURCE_DIR}/src/console.cpp ${CMAKE_SOURCE_DIR}/src/osDependent.cpp)
+add_executable (testNumbers testNumbers.cpp ${SRC})
 add_test(Numbers testNumbers)
 
 add_executable (testConversions testConversions.cpp ${SRC})

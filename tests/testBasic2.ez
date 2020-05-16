@@ -22,7 +22,7 @@ if(!b.good) {
 
 let c = "x";
 let x = json {
-    c:"a";
+    c:"a"
 };
 
 class Myclass {
@@ -32,7 +32,7 @@ class Myclass {
     },
     writeSth: function { console.writeLine(this.sth); },
     destructor: function { console.writeLine("destructor" + this.sth); }
-}
+};
 
 {
     let m <- Myclass(12);
@@ -56,9 +56,9 @@ let nwd = function {
     let b = args[1];
     while (a != b) {
         if (a < b)
-            b = b - a;
-        if (a > b)
-            a = a - b;
+            b <- b - a;
+        else
+            a <- a - b;
     }
     return a;
 };
@@ -71,6 +71,9 @@ while(i<1000) {
     i++;
 }
 let time = Time.sinceEpoch.asFloatingPoint();
-let x = nwd(144, 2048000);
+let x = nwd(144, 20480000);
+// 1170 - old time
+// 920 - new time
+// 570 - with "<-" and "else"
 //console.log(Time.sinceEpoch.asFloatingPoint() - time);
 //console.log(x);

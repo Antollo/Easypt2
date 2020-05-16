@@ -3,7 +3,8 @@
 
 #pragma warning(disable : 4100)
 
-#include "statement.h"
+//#include "statement.h"
+#include "Node.h"
 #include "nobject.h"
 #include "runtime.h"
 #include "common.h"

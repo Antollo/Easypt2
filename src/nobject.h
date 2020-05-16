@@ -11,11 +11,15 @@
 #include "name.h"
 #include "stack.h"
 #include "number.h"
-#include "statement.h"
+//#include "statement.h"
+#include "Node.h"
 #include "promise.h"
 #include "file.h"
 
-template<class T> struct always_false : std::false_type {};
+template <class T>
+struct always_false : std::false_type
+{
+};
 
 #define makeObject(...) objectPtrImpl(new object{__VA_ARGS__})
 #define makeEmptyObject(...) objectPtrImpl(new object{nullptr})
@@ -23,7 +27,6 @@ template<class T> struct always_false : std::false_type {};
 template <class T>
 using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
-//object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st);
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl> &&args, stack *st);
 class objectMemory;
 
@@ -36,8 +39,11 @@ public:
     using propertiesType = std::unordered_map<name, objectPtr>;
     using objectPromise = promise<objectPtr>;
 
-    //void *operator new(size_t size);
-    //void operator delete(void *p);
+    using functionType = Node;
+    static functionType makeFunction()
+    {
+        return Node(0, "root");
+    }
 
     template <class T>
     explicit object(const T &t) : _value(std::move(t)), _isConst(false)
@@ -54,7 +60,7 @@ public:
             _properties["prototype"_n] = booleanPrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, objectPromise::promisePtr>)
             _properties["prototype"_n] = promisePrototype;
-        else if constexpr (std::is_same_v<std::decay_t<T>, compoundStatement> || std::is_same_v<std::decay_t<T>, nativeFunctionType>)
+        else if constexpr (std::is_same_v<std::decay_t<T>, functionType> || std::is_same_v<std::decay_t<T>, nativeFunctionType>)
         {
             if constexpr (std::is_same_v<std::decay_t<T>, nativeFunctionType>)
             {
@@ -115,8 +121,8 @@ public:
     template <class T>
     bool isConvertible() const
     {
-        if constexpr(std::is_same_v<remove_cref_t<T>, bool>)
-            if (isOfType<nullptr_t>() || isOfType<compoundStatement>() || isOfType<nativeFunctionType>())
+        if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
+            if (isOfType<nullptr_t>() || isOfType<functionType>() || isOfType<nativeFunctionType>())
                 return true;
         if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
         {
@@ -144,7 +150,8 @@ public:
                     return static_cast<number>(value.size());
                 else if constexpr (std::is_same_v<A, bool>)
                     return static_cast<number>(value);
-                else return static_cast<number>(0);
+                else
+                    return static_cast<number>(0);
             }
 
             else if constexpr (std::is_same_v<remove_cref_t<T>, std::string>)
@@ -155,7 +162,8 @@ public:
                     return "["s + std::to_string(value.size()) + "]"s;
                 else if constexpr (std::is_same_v<A, bool>)
                     return value ? "true"s : "false"s;
-                else return ""s;
+                else
+                    return ""s;
             }
 
             else if constexpr (std::is_same_v<remove_cref_t<T>, arrayType>)
@@ -166,7 +174,8 @@ public:
                     return arrayType{makeObject(value)};
                 else if constexpr (std::is_same_v<A, bool>)
                     return arrayType{makeObject(value)};
-                else return arrayType{};
+                else
+                    return arrayType{};
             }
 
             else if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
@@ -179,13 +188,16 @@ public:
                     return static_cast<bool>(value.size());
                 else if constexpr (std::is_same_v<A, nullptr_t>)
                     return !(hasOwnProperty("prototype"_n) && _properties.size() == 1);
-                else if constexpr (std::is_same_v<A, compoundStatement> || std::is_same_v<A, nativeFunctionType>)
+                else if constexpr (std::is_same_v<A, functionType> || std::is_same_v<A, nativeFunctionType>)
                     return true;
-                else return false;
+                else
+                    return false;
             }
-            
-            else throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
-        }, _value);
+
+            else
+                throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
+        },
+                          _value);
 
         /*if (isOfType<T>())
             return get<const remove_cref_t<T>>();
@@ -252,7 +264,7 @@ public:
 private:
     friend class objectPtrImpl;
     //std::any _value;
-    std::variant<nullptr_t, bool, number, std::string, arrayType, objectPromise::promisePtr, compoundStatement, nativeFunctionType, file> _value;
+    std::variant<nullptr_t, bool, number, std::string, arrayType, objectPromise::promisePtr, functionType, nativeFunctionType, file> _value;
     propertiesType _properties;
     bool _isConst;
     const objectPtrImpl *_thisPtr;
@@ -268,26 +280,19 @@ private:
     }
 };
 
-/*class objectMemory
-{
-private:
-    static std::vector<std::array<std::byte, sizeof(object)>> memoryBlock;
-    static std::vector<void*> freeElements;
-    friend class object;
-};*/
-
-class objectException : public std::exception,
-                        object::objectPtr
+class objectException : public std::exception
 {
 public:
-    objectException(object::objectPtr &&obj) : object::objectPtr(obj) {}
-    objectException(const object::objectPtr &obj) : object::objectPtr(obj) {}
+    objectException(object::objectPtr &&obj) : ptr(obj) {}
+    objectException(const object::objectPtr &obj) : ptr(obj) {}
 
     const char *what() const noexcept override { return "object exception"; }
     object::objectPtr &getPtr()
     {
-        return dynamic_cast<object::objectPtr &>(*this);
+        return ptr;
     }
+private:
+    object::objectPtr ptr;
 };
 
 #endif

@@ -114,7 +114,7 @@ static void sigaction_segv(int signal, siginfo_t *si, void *arg)
 
 void initialize()
 {
-    std::ios_base::sync_with_stdio(false);
+    //std::ios_base::sync_with_stdio(false);
     initializeThread();
 #if defined(_WIN32)
     setlocale(LC_ALL, ".65001");

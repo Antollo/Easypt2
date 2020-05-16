@@ -15,9 +15,9 @@ build_script:
 test_script:
     - ps: ctest --output-on-failure
 artifacts:
-    - path: '**\*.sh'
+    - path: 'packages\**\*.sh'
       name: linux_installer
       type: zip
-    - path: '**\*.exe'
+    - path: 'packages\**\*.exe'
       name: windows_installer
       type: zip

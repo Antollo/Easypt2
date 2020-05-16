@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.hpp": "cpp",
+        "*.ez": "easypt",
         "codecvt": "cpp",
         "algorithm": "cpp",
         "array": "cpp",
@@ -86,7 +87,8 @@
         "*.ipp": "cpp",
         "fstream": "cpp",
         "queue": "cpp",
-        "concepts": "cpp"
+        "concepts": "cpp",
+        "cassert": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,

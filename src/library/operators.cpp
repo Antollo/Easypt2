@@ -2,6 +2,7 @@
 
 void operators::init(stack *st)
 {
+    /*
     addOperatorL("+"_n, {
         object::objectPtr &a = args[0].resolve(st);
         object::objectPtr &b = args[1].resolve(st);
@@ -227,10 +228,10 @@ void operators::init(stack *st)
         return args[0].getName();
     });
     addOperatorL(":"_n, {
-        /*if (args[0].getType() == token::tokenType::StringLiteral)
-        {
-            console::log((int)args[0].getType());
-        }*/
+        //if (args[0].getType() == token::tokenType::StringLiteral)
+        //{
+        //    console::log((int)args[0].getType());
+        //}
         if (args[0].getType() == token::tokenType::Name)
             return st->insert(args[0].getName(), args[1].resolve(st));
         else
@@ -283,5 +284,5 @@ void operators::init(stack *st)
             compoundStatement::get(args[1].getCompoundStatementIndex())(localStack, memory);
         }
         return makeEmptyObject();
-    });
+    });*/
 }

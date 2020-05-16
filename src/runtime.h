@@ -1,7 +1,6 @@
 #ifndef RUNTIME_H_
 #define RUNTIME_H_
 
-#include "token.h"
 
 class runtime
 {

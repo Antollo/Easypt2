@@ -1,9 +1,10 @@
 #include "core.h"
 #include "console.h"
 #include "runtime.h"
-#include "statement.h"
 #include "defines.h"
 #include "osDependent.h"
+
+#include "treeParser.h"
 
 inline bool isFlag(std::string a, std::string f)
 {
@@ -15,7 +16,7 @@ int main(int argc, char **argv)
     stack globalStack;
     try
     {
-    initialize();
+        initialize();
         runtime::init(&globalStack);
 
         auto st = &globalStack;
@@ -48,6 +49,7 @@ int main(int argc, char **argv)
     catch (objectException &e)
     {
         auto obj = e.getPtr();
+        console::stackTrace();
         if (obj->isConvertible<std::string>())
             console::error(obj->getConverted<std::string>());
         else
@@ -56,6 +58,7 @@ int main(int argc, char **argv)
     }
     catch (std::exception &e)
     {
+        console::stackTrace();
         console::error((std::string)e.what());
         runtime::fini(&globalStack);
     }

@@ -1,3 +1,4 @@
+#error "deprecated"
 #include "utils.h"
 #include "statement.h"
 

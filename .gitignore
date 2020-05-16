@@ -1,6 +1,12 @@
 #*
 #!/**/
 #!*.*
+gram.c
+gram.h
+lex.yy.c
+LLnextgen
+flex
+*.zip
 *.tlog
 core.*
 *.js

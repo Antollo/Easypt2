@@ -15,7 +15,7 @@ name::name(std::string &&textName)
         throw std::runtime_error("terrible parser error");
     if (nameToCodeMap.count(textName) == 0)
     {
-        code = nameToCodeMap.size();
+        code = nameToCodeMap.size() + 1;
         nameToCodeMap[textName] = code;
         codeToNameMap[code] = textName;
     }
@@ -32,7 +32,7 @@ name::name(const std::string &textName)
         throw std::runtime_error("terrible parser error");
     if (nameToCodeMap.count(textName) == 0)
     {
-        code = nameToCodeMap.size();
+        code = nameToCodeMap.size() + 1;
         nameToCodeMap[textName] = code;
         codeToNameMap[code] = textName;
     }

@@ -1,4 +1,5 @@
-#include "statement.h"
+//#include "statement.h"
+#include "Node.h"
 #include "nobject.h"
 #include "runtime.h"
 #include "common.h"
@@ -49,8 +50,7 @@ void runtime::init(stack *st)
     insertObject("false"_n, false)->setConst();
 
     insertObject("import"_n, import);
-    insertObject("parse"_n, parse);
-    insertObject("transpile"_n, transpile);
+    insertObject("parse"_n, ez_parse);
     insertObject("getStack"_n, getStack);
 
     object::objectPtr Function = insertObject("Function"_n, nullptr);

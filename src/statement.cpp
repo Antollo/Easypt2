@@ -1,3 +1,5 @@
+#error "deprecated"
+
 #include "stack.h"
 #include "defines.h"
 #include "statement.h"
@@ -277,7 +279,7 @@ void compoundStatement::operator()(stack &localStack, executionMemory &memory)
                         auto name = t[0].getName();
                         t.erase(t.begin(), t.begin() + 2);
                         auto arrObj = cp(&localStack, memory).resolve(&localStack);
-                        object::arrayType &arr = arrObj->getOwnPropertyNames();
+                        object::arrayType arr = arrObj->getOwnPropertyNames();
                         stack loopStack(&localStack);
                         loopStack.insert(name, nullptr);
                         for (const auto &el : arr)

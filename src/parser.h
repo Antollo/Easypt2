@@ -1,3 +1,5 @@
+#error "deprecated"
+
 #ifndef PARSER_H_
 #define PARSER_H_
 

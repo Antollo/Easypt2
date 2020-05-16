@@ -1,6 +1,7 @@
 #include <chrono>
 #include <ctime>
 #include "console.h"
+#include "Node.h"
 
 std::string console::now()
 {
@@ -10,4 +11,9 @@ std::string console::now()
     std::string buffer(64, ' ');
     buffer.resize(std::strftime(&buffer[0], buffer.size(), "%d-%m-%Y %H:%M:%S", timeinfo));
     return buffer;
+}
+
+void console::stackTrace()
+{
+    Node::printStackTrace();
 }

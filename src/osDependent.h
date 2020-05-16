@@ -11,8 +11,9 @@
 
 #if __GNUC__ == 7
 #include <experimental/filesystem>
-namespace std{
-    namespace filesystem = std::experimental::filesystem;
+namespace std
+{
+namespace filesystem = std::experimental::filesystem;
 };
 #else
 #include <filesystem>
@@ -43,7 +44,7 @@ using libraryType = HMODULE;
 #include <unistd.h>
 #include <linux/limits.h>
 #include <dlfcn.h>
-using libraryType = void*;
+using libraryType = void *;
 
 #include <cstdio>
 #include <cstring>
@@ -62,9 +63,10 @@ class dynamicLibrary
 {
 public:
     dynamicLibrary();
-    void loadLibrary(const std::string& fileName);
-    void* getFunction(const std::string& functionName);
+    void loadLibrary(const std::string &fileName);
+    void *getFunction(const std::string &functionName);
     ~dynamicLibrary();
+
 private:
     libraryType library;
 };
@@ -72,6 +74,24 @@ private:
 #if defined(_WIN32)
 std::string utf8_encode(const std::wstring &wstr);
 std::wstring utf8_decode(const std::string &str);
+class useStdio
+{
+public:
+    useStdio()
+    {
+        _setmode(_fileno(stdout), _O_TEXT);
+        _setmode(_fileno(stdin), _O_TEXT);
+    }
+    ~useStdio()
+    {
+        _setmode(_fileno(stdout), _O_WTEXT);
+        _setmode(_fileno(stdin), _O_WTEXT);
+    }
+};
+#else
+class useStdio
+{
+};
 #endif
 
 #endif // OSDEPENDENT_H

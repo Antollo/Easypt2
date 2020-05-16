@@ -1,4 +1,3 @@
-#define addOperatorL(NAME, ...) expressionStatement::addOperator(NAME, static_cast<token (*)(stack *st, std::vector<token> &)>([](stack *st, std::vector<token> & args) -> token __VA_ARGS__))
 #define insertObject(NAME, ...) st->insert(NAME, makeObject(__VA_ARGS__))
 #define insertFunctionL(NAME, ...) st->insert(NAME, makeObject(static_cast<object::nativeFunctionType>([](object::objectPtr thisObj, object::arrayType && args, stack * st) -> object::objectPtr __VA_ARGS__)))
 #define addFunctionL(OBJECTPTR, NAME, ...) OBJECTPTR->addProperty(NAME, makeObject(static_cast<object::nativeFunctionType>([](object::objectPtr thisObj, object::arrayType && args, stack * st) -> object::objectPtr __VA_ARGS__)))

@@ -2,7 +2,7 @@
 #include "core.h"
 #include "console.h"
 #include "runtime.h"
-#include "statement.h"
+#include "Node.h"
 #include "defines.h"
 
 inline bool isFlag(std::string a, std::string f)
