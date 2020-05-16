@@ -159,15 +159,7 @@ void initializeThread()
 #endif
 }
 
-/*struct _
-{
-    _()
-    {
-        initialize();
-    }
-} _;*/
-
-dynamicLibrary::dynamicLibrary()
+/*dynamicLibrary::dynamicLibrary()
 {
 #if defined(_WIN32)
     library = nullptr;
@@ -239,4 +231,4 @@ dynamicLibrary::~dynamicLibrary()
         library = nullptr;
     }
 #endif
-}
+}*/

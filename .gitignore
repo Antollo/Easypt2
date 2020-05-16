@@ -1,6 +1,7 @@
 #*
 #!/**/
 #!*.*
+*.deb
 gram.c
 gram.h
 lex.yy.c
