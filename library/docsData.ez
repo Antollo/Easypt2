@@ -1,38 +1,34 @@
 argc @description@
 "Number of the interpreter's command-line arguments.";
 argc @example@
-"// easypt2 -file f.ez
+"// easypt -file f.ez
 // f.ez:
-let i = 0;
-while(i < argc) {
-    console.writeLine(argv[i]);
-    i++;
-}";
+for (let i = 0; i < argc; i++)
+    console.writeLine(argv[i]);";
 
 argv @description@
 "Array of the interpreter's command-line arguments.";
 argv @example@
-"// easypt2 -file f.ez
+"// easypt -file f.ez
 // f.ez:
-let i = 0;
-while(i < argc) {
-    console.writeLine(argv[i]);
-    i++;
-}";
+for (let i = 0; i < argc; i++)
+    console.writeLine(argv[i]);";
 
 import @parameters@
 "file /*String or File*/";
 import @returns@
 "/*Object*/";
 import @description@
-"Imports source code from another *.ez file (source is transpiled, parsed, and called, return 
-value is returned as import return value). First and only parameter is filename (file is 
-searched in current working directory and then in interpreter directory) or opened File object.";
+"Imports source code from another *.ez file (source parsed, and called, 
+return value is returned as import return value). First and only parameter 
+is filename (file is searched in current working directory and then in 
+interpreter directory) or opened `File` object.";
 import @example@
 "let file = File();
 file.create(\"module.ez\");
-file.write(\"let x = 7; let y = 3; return x*y+y;\");
-let result = import(file);
+file.write(\"let x = 7; let y = 3; return x*y + y;\");
+file.close();
+let result = import(\"module.ez\");
 file.remove();
 console.write(result);";
 import @expectedOutput@ "24";
@@ -43,23 +39,33 @@ parse @returns@
 "/*Function*/";
 parse @description@
 "Parses code from string to Function object. It is dangerous (it could parse malicious 
-code) and slow function.";
+code) function.";
 parse @example@
-"let fun = parse(\"let x = 7; let y = 3; return x*y+y;\");
+"let fun = parse(\"
+    let x = 7;
+    let y = 3;
+    return x*y + y;\");
 let result = fun();
 console.write(result);";
 parse @expectedOutput@ "24";
 
-transpile @parameters@
+execute @parameters@
 "code /*String*/";
-transpile @returns@
-"/*String*/";
-transpile @description@
-"Transpiles code to simplified form. Simplified form is faster to parse.";
-transpile @example@
-"console.write(transpile(\"if(true) { console.log(true); }\"))";
-transpile @expectedOutput@
-"if;true; { console.log(true); }\n";
+execute @returns@
+"/*Object*/";
+execute @description@
+"Parses code from string and executes it (using current stack - variable declared in
+string is accessible outside the execute function). It is dangerous (it could execute
+malicious code) function.";
+execute @example@
+"let result = execute(\"
+    let x = 7;
+    let y = 3;
+    let z = x*y + y;
+    return z; 
+\");
+console.write(result, \" \", z);";
+execute @expectedOutput@ "24 24";
 
 console @description@
 "`console` object provides standard input and output operations.";
@@ -71,166 +77,811 @@ if (1+3 != 4) {
 console @expectedOutput@
 "1+3 is 4";
 
+console.newLine @description@
+"Writes the new line character or characters sequence
+(platform dependent) to standard output stream.";
+console.newLine @example@
+"console.newLine();";
+
+console.write @parameters@
+"/*any number of convertible to String parameters*/";
+console.write @returns@
+"console";
+console.write @description@
+"Writes arguments to standard output stream.";
+console.write @example@
+"console.write(\"seven: \", 7);";
+console.write @expectedOutput@ "seven: 7";
+
+console.writeLine @parameters@
+"/*any number of convertible to String parameters*/";
+console.writeLine @returns@
+"console";
+console.writeLine @description@
+"Writes arguments appended with the new line character or 
+characters sequence (platform dependent) to standard 
+output stream.";
+console.writeLine @example@
+"console.writeLine(\"seven: \", 7);";
+
+console.debug @parameters@
+"/*any number of convertible to String parameters*/";
+console.debug @returns@
+"console";
+console.debug @description@
+"Writes arguments to standard output stream
+(with date and time, marked in violet).";
+console.debug @example@
+"let a = 7;
+console.debug(\"value of a : \", a);";
+
+console.log @parameters@
+"/*any number of convertible to String parameters*/";
+console.log @returns@
+"console";
+console.log @description@
+"Writes arguments to standard output stream
+(with date and time, marked in blue).";
+console.log @example@
+"let a = 7;
+console.log(\"value of a : \", a);";
+
+console.warn @parameters@
+"/*any number of convertible to String parameters*/";
+console.warn @returns@
+"console";
+console.warn @description@
+"Writes arguments to standard output stream
+(with date and time, marked in yellow).";
+console.warn @example@
+"let input = console.read();
+if (a != 7)
+    console.warn(\"value of input is not 7\");";
+
+console.error @parameters@
+"/*any number of convertible to String parameters*/";
+console.error @returns@
+"console";
+console.error @description@
+"Writes arguments to standard output stream
+(with date and time, marked in yellow).";
+console.error @example@
+"try {
+    throw \"error\";
+} catch {
+    console.error(exception);
+}";
+
+console.read @returns@
+"/*String*/";
+console.read @description@
+"Reads word terminated by whitespace from standard input stream.";
+console.read @example@
+"console.writeLine(\"What is your name?\");
+let name = console.read();
+console.writeLine(\"Welcome \", name);";
+
+console.readLine @returns@
+"/*String*/";
+console.readLine @description@
+"Reads string terminated by new line character 
+from standard input stream.";
+console.readLine @example@
+"console.writeLine(\"Who is favourite writer?\");
+let writer = console.readLine();
+console.writeLine(\"I like books written by \", writer, \" too.\");";
+
+
+console.controlSequence @returns@
+"/*String*/";
+console.controlSequence @description@
+"Writes ANSI escape code starting with `ESC` and `[` 
+(CSI sequence) to the standard output stream.";
+console.controlSequence @example@
+"console.controlSequence(\"7m\").write(\"special\").controlSequence(\"0m\");";
+
+console.getOutput @parameters@
+"/*Function*/";
+console.getOutput @returns@
+"/*String*/";
+console.getOutput @description@
+"Calls provided function and intercet output written 
+by that function. Useful for testing.";
+console.getOutput @example@
+"function f {
+    console.write(\"abc\");
+};
+let output = console.getOutput(f);
+console.write(output);";
+console.getOutput @expectedOutput@
+"abc";
+
 Array @description@
 "Array lists provides methods for manipulating arrays (list-like
 objects). Array elements are indexed with non-negative integers.";
 Array @example@
-"let arr = Array[36.6, \"Harry\", true];
+"let arr = [36.6, \"Harry\", true];
 arr.forEach(function {
     console.write(args[0], \" is element with index \", args[1], \", \");
 });";
 Array @expectedOutput@
 "36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, ";
 
-Array.forEach @parameters@
+Array.classPrototype.forEach @parameters@
 "calback /*Function*/";
-Array.forEach @description@
+Array.classPrototype.forEach @description@
 "Executes a callback for each array element. Arguments of callback are:
 element, index of element, array.";
-Array.forEach @example@
-"let arr = Array[36.6, \"Harry\", true];
+Array.classPrototype.forEach @example@
+"let arr = [36.6, \"Harry\", true];
 arr.forEach(function {
     console.write(args[0], \" is element with index \", args[1], \", \");
 });";
-Array.forEach @expectedOutput@
+Array.classPrototype.forEach @expectedOutput@
 "36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, ";
 
-Array.length @returns@
+Array.classPrototype.length @returns@
 "/*Number*/";
-Array.length @description@
+Array.classPrototype.length @description@
 "Returns the number of elements in that array.";
-Array.length @example@
-"let arr = Array[36.6, \"Harry\", true];
+Array.classPrototype.length @example@
+"let arr = [36.6, \"Harry\", true];
 console.write(arr.length());";
-Array.forEach @expectedOutput@ "3";
+Array.classPrototype.length @expectedOutput@ "3";
 
-Array.insert @parameters@
+Array.classPrototype.insert @parameters@
 "n /*Number*/, element";
-Array.insert @description@
+Array.classPrototype.insert @description@
 "Inserts new element before n-th element.";
-Array.insert @example@
-"let arr = Array[36.6, \"Harry\", true];
+Array.classPrototype.insert @example@
+"let arr = [36.6, \"Harry\", true];
 arr.insert(1, \"Dirty \");
 console.write(arr[1], arr[2]);";
-Array.insert @expectedOutput@
+Array.classPrototype.insert @expectedOutput@
 "Dirty Harry";
 
-Array.insertFrom @parameters@
+Array.classPrototype.insertFrom @parameters@
 "n /*Number*/, array /*Array*/, [position = 0 /*Number*/], [length = array.length() /*Number*/]";
-Array.insertFrom @description@
-"Inserts new elements before n-th element from subarray of second
-argument starting at given position ad of given length.";
-Array.insertFrom @example@
-"let arr = Array[36.6, \"Harry\", true];
-arr.insertFrom(3, Array[1, 2, 3, 4, 5, 6], 2, 4);
+Array.classPrototype.insertFrom @description@
+"Inserts to array new elements before n-th element from subarray of second
+argument starting at given position and of given length.";
+Array.classPrototype.insertFrom @example@
+"let arr = [36.6, \"Harry\", true];
+arr.insertFrom(3, [1, 2, 3, 4, 5, 6], 2, 4);
 console.write(arr[3], arr[4], arr[5], arr[6]);";
-Array.insertFrom @expectedOutput@
+Array.classPrototype.insertFrom @expectedOutput@
 "3456";
 
-Array.erase @parameters@
+Array.classPrototype.erase @parameters@
 "position /*Number*/, length /*Number*/";
-Array.erase @description@
+Array.classPrototype.erase @description@
 "Erases elements from range [position, position + length).";
-Array.erase @example@
-"let arr = Array[1, 2, 3];
+Array.classPrototype.erase @example@
+"let arr = [1, 2, 3];
 arr.erase(1, 1);
 console.write(arr[0], arr[1]);";
-Array.erase @expectedOutput@
+Array.classPrototype.erase @expectedOutput@
 "13";
 
-Array.subarray @parameters@
+Array.classPrototype.subarray @parameters@
 "position /*Number*/, length /*Number*/";
-Array.subarray @returns@
+Array.classPrototype.subarray @returns@
 "/*Array*/";
-Array.subarray @description@
+Array.classPrototype.subarray @description@
 "Creates subarray of given length starting at given position.";
-Array.subarray @example@
-"let arr = Array[1, 2, 3];
+Array.classPrototype.subarray @example@
+"let arr = [1, 2, 3];
 let subarr = arr.subarray(1, 1);
 console.write(subarr[0]);";
-Array.subarray @expectedOutput@
+Array.classPrototype.subarray @expectedOutput@
 "2";
 
-Array.prototype.readOperator @parameters@
+Array.classPrototype.readOperator @parameters@
 "position /*Number*/";
-Array.prototype.readOperator @description@
+Array.classPrototype.readOperator @description@
 "Read operator (arrayInstance[n]) returns element at given position.
 Not to be confused with static method Array.readOperator.";
-Array.prototype.readOperator @example@
-"let arr = Array[36.6, \"Harry\", true];
+Array.classPrototype.readOperator @example@
+"let arr = [36.6, \"Harry\", true];
 console.write(arr[1]);";
-Array.prototype.readOperator @expectedOutput@
+Array.classPrototype.readOperator @expectedOutput@
 "Harry";
 
 Array.readOperator @parameters@
 "...";
 Array.readOperator @description@
-"Static read operator (Array[1, \"A\"]) constructs new Array.
-Not to be confused with method Array.prototype.readOperator.";
+"Static read operator ([1, \"A\"]) constructs new Array.
+Not to be confused with method Array.classPrototype.readOperator.";
 Array.readOperator @example@
-"let arr = Array[36.6, \"Harry\", true];
+"let arr = [36.6, \"Harry\", true];
 console.write(arr[1]);";
 Array.readOperator @expectedOutput@
 "Harry";
 
-Object.getId @returns@
+Object.classPrototype.getId @returns@
 "/*String*/";
-Object.getId @description@
+Object.classPrototype.getId @description@
 "Returns array of bytes unique for each Object instance.
-It may consist of non printable characters.";
-Object.getId @example@
+It may contain non printable characters. It can be equal
+to id of destructed object.";
+Object.classPrototype.getId @example@
 "console.writeLine(1.getId());
 console.writeLine(\"ABC\".getId());
 console.writeLine(Object().getId());";
 
-Object.addProperty @parameters@
+Object.classPrototype.addProperty @parameters@
 "key /*String*/, value";
-Object.addProperty @description@
+Object.classPrototype.addProperty @description@
 "Adds new property to object.";
-Object.addProperty @example@
+Object.classPrototype.addProperty @example@
 "let obj = Object();
 obj.addProperty(\"first\", 1);
 obj.addProperty(\"second\", \"a\");
 console.write(obj.first, \" \", obj.second);";
-Object.addProperty @expectedOutput@
+Object.classPrototype.addProperty @expectedOutput@
 "1 a";
 
-Object.hasOwnProperty @parameters@
+Object.classPrototype.removeProperty @parameters@
+"key /*String*/, value";
+Object.classPrototype.removeProperty @description@
+"Adds new property to object.";
+Object.classPrototype.removeProperty @example@
+"let obj = Object();
+obj.addProperty(\"first\", 1);
+obj.addProperty(\"second\", \"a\");
+obj.removeProperty(\"second\");
+if (obj.hasOwnProperty(\"second\"))
+    console.write(obj.second);
+else
+    console.write(obj.first);";
+Object.classPrototype.removeProperty @expectedOutput@
+"1";
+
+Object.classPrototype.hasOwnProperty @parameters@
 "key /*String*/";
-Object.hasOwnProperty @returns@
+Object.classPrototype.hasOwnProperty @returns@
 "/*Boolean*/";
-Object.hasOwnProperty @description@
+Object.classPrototype.hasOwnProperty @description@
 "Checks whether the object has own property.";
-Object.hasOwnProperty @example@
+Object.classPrototype.hasOwnProperty @example@
 "let obj = Object();
 obj.addProperty(\"first\", 1);
 console.write(obj.hasOwnProperty(\"first\"), \" \", obj.hasOwnProperty(\"second\"));";
-Object.hasOwnProperty @expectedOutput@
+Object.classPrototype.hasOwnProperty @expectedOutput@
 "true false";
 
-Object.getOwnPropertyNames @returns@
+Object.classPrototype.getOwnPropertyNames @returns@
 "/*Array*/";
-Object.getOwnPropertyNames @description@
+Object.classPrototype.getOwnPropertyNames @description@
 "Returns array of all own properties. Order is not specified.
 Possible output for following example is:
 \"secondNumber prototype number thirdNumber\"";
-Object.getOwnPropertyNames @example@
+Object.classPrototype.getOwnPropertyNames @example@
 "let obj = Object();
 obj.number = 21;
 obj[\"secondNumber\"] = 22;
 obj.addProperty(\"thirdNumber\", 1);
 obj.getOwnPropertyNames().forEach(function {
-    console.write(args[0], " ");
+    console.write(args[0], \" \");
 });";
 
-Object.readOperator @parameters@
+Object.classPrototype.readOperator @parameters@
 "key /*String*/";
-Object.readOperator @description@
+Object.classPrototype.readOperator @description@
 "Read operator (string[key]) returns property.";
-Object.readOperator @example@
+Object.classPrototype.readOperator @example@
 "let obj = Object();
 obj.number = 21;
 obj[\"secondNumber\"] = 22;
 console.write(obj[\"number\"], \" \", obj.secondNumber);";
 Object.readOperator @expectedOutput@
 "21 22";
+
+module @description@
+"Object containing information about current source file.";
+module @example@
+"console.writeLine(module.name);";
+
+module.name @description@
+"Path of current source file.";
+module.name @example@
+"console.writeLine(module.name);";
+
+String @description@
+"Represents text as sequence of characters (UTF-8 code units).
+Provides methods for manipulating such sequences. String 
+are indexed with non-negative integers.";
+String @example@
+"console.write(\"a\".getByteAt(0));";
+String @expectedOutput@
+"97";
+
+String.classPrototype.length @returns@
+"/*Number*/";
+String.classPrototype.length @description@
+"Returns the number of bytes in string.";
+String.classPrototype.length @example@
+"console.write(\"abc\".length());";
+String.classPrototype.length @expectedOutput@ "3";
+
+String.classPrototype.insertFrom @parameters@
+"n /*Number*/, string /*String*/, [position = 0 /*Number*/], [length = string.length() /*Number*/]";
+String.classPrototype.insertFrom @description@
+"Inserts bytes to string before n-th byte from substring of second
+argument starting at given position and of given length.";
+String.classPrototype.insertFrom @example@
+"let x = \"xyz\";
+x.insertFrom(1, \"abc\", 1, 2);
+console.write(x);";
+String.classPrototype.insertFrom @expectedOutput@
+"xbcyz";
+
+String.classPrototype.erase @parameters@
+"position /*Number*/, length /*Number*/";
+String.classPrototype.erase @description@
+"Erases bytes from range [position, position + length).";
+String.classPrototype.erase @example@
+"let str = \"abcdefg\";
+str.erase(2, 3);
+console.write(str);";
+String.classPrototype.erase @expectedOutput@
+"abfg";
+
+String.classPrototype.substring @parameters@
+"position /*Number*/, length /*Number*/";
+String.classPrototype.substring @returns@
+"/*String*/";
+String.classPrototype.substring @description@
+"Creates substring of given length starting at given position.";
+String.classPrototype.substring @example@
+"console.write(\"abcde\".substring(1, 2));";
+String.classPrototype.substring @expectedOutput@
+"bc";
+
+String.classPrototype.readOperator @parameters@
+"position /*Number*/";
+String.classPrototype.readOperator @returns@
+"/*String*/";
+String.classPrototype.readOperator @description@
+"Read operator (stringInstance[n]) returns character at given position.";
+String.classPrototype.readOperator @example@
+"console.write(\"Harry\"[1]);";
+String.classPrototype.readOperator @expectedOutput@
+"a";
+
+String.classPrototype.getByteAt @parameters@
+"position /*Number*/";
+String.classPrototype.getByteAt @returns@
+"/*Number*/";
+String.classPrototype.getByteAt @description@
+"Returns character (byte represented by number) at given position.";
+String.classPrototype.getByteAt @example@
+"console.write(\"abcde\".getByteAt(0));";
+String.classPrototype.getByteAt @expectedOutput@
+"97";
+
+String.classPrototype.setByteAt @parameters@
+"position /*Number*/, byte /*Number*/";
+String.classPrototype.setByteAt @description@
+"Sets new value of character (byte at given position).";
+String.classPrototype.setByteAt @example@
+"let x = \"abc\";
+x.setByteAt(0, 98);
+console.write(x);";
+String.classPrototype.setByteAt @expectedOutput@
+"bbc";
+
+String.classPrototype.search @parameters@
+"regex /*String*/";
+String.classPrototype.search @returns@
+"/*Array*/";
+String.classPrototype.search @description@
+"Returns array of object in form (position, length)
+representing first substring that matches regex
+and substrings that match subexpression of this regex.";
+String.classPrototype.search @example@
+"let arr = \"Roses are red.\".search(\"([A-Z]+)([a-z]+)\");
+for (let i = 0; i < arr.length(); i++)
+    console.write(arr[i].position, \" \", arr[i].length, \", \");";
+String.classPrototype.search @expectedOutput@
+"0 5, 0 1, 1 4, ";
+
+String.classPrototype.searchAll @parameters@
+"regex /*String*/";
+String.classPrototype.searchAll @returns@
+"/*Array*/";
+String.classPrototype.searchAll @description@
+"Returns array of object in form (position, length)
+representing all substrings that matches regex.";
+String.classPrototype.searchAll @example@
+"let arr = \"Roses are red.\".searchAll(\"[a-z]+\");
+for (let i = 0; i < arr.length(); i++)
+    console.write(arr[i].position, \" \", arr[i].length, \", \");";
+String.classPrototype.searchAll @expectedOutput@
+"1 4, 6 3, 10 3, ";
+
+Boolean @description@
+"Represents boolean value.";
+Boolean @example@
+"console.write(true && false || false);";
+Boolean @expectedOutput@
+"false";
+
+Number @description@
+"Represents number represented as at least 4 bytes
+integer or at least 8 bytes floating point number,
+implementation should choose appropriate representation
+dynamically.";
+Number @example@
+"console.write(1 + 2 * 3);";
+Number @expectedOutput@
+"7";
+
+Function @description@
+"Represents function.";
+Function @example@
+"function sum (a, b) {
+    return a + b;    
+};
+console.write(sum(1, 3));";
+Function @expectedOutput@
+"4";
+
+Function.classPrototype.call @parameters@
+"caller, ...";
+Function.classPrototype.call @description@
+"Calls function with first argument as caller
+and passes following to this function.";
+Function.classPrototype.call @example@
+"let x = String.classPrototype.substring.call(\"abc\", 1, 1);
+console.write(x);";
+Function.classPrototype.call @expectedOutput@
+"b";
+
+Class @description@
+"Takes part in class creation.";
+Class @example@
+"class MyBaseClass {
+    function constructor {
+        console.write(\"baseConstructor \");
+    },
+    function method {
+        console.write(\"baseMethod \");
+    },
+    function destructor {
+        console.write(\"baseDestructor \");
+    }
+};
+MyBaseClass();
+
+console.write(\"| \");
+
+class MyClass extends MyBaseClass {
+    function constructor {
+        this.super();
+        console.write(\"constructor \");
+    },
+    function method {
+        console.write(\"method \");
+    },
+    function destructor {
+        // TODO: base class destructor calling
+        console.write(\"destructor \");
+    }
+};
+let obj <- MyClass();
+obj.method();
+";
+Class @expectedOutput@
+"baseConstructor baseDestructor | baseConstructor constructor method destructor ";
+
+Time @description@
+"Singleton object that has properties 
+connected with time.";
+Time @example@
+"console.writeLine(Time.sinceEpoch.asFloatingPoint());
+console.writeLine(Time.sinceEpoch.asInteger());";
+
+Time.sinceEpoch @description@
+"Provides methods returnig the time elapsed since 
+UNIX epoch (January 1, 1970 00:00:00 UTC).";
+Time.sinceEpoch @example@
+"console.writeLine(Time.sinceEpoch.asFloatingPoint());
+console.writeLine(Time.sinceEpoch.asInteger());";
+
+Time.sinceEpoch.asFloatingPoint @description@
+"Returns the number of milliseconds elapsed since UNIX epoch 
+(January 1, 1970 00:00:00 UTC) as floating point number.";
+Time.sinceEpoch.asFloatingPoint @example@
+"console.writeLine(Time.sinceEpoch.asFloatingPoint());";
+
+Time.sinceEpoch.asInteger @description@
+"Returns the number of seconds elapsed since UNIX epoch 
+(January 1, 1970 00:00:00 UTC) as integer.";
+Time.sinceEpoch.asInteger @example@
+"console.writeLine(Time.sinceEpoch.asInteger());";
+
+File @description@
+"`File` class provides file input and output operations.";
+File @example@
+"console.write(\"1+3 is \", 1+3);
+if (1+3 != 4) {
+    console.warn(\"1+3 is not 4!\");
+}";
+File @expectedOutput@
+"1+3 is 4";
+
+File.classPrototype.write @parameters@
+"/*any number of convertible to String parameters*/";
+File.classPrototype.write @returns@
+"/*File*/";
+File.classPrototype.write @description@
+"Writes arguments to file.";
+File.classPrototype.write @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.write @expectedOutput@
+"http 80";
+
+File.classPrototype.writeLine @parameters@
+"/*any number of convertible to String parameters*/";
+File.classPrototype.writeLine @returns@
+"/*File*/";
+File.classPrototype.writeLine @description@
+"Writes arguments appended with the new line character or 
+characters sequence (platform dependent) to file.";
+File.classPrototype.writeLine @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.writeLine @expectedOutput@
+"http 80";
+
+File.classPrototype.read @returns@
+"/*String*/";
+File.classPrototype.read @description@
+"Reads word terminated by whitespace from file.";
+File.classPrototype.read @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.read @expectedOutput@
+"http 80";
+
+File.classPrototype.readLine @returns@
+"/*String*/";
+File.classPrototype.readLine @description@
+"Reads string terminated by new line character 
+from file.";
+File.classPrototype.readLine @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.readLine @expectedOutput@
+"http 80";
+
+
+File.classPrototype.open @parameters@
+"/*String*/";
+File.classPrototype.open @returns@
+"/*File*/";
+File.classPrototype.open @description@
+"Opens file specified by the path.";
+File.classPrototype.open @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.remove();
+try {
+    file.open(\"protocols.txt\");
+} catch {
+    console.write(\"error\");
+}";
+File.classPrototype.open @expectedOutput@
+"error";
+
+
+File.classPrototype.create @parameters@
+"/*String*/";
+File.classPrototype.create @returns@
+"/*File*/";
+File.classPrototype.create @description@
+"Creates (or open and remove contents) 
+file in the specified path.";
+File.classPrototype.create @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.remove();
+try {
+    file.open(\"protocols.txt\");
+} catch {
+    console.write(\"error\");
+}";
+File.classPrototype.create @expectedOutput@
+"error";
+
+File.classPrototype.remove @returns@
+"/*File*/";
+File.classPrototype.remove @description@
+"Deletes the file.";
+File.classPrototype.remove @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.remove();
+try {
+    file.open(\"protocols.txt\");
+} catch {
+    console.write(\"error\");
+}";
+File.classPrototype.remove @expectedOutput@
+"error";
+
+
+File.classPrototype.readTo @parameters@
+"/*String*/";
+File.classPrototype.readTo @returns@
+"/*String*/";
+File.classPrototype.readTo @description@
+"Reads string terminated by give character
+from file.";
+File.classPrototype.readTo @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+file.setReadPosition(0);
+console.write(file.readTo(\"c\"));";
+File.classPrototype.readTo @expectedOutput@
+"abba";
+
+File.classPrototype.readBytes @parameters@
+"/*Number*/";
+File.classPrototype.readBytes @returns@
+"/*String*/";
+File.classPrototype.readBytes @description@
+"Reads string of given length
+from file.";
+File.classPrototype.readBytes @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+file.setReadPosition(0);
+console.write(file.readBytes(4));";
+File.classPrototype.readBytes @expectedOutput@
+"abba";
+
+File.classPrototype.close @returns@
+"/*File*/";
+File.classPrototype.close @description@
+"Closes the file, makes sure all
+input/output operations are
+saved to disk.";
+File.classPrototype.close @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+file.close();
+console.write(file.size());";
+File.classPrototype.close @expectedOutput@
+"7";
+
+File.classPrototype.size @returns@
+"/*Number*/";
+File.classPrototype.size @description@
+"Returns the size of file in bytes.";
+File.classPrototype.size @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+file.close();
+console.write(file.size());";
+File.classPrototype.size @expectedOutput@
+"7";
+
+
+File.classPrototype.getReadPosition @returns@
+"/*Number*/";
+File.classPrototype.getReadPosition @description@
+"Returns read position of file
+(counted from begining in bytes).";
+File.classPrototype.getReadPosition @example@
+"let file = File();
+file.create(\"ab.txt\");
+file.write(\"aaaaa\");
+file.setWritePosition(2);
+file.write(\"bb\");
+file.setReadPosition(1);
+console.write(file.readBytes(4), \" \");
+console.write(file.getReadPosition(), \" \");
+console.write(file.getWritePosition());";
+File.classPrototype.getReadPosition @expectedOutput@
+"abba 5 5";
+
+File.classPrototype.getWritePosition @returns@
+"/*Number*/";
+File.classPrototype.getWritePosition @description@
+"Returns write position of file
+(counted from begining in bytes).";
+File.classPrototype.getWritePosition @example@
+"let file = File();
+file.create(\"ab.txt\");
+file.write(\"aaaaa\");
+file.setWritePosition(2);
+file.write(\"bb\");
+file.setReadPosition(1);
+console.write(file.readBytes(4), \" \");
+console.write(file.getReadPosition(), \" \");
+console.write(file.getWritePosition());";
+File.classPrototype.getWritePosition @expectedOutput@
+"abba 5 5";
+
+File.classPrototype.setReadPosition @parameters@
+"/*Number*/";
+File.classPrototype.setReadPosition @description@
+"Sets read position of file
+(counted from begining in bytes).";
+File.classPrototype.setReadPosition @example@
+"let file = File();
+file.create(\"ab.txt\");
+file.write(\"aaaaa\");
+file.setWritePosition(2);
+file.write(\"bb\");
+file.setReadPosition(1);
+console.write(file.readBytes(4), \" \");
+console.write(file.getReadPosition(), \" \");
+console.write(file.getWritePosition());";
+File.classPrototype.setReadPosition @expectedOutput@
+"abba 5 5";
+
+File.classPrototype.setWritePosition @parameters@
+"/*Number*/";
+File.classPrototype.setWritePosition @description@
+"Sets write position of file
+(counted from begining in bytes).";
+File.classPrototype.setWritePosition @example@
+"let file = File();
+file.create(\"ab.txt\");
+file.write(\"aaaaa\");
+file.setWritePosition(2);
+file.write(\"bb\");
+file.setReadPosition(1);
+console.write(file.readBytes(4), \" \");
+console.write(file.getReadPosition(), \" \");
+console.write(file.getWritePosition());";
+File.classPrototype.setWritePosition @expectedOutput@
+"abba 5 5";
+
+/* TODO:
+Promise
+    tick
+    then
+    await
+ConditionalPromise
+Timeout*/

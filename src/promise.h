@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <memory>
 #include <atomic>
+#include "console.h"
 
 template <class R>
 class promise : public std::enable_shared_from_this<promise<R>>
@@ -77,17 +78,17 @@ public:
         consumable = true;
         if (cbf)
             throw std::runtime_error("cannot await promise, it will be consumed by callback");
+        consumed = true;
         while (!isReady())
         {
             loop();
         }
-        consumed = true;
         R temp = future.get();
         return temp;
     }
     static void loop()
     {
-        //std::cout << "loop" << promises.size() << '\n';
+        console::debug("loop");
         typename list::iterator i, j;
         for (i = promises.begin(); i != promises.end();)
         {
@@ -95,10 +96,17 @@ public:
             (*j)->tick();
             if ((*j)->isReady())
             {
+                console::debug("consumable: ", (*j)->consumable, " consumed: ", (*j)->consumed);
                 if ((*j)->consumable && (*j)->consumed)
+                {
+                    console::debug("released");
                     promises.erase(j);
-                else if (!(*j)->consumable)
+                }
+                else if (!(*j)->consumable && j->use_count() == 1)
+                {
+                    console::debug("released !consumable");
                     promises.erase(j);
+                }
             }
         }
     }
@@ -139,7 +147,7 @@ private:
     }
     bool isReady()
     {
-        if (ended) return ended;
+        if (ended) return true;
         return ended = future.valid() && future.wait_for(std::chrono::milliseconds::zero()) == std::future_status::ready;
     }
     using list = typename std::list<std::shared_ptr<promise>>;

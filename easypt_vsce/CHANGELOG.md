@@ -1,5 +1,14 @@
 # Change Log
 
+### 2.0.4
+
+- `instanceOf` and `else` highlight.
+
+### 2.0.3
+
+- Snippets added again.
+- `extends` highlight.
+
 ### 2.0.2
 
 - `json` and `class` highlights

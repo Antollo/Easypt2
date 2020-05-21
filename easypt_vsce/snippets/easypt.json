@@ -1,1 +1,89 @@
-{}
+{
+    "For loop": {
+        "prefix": "for",
+        "body": [
+            "for (let i = 0; i < length; i++) {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Int based for loop"
+    },
+    "While loop": {
+        "prefix": "while",
+        "body": [
+            "while (${0:condition}) {",
+            "\t$1",
+            "}"
+        ],
+        "description": "While loop"
+    },
+    "If": {
+        "prefix": "if",
+        "body": [
+            "if (${0:condition}) {",
+            "\t$1",
+            "}"
+        ],
+        "description": "If"
+    },
+    "If else": {
+        "prefix": "if",
+        "body": [
+            "if (${0:condition}) {",
+            "\t$1",
+            "} else {",
+            "\t$2",
+            "}"
+        ],
+        "description": "If else"
+    },
+    "Try catch": {
+        "prefix": "try",
+        "body": [
+            "try {",
+            "\t$0",
+            "} catch {",
+            "\tconsole.error(exception);",
+            "}"
+        ],
+        "description": "Try catch"
+    },
+    "Function": {
+        "prefix": "function",
+        "body": [
+            "function {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Function"
+    },
+    "Declaration": {
+        "prefix": "let",
+        "body": [
+            "let ${0:name} = $1;"
+        ],
+        "description": "Declaration"
+    },
+    "Class": {
+        "prefix": "class",
+        "body": [
+            "class ${0:Name} {",
+            "\tconstructor: function { },",
+            "\tdestructor: function { }",
+            "};"
+        ],
+        "description": "Class"
+    },
+    "Class with inheritance": {
+        "prefix": "class",
+        "body": [
+            "class ${0:Name} extends ${1:Base} {",
+            "\tconstructor: function {",
+            "\t\tthis.super();",
+            "\t},",
+            "\tdestructor: function { }",
+            "};"
+        ],
+        "description": "Class with inheritance"
+    }
+}

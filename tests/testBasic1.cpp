@@ -53,19 +53,21 @@ zz
 122
 mobile
 )"s == console::getOutput([&argc, &argv]() {
-                   stack globalStack;
-                   runtime::init(&globalStack);
+                    name::init();
+                    stack globalStack;
+                    runtime::init(&globalStack);
 
-                   auto st = &globalStack;
+                    auto st = &globalStack;
+                    auto import = globalStack["import"_n];
 
-                   for (int i = 0; i < argc; i++)
-                   {
-                       if (isFlag(argv[i], "file") && i != argc - 1)
-                       {
-                           import(nullptr, {makeObject(std::string(argv[++i]))}, st);
-                       }
-                   }
-               }));
+                    for (int i = 0; i < argc; i++)
+                    {
+                        if (isFlag(argv[i], "file") && i != argc - 1)
+                        {
+                            (*import)(import, {object::makeObject(std::string(argv[++i]))}, st);
+                        }
+                    }
+                }));
     }
     catch (const std::exception &e)
     {

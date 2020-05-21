@@ -3,7 +3,7 @@
 void Class::init(stack *st)
 {
     object::objectPtr Class = insertObject("Class"_n, constructorCaller);
-    (*object::classPrototype)["prototype"_n] = object::functionPrototype;
+    (*object::classPrototype)[name::prototype] = object::functionPrototype;
 
     (*Class)["classPrototype"_n] = object::classPrototype;
 

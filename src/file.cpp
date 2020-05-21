@@ -138,21 +138,21 @@ void file::writeLine(const std::string &str)
 }
 void file::readGuard()
 {
-    if (lastOperation != lastOperationType::read)
+    if (lastOperation == lastOperationType::write)
     {
         (*_f).flush();
         (*_f).sync();
-        (*_f).seekp(0, std::ios::beg);
+        (*_f).seekp(0);
         lastOperation = lastOperationType::read;
     }
 }
 void file::writeGuard()
 {
-    if (lastOperation != lastOperationType::write)
+    if (lastOperation == lastOperationType::read)
     {
         (*_f).flush();
         (*_f).sync();
-        (*_f).seekg(0, std::ios::beg);
+        (*_f).seekg(0);
         lastOperation = lastOperationType::write;
     }
 }

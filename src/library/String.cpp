@@ -19,7 +19,7 @@ void String::init(stack *st)
         const std::string &me = thisObj->get<const std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
-        return makeObject(std::string(1, me[pos]));
+        return object::makeObject(std::string(1, me[pos]));
     });
 
     addFunctionL(object::stringPrototype, "getByteAt"_n, {
@@ -28,22 +28,22 @@ void String::init(stack *st)
         const std::string &me = thisObj->get<const std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
-        return makeObject(number(static_cast<int>(static_cast<unsigned char>(me[pos]))));
+        return object::makeObject(number(static_cast<int>(static_cast<unsigned char>(me[pos]))));
     });
 
     addFunctionL(object::stringPrototype, "setByteAt"_n, {
         argsConvertibleGuard<number, number>(args);
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        int byte = static_cast<int>(args[0]->getConverted<number>());
+        int byte = static_cast<int>(args[1]->getConverted<number>());
         std::string &me = thisObj->get<std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         me[pos] = static_cast<unsigned char>(byte);
-        return makeEmptyObject();
+        return thisObj;
     });
 
     addFunctionL(object::stringPrototype, "length"_n, {
-        return makeObject(static_cast<number>(thisObj->get<const std::string>().size()));
+        return object::makeObject(static_cast<number>(thisObj->get<const std::string>().size()));
     });
 
     addFunctionL(object::stringPrototype, "insertFrom"_n, {
@@ -81,7 +81,7 @@ void String::init(stack *st)
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());
-        return makeObject(std::string(me.begin() + pos, me.begin() + pos + length));
+        return object::makeObject(std::string(me.begin() + pos, me.begin() + pos + length));
     });
 
     addFunctionL(object::stringPrototype, "erase"_n, {
@@ -113,11 +113,11 @@ void String::init(stack *st)
         object::arrayType array(matchResults.size());
         for (size_t i = 0; i < matchResults.size(); i++)
         {
-            array[i] = makeEmptyObject();
-            array[i]->addProperty("position"_n, makeObject(static_cast<number>(static_cast<int>(std::distance(me.begin(), matchResults[i].first)))));
-            array[i]->addProperty("length"_n, makeObject(static_cast<number>(static_cast<int>(std::distance(matchResults[i].first, matchResults[i].second)))));
+            array[i] = object::makeEmptyObject();
+            array[i]->addProperty("position"_n, object::makeObject(static_cast<number>(static_cast<int>(std::distance(me.begin(), matchResults[i].first)))));
+            array[i]->addProperty("length"_n, object::makeObject(static_cast<number>(static_cast<int>(std::distance(matchResults[i].first, matchResults[i].second)))));
         }
-        return makeObject(array);
+        return object::makeObject(array);
     });
 
     addFunctionL(object::stringPrototype, "searchAll"_n, {
@@ -140,12 +140,12 @@ void String::init(stack *st)
         size_t i = 0;
         for (auto it = begin; it != end; it++)
         {
-            array[i] = makeEmptyObject();
-            array[i]->addProperty("position"_n, makeObject(static_cast<number>(static_cast<int>(it->position()))));
-            array[i]->addProperty("length"_n, makeObject(static_cast<number>(static_cast<int>(it->length()))));
+            array[i] = object::makeEmptyObject();
+            array[i]->addProperty("position"_n, object::makeObject(static_cast<number>(static_cast<int>(it->position()))));
+            array[i]->addProperty("length"_n, object::makeObject(static_cast<number>(static_cast<int>(it->length()))));
             i++;
         }
 
-        return makeObject(array);
+        return object::makeObject(array);
     });
 }

@@ -5,6 +5,8 @@
 
 object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, stack *st);
 object::objectPtr ez_parse(object::objectPtr thisObj, object::arrayType &&args, stack *st);
+object::objectPtr execute(object::objectPtr thisObj, object::arrayType &&args, stack *st);
+//object::objectPtr repl(object::objectPtr thisObj, object::arrayType &&args, stack *st);
 object::objectPtr getStack(object::objectPtr thisObj, object::arrayType &&args, stack *st);
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st);
 

@@ -67,6 +67,8 @@
 %token COMPOUND_STATEMENT;
 %token ARRAY_LITERAL;
 %token IF_ELSE;
+%token EXTENDS;
+%token INSTANCEOF;
 
 %start parse, input;
 
@@ -280,6 +282,10 @@ factorBase(Node& me)  { Node b(INI); }:
     |
     FUNCTION
     [
+        IDENTIFIER { me.text(treeParser::text); }
+    |
+    ]
+    [
         PARENTHESES_OPEN
         [
             IDENTIFIER { me.addName(treeParser::text); }
@@ -302,8 +308,14 @@ factorBase(Node& me)  { Node b(INI); }:
     |
     CLASS
     IDENTIFIER { me.text(treeParser::text); }
+    [
+        { b.init(INI); }
+        EXTENDS
+        IDENTIFIER { b.token(IDENTIFIER); b.text(treeParser::text); }
+    |
+    ]
     BRACES_OPEN
-    jsonStatements(me) { me.token(CLASS); }
+    jsonStatements(me) { me.token(CLASS); me.addChild(b); }
     BRACES_CLOSE
     |
     BRACKET_OPEN expressionList(me) BRACKET_CLOSE
@@ -331,6 +343,7 @@ leftAssociativeOperator :
     | AND
     | OR
     | USER_OPERATOR
+    | INSTANCEOF
     ]
     ;
 

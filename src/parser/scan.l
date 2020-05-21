@@ -7,6 +7,9 @@
     #undef YY_INPUT
     #define YY_INPUT(b, r, s) (treeParser::read(b, &r, s))
 %}
+
+%option never-interactive yylineno
+
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 ws [ \t\n\r]*
 number [0-9]+([.][0-9]+)?
@@ -19,6 +22,8 @@ comment \/\/.*
 {comment}/\0                ;
 json                        { return JSON; }
 class                       { return CLASS; }
+extends                     { return EXTENDS; }
+instanceOf                  { return INSTANCEOF; }
 return                      { return RETURN; }
 throw                       { return THROW; }
 try                         { return TRY; }
@@ -50,18 +55,23 @@ function                    { return FUNCTION; }
 \>                          { treeParser::text = yytext; return GREATER; }
 \>=                         { treeParser::text = yytext; return GREATER_EQUAL; }
 \%                          { treeParser::text = yytext; return MODULUS; }
-\/                          { treeParser::text = yytext; return DIVISION; }
 =                           { treeParser::text = yytext; return ASSIGNMENT; }
 :                           { treeParser::text = yytext; return JSON_ASSIGNMENT; }
 \<\-                        { treeParser::text = yytext; return INIT_ASSIGNMENT; }
 !                           { treeParser::text = yytext; return NOT; }
+~                           { treeParser::text = yytext; return COMPLEMENT; }
 \+\+                        { treeParser::text = yytext; return INCREMENT; }
 \-\-                        { treeParser::text = yytext; return DECREMENT; }
 \+                          { treeParser::text = yytext; return ADDITION; }
 \-                          { treeParser::text = yytext; return SUBTRACTION; }
 \*                          { treeParser::text = yytext; return MULTIPLICATION; }
 \/                          { treeParser::text = yytext; return DIVISION; }
-
+\|\|                        { treeParser::text = yytext; return OR; }
+&&                          { treeParser::text = yytext; return AND; }
+\|                          { treeParser::text = yytext; return BITWISE_OR; }
+&                           { treeParser::text = yytext; return BITWISE_AND; }
+\<\<                        { treeParser::text = yytext; return SHIFT_LEFT; }
+\>\>                        { treeParser::text = yytext; return SHIFT_RIGHT; }
 ,                           { return ','; }
 ;                           { return ';'; }
 \.                          { return DOT; }
@@ -74,7 +84,7 @@ function                    { return FUNCTION; }
 {ws}                        ;
 .                           {
 
-                                throw std::runtime_error("invalid character <" + std::string(1, yytext[0]) + "> in " + treeParser::file + ":" + std::to_string(yylineno));
+                                treeParser::throwLater("invalid character <" + std::string(1, yytext[0]) + "> in " + treeParser::file + ":" + std::to_string(yylineno));
                             }
 %%
 int yywrap(void) { return 1; }

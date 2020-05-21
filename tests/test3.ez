@@ -31,7 +31,8 @@ file.open("test3.ez");
 let x = function { console.debug(args[0]); };
 x(5);
 //console.writeLine(tr);
-//import("../library/docs")
+import("../library/docs");
+return 1;
 
 
 let p1 = Promise(function { console.log(1); });

@@ -19,10 +19,29 @@ public:
     bool operator==(const name &x) const;
     bool isEmpty() const { return code == 0; }
 
+    const static name prototype, args, thisObj;
+
+    static void init()
+    {
+        codeToNameMap[prototypeCode] = "prototype"s;
+        nameToCodeMap["prototype"s] = prototypeCode;
+
+        codeToNameMap[argsCode] = "args"s;
+        nameToCodeMap["args"s] = argsCode;
+
+        codeToNameMap[thisObjCode] = "this"s;
+        nameToCodeMap["this"s] = thisObjCode;
+    }
+
 private:
-    int code;
-    static std::unordered_map<int, std::string> codeToNameMap;
-    static std::unordered_map<std::string, int> nameToCodeMap;
+    unsigned int code;
+    name(unsigned int i) : code(i) {}
+    static std::unordered_map<unsigned int, std::string> codeToNameMap;
+    static std::unordered_map<std::string, unsigned int> nameToCodeMap;
+    static constexpr unsigned int start = 10;
+    static constexpr unsigned int prototypeCode = 1;
+    static constexpr unsigned int argsCode = 2;
+    static constexpr unsigned int thisObjCode = 3;
     friend struct std::hash<name>;
 };
 

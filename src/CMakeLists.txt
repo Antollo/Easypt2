@@ -20,11 +20,11 @@ endif ()
 find_package(Threads REQUIRED)
 target_link_libraries(libeasypt Threads::Threads)
 
-add_executable(easypt2 main.cpp)
-target_link_libraries(easypt2 libeasypt)
+add_executable(easypt main.cpp)
+target_link_libraries(easypt libeasypt)
 # Having fun with Profile-Guided Optimizations
-# set_target_properties(easypt2 PROPERTIES COMPILE_FLAGS "/GL")
-# set_target_properties(easypt2 PROPERTIES LINK_FLAGS "/LTCG /GENPROFILE")
-# set_target_properties(easypt2 PROPERTIES LINK_FLAGS "/LTCG /USEPROFILE")
+# set_target_properties(easypt PROPERTIES COMPILE_FLAGS "/GL")
+# set_target_properties(easypt PROPERTIES LINK_FLAGS "/LTCG /GENPROFILE")
+# set_target_properties(easypt PROPERTIES LINK_FLAGS "/LTCG /USEPROFILE")
 
-install(TARGETS easypt2 RUNTIME DESTINATION bin COMPONENT binaries)
+install(TARGETS easypt RUNTIME DESTINATION bin COMPONENT binaries)

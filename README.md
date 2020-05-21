@@ -10,7 +10,7 @@ let name = console.readLine();
 console.writeLine("Hello " + name + "! Nice to meet you.");
 ```
 
-Run with: `easypt2 -file my_file.ez`. Longer example:
+Run with: `easypt -file my_file.ez`. Longer example:
 
 ```
 console.writeLine("a\nb");
@@ -58,7 +58,7 @@ console.write(u.p);
 
 ## Overview
 
-__Easypt__ (_blend of easy and script_) is cross-platform structured object-oriented interpreted programming language. Its main goal is to be easy, small and extensible. Project started on 30th August 2018. Implementation of easypt2 interpreter and started on 2nd October 2019 as well as introduction of a new language standard.
+__Easypt__ (_blend of easy and script_) is cross-platform structured object-oriented interpreted programming language. Its main goal is to be easy, small and extensible. Project started on 30th August 2018. Implementation of easypt2 interpreter and started on 2nd October 2019 as well as introduction of a new language standard and grammar. Significant improvement of parser was done in May 2020.
  
 ## Artifacts
 

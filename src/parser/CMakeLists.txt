@@ -1,6 +1,6 @@
 if (WIN32)
     execute_process(
-        COMMAND "$ENV{TEMP}/flex/bin/flex.exe" -l scan.l
+        COMMAND "$ENV{TEMP}/flex/bin/flex.exe" scan.l
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     execute_process(
@@ -9,7 +9,7 @@ if (WIN32)
     )
 else()
     execute_process(
-        COMMAND flex -l scan.l
+        COMMAND flex scan.l
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     execute_process(

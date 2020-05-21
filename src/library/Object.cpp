@@ -5,11 +5,17 @@ void Object::init(stack *st)
     object::objectPtr Object = insertObject("Object"_n, constructorCaller);
 
     (*Object)["classPrototype"_n] = object::objectPrototype;
-    (*object::objectPrototype)["prototype"_n] = object::objectPrototype;
+    (*object::objectPrototype)[name::prototype] = object::objectPrototype;
     
     addFunctionL(object::objectPrototype, "hasOwnProperty"_n, {
         argsConvertibleGuard<std::string>(args);
-        return makeObject(thisObj->hasOwnProperty(static_cast<name>(args[0]->getConverted<std::string>())));
+        return object::makeObject(thisObj->hasOwnProperty(static_cast<name>(args[0]->getConverted<std::string>())));
+    });
+    
+    addFunctionL(object::objectPrototype, "removeProperty"_n, {
+        argsConvertibleGuard<std::string>(args);
+        thisObj->removeProperty(static_cast<name>(args[0]->getConverted<std::string>()));
+        return thisObj;
     });
 
     addFunctionL(object::objectPrototype, "addProperty"_n, {
@@ -19,7 +25,7 @@ void Object::init(stack *st)
     });
 
     addFunctionL(object::objectPrototype, "getOwnPropertyNames"_n, {
-        return makeObject(thisObj->getOwnPropertyNames());
+        return object::makeObject(thisObj->getOwnPropertyNames());
     });
 
     addFunctionL(object::objectPrototype, "readOperator"_n, {
@@ -30,6 +36,6 @@ void Object::init(stack *st)
     addFunctionL(object::objectPrototype, "getId"_n, {
         auto ptr = thisObj.get();
 	    std::string byteBuffer(reinterpret_cast<char*>(&ptr), reinterpret_cast<char*>(&ptr) + sizeof(decltype(ptr)));
-        return makeObject(byteBuffer);
+        return object::makeObject(byteBuffer);
     });
 }

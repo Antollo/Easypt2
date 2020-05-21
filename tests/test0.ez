@@ -19,9 +19,9 @@ for (let i = 0; i<arr.length(); i++)
     console.debug(arr[i]);
 }
 
-let nwd = function {
-    let a = args[0];
-    let b = args[1];
+function nwd (x, y) {
+    let a = x;
+    let b = y;
     while (a != b) {
         if (a < b)
             b <- b - a;
@@ -39,6 +39,8 @@ while(i<1000) {
     i++;
 }
 console.warn("Zażółć gęślą jaźń.\n");
+let a = 144;
+let b = 20480000;
 let time = Time.sinceEpoch.asFloatingPoint();
 let x = nwd(144, 20480000);
 // 1170 - old time
@@ -48,12 +50,25 @@ console.log(Time.sinceEpoch.asFloatingPoint() - time);
 let u = {a:7, b:8};
 console.log(u.a);
 
-class Myclass {
+class Printer {
     constructor: function {
+        console.writeLine("Printer constructor");
+    },
+    print: function {
+        console.writeLine("Printer");
+    }
+};
+
+class Myclass extends Printer {
+    constructor: function {
+        //getStack().forEach(console.log);
+        this.super();
         this.sth = args[0];
         console.writeLine("constructor");
+        this.print();
     },
     writeSth: function { console.writeLine(this.sth); },
+    write: function { console.writeLine("write"); },
     destructor: function { console.writeLine("destructor" + this.sth); }
 };
 
@@ -66,3 +81,13 @@ class Myclass {
     //console.writeLine(m.getId());
     m.writeSth();
 }
+
+let file = File();
+file.create("protocols.txt");
+file.remove();
+try {
+    file.open("protocols.txt");
+} catch {
+    console.write("error");
+}
+

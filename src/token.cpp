@@ -72,14 +72,14 @@ token::token(const std::string &n, tokenType t) : _name(n), arityOrIndex(-1), ty
     {
     case tokenType::NumberLiteral:
         if (n.find('.') == std::string::npos)
-            value = makeObject(static_cast<number>(std::stoi(n)));
+            value = object::makeObject(static_cast<number>(std::stoi(n)));
         else
-            value = makeObject(static_cast<number>(std::stod(n)));
+            value = object::makeObject(static_cast<number>(std::stod(n)));
         value->setConst();
         break;
 
     case tokenType::StringLiteral:
-        value = makeObject(parseString(n));
+        value = object::makeObject(parseString(n));
         value->setConst();
         break;
 

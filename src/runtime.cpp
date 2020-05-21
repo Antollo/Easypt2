@@ -14,29 +14,29 @@
 void runtime::init(stack *st)
 {
     object::setGlobalStack(st);
-    object::objectPrototype = makeEmptyObject();
-    object::classPrototype = makeEmptyObject();
+    object::objectPrototype = object::makeEmptyObject();
+    object::classPrototype = object::makeEmptyObject();
 
-    object::arrayPrototype = makeEmptyObject();
-    (*object::arrayPrototype)["prototype"_n] = object::objectPrototype;
+    object::arrayPrototype = object::makeEmptyObject();
+    (*object::arrayPrototype)[name::prototype] = object::objectPrototype;
 
-    object::stringPrototype = makeEmptyObject();
-    (*object::stringPrototype)["prototype"_n] = object::objectPrototype;
+    object::stringPrototype = object::makeEmptyObject();
+    (*object::stringPrototype)[name::prototype] = object::objectPrototype;
 
-    object::numberPrototype = makeEmptyObject();
-    (*object::numberPrototype)["prototype"_n] = object::objectPrototype;
+    object::numberPrototype = object::makeEmptyObject();
+    (*object::numberPrototype)[name::prototype] = object::objectPrototype;
 
-    object::booleanPrototype = makeEmptyObject();
-    (*object::booleanPrototype)["prototype"_n] = object::objectPrototype;
+    object::booleanPrototype = object::makeEmptyObject();
+    (*object::booleanPrototype)[name::prototype] = object::objectPrototype;
 
-    object::functionPrototype = makeEmptyObject();
-    (*object::functionPrototype)["prototype"_n] = object::objectPrototype;
+    object::functionPrototype = object::makeEmptyObject();
+    (*object::functionPrototype)[name::prototype] = object::objectPrototype;
 
-    object::promisePrototype = makeEmptyObject();
-    (*object::promisePrototype)["prototype"_n] = object::objectPrototype;
+    object::promisePrototype = object::makeEmptyObject();
+    (*object::promisePrototype)[name::prototype] = object::objectPrototype;
 
     addFunctionL(object::functionPrototype, "callOperator"_n, {
-        return (*thisObj)(nullptr, std::move(args), st);
+        return (*thisObj)(thisObj, std::move(args), st);
     });
 
     addFunctionL(object::functionPrototype, "call"_n, {
@@ -51,6 +51,7 @@ void runtime::init(stack *st)
 
     insertObject("import"_n, import);
     insertObject("parse"_n, ez_parse);
+    insertObject("execute"_n, execute);
     insertObject("getStack"_n, getStack);
 
     object::objectPtr Function = insertObject("Function"_n, nullptr);

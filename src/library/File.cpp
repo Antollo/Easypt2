@@ -4,7 +4,7 @@
 void File::init(stack *st)
 {
     object::objectPtr File = insertObject("File"_n, constructorCaller);
-    object::objectPtr filePrototype = makeEmptyObject();
+    object::objectPtr filePrototype = object::makeEmptyObject();
 
     (*File)["classPrototype"_n] = filePrototype;
 
@@ -16,23 +16,23 @@ void File::init(stack *st)
     });
 
     addFunctionL(filePrototype, "read"_n, {
-        return makeObject(thisObj->get<file>().read());
+        return object::makeObject(thisObj->get<file>().read());
     });
 
     addFunctionL(filePrototype, "readLine"_n, {
-        return makeObject(thisObj->get<file>().readLine());
+        return object::makeObject(thisObj->get<file>().readLine());
     });
 
     addFunctionL(filePrototype, "readBytes"_n, {
         argsConvertibleGuard<number>(args);
-        return makeObject(thisObj->get<file>().readBytes(static_cast<int>(args[0]->getConverted<number>())));
+        return object::makeObject(thisObj->get<file>().readBytes(static_cast<int>(args[0]->getConverted<number>())));
     });
 
     addFunctionL(filePrototype, "readTo"_n, {
         argsConvertibleGuard<std::string>(args);
         std::string c = args[0]->getConverted<std::string>();
         assert(c.size(), "string empty");
-        return makeObject(thisObj->get<file>().readTo(c[0]));
+        return object::makeObject(thisObj->get<file>().readTo(c[0]));
     });
 
     addFunctionL(filePrototype, "write"_n, {
@@ -71,6 +71,26 @@ void File::init(stack *st)
     });
 
     addFunctionL(filePrototype, "size"_n, {
-        return makeObject(static_cast<number>(thisObj->get<file>().size()));
+        return object::makeObject(static_cast<number>(thisObj->get<file>().size()));
+    });
+
+    addFunctionL(filePrototype, "setReadPosition"_n, {
+        argsConvertibleGuard<number>(args);
+        thisObj->get<file>().setReadPosition(static_cast<int>(args[0]->getConverted<number>()));
+        return thisObj;
+    });
+
+    addFunctionL(filePrototype, "setWritePosition"_n, {
+        argsConvertibleGuard<number>(args);
+        thisObj->get<file>().setWritePosition(static_cast<int>(args[0]->getConverted<number>()));
+        return thisObj;
+    });
+
+    addFunctionL(filePrototype, "getReadPosition"_n, {
+        return object::makeObject(static_cast<number>(thisObj->get<file>().getReadPosition()));
+    });
+
+    addFunctionL(filePrototype, "getWritePosition"_n, {
+        return object::makeObject(static_cast<number>(thisObj->get<file>().getWritePosition()));
     });
 }

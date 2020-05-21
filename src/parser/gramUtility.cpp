@@ -28,7 +28,7 @@ void LLmessage(int token)
         message += " unexpected token <" + tokenToName(LLsymb) + "> detected";
         break;
     }
-    throw std::runtime_error(message);
+    treeParser::throwLater(message);
 }
 
 int operatorPriority(int token)
@@ -64,6 +64,7 @@ int operatorPriority(int token)
     case LESS_EQUAL:
     case GREATER:
     case GREATER_EQUAL:
+    case INSTANCEOF:
         return 9;
     case EQUAL:
     case NOT_EQUAL:
@@ -88,7 +89,7 @@ int operatorPriority(int token)
         return 17;
 
     default:
-        throw std::runtime_error("operator " + tokenToName(token) + " has no priority");
+        treeParser::throwLater("operator " + tokenToName(token) + " has no priority");
         return 100;
     }
 }

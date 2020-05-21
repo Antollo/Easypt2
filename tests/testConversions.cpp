@@ -3,7 +3,7 @@
 
 int main()
 {
-    auto x = makeObject(1_n);
+    auto x = object::makeObject(1_n);
     staticAssert(std::is_same_v<number&, decltype(x->get<number>())>);
     staticAssert(std::is_same_v<const number&, decltype(x->get<const number>())>);
     x->setConst();

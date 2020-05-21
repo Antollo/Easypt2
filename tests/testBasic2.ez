@@ -26,8 +26,8 @@ let x = json {
 };
 
 class Myclass {
-    constructor: function {
-        this.sth = args[0];
+    constructor: function (a) {
+        this.sth = a;
         console.writeLine("constructor");
     },
     writeSth: function { console.writeLine(this.sth); },

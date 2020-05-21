@@ -2,7 +2,7 @@
     "name": "easypt",
     "displayName": "Easypt",
     "description": "Easypt programming language basic support.",
-    "version": "2.0.2",
+    "version": "2.0.4",
     "publisher": "Antollo",
     "repository": {
         "type": "git",

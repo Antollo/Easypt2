@@ -13,6 +13,7 @@ inline bool isFlag(std::string a, std::string f)
 
 int main(int argc, char **argv)
 {
+    name::init();
     stack globalStack;
     try
     {
@@ -26,18 +27,20 @@ int main(int argc, char **argv)
         globalStack["argv"_n]->get<object::arrayType>().resize(argc);
         globalStack["argc"_n]->get<number>() = argc;
 
+        auto import = globalStack["import"_n];
+
         for (int i = 0; i < argc; i++)
-            globalStack["argv"_n]->get<object::arrayType>()[i] = makeObject(std::string(argv[i]));
+            globalStack["argv"_n]->get<object::arrayType>()[i] = object::makeObject(std::string(argv[i]));
 
         for (int i = 0; i < argc; i++)
         {
             if (isFlag(argv[i], "file") && i != argc - 1)
             {
-                import(nullptr, {makeObject(std::string(argv[++i]))}, &globalStack);
+                (*import)(import, {object::makeObject(std::string(argv[++i]))}, &globalStack);
             }
             else if (isFlag(argv[i], "repl"))
             {
-                import(nullptr, {makeObject(std::string("repl"))}, &globalStack);
+                (*import)(import, {object::makeObject(std::string("repl.ez"))}, &globalStack);
             }
             else if (isFlag(argv[i], "help"))
             {

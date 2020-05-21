@@ -37,6 +37,14 @@ public:
     {
         return data->names;
     }
+    std::vector<Node> &children()
+    {
+        return _children;
+    }
+    const std::vector<Node> &children() const
+    {
+        return _children;
+    }
     void init(int line, std::string file)
     {
         data->line = line;
@@ -56,7 +64,7 @@ private:
 
     int _token;
     name _text;
-    std::vector<Node> children;
+    std::vector<Node> _children;
     std::shared_ptr<dataType> data;
 
     std::string toName() const

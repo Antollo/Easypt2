@@ -8,7 +8,7 @@ objectPtrImpl::objectPtrImpl(object *obj)
     _obj = obj;
     if (_obj != nullptr)
     {
-        _refCount = new int;
+        _refCount = newInt();
         *_refCount = 1;
     }
     else
@@ -31,8 +31,8 @@ objectPtrImpl &objectPtrImpl::operator=(const objectPtrImpl &ptr)
         if (*_refCount == 0)
         {
             if (_obj != nullptr)
-                delete _obj;
-            delete _refCount;
+                object::reuse(_obj);
+            deleteInt(_refCount);
         }
     }
     _obj = ptr._obj;
@@ -59,8 +59,8 @@ objectPtrImpl &objectPtrImpl::operator=(objectPtrImpl &&ptr)
         if (*_refCount == 0)
         {
             if (_obj != nullptr)
-                delete _obj;
-            delete _refCount;
+                object::reuse(_obj);
+            deleteInt(_refCount);
         }
     }
     _obj = ptr._obj;
@@ -93,7 +93,7 @@ objectPtrImpl::~objectPtrImpl()
         {
             if (_obj != nullptr)
             {
-                auto obj = _obj->read("prototype"_n);
+                auto obj = _obj->read(name::prototype);
                 if (obj) obj = obj->read("destructor"_n);
                 if (object::globalStack != nullptr && obj != nullptr && (!_obj->isOfType<object::nativeFunctionType>() || _obj->get<object::nativeFunctionType>() != constructorCaller))
                 {
@@ -104,10 +104,10 @@ objectPtrImpl::~objectPtrImpl()
                     }
                     catch (objectException &e)
                     {
-                        auto obj = e.getPtr();
+                        auto eObj = e.getPtr();
                         console::stackTrace();
-                        if (obj->isConvertible<std::string>())
-                            console::error(obj->getConverted<std::string>());
+                        if (eObj->isConvertible<std::string>())
+                            console::error(eObj->getConverted<std::string>());
                         else
                             console::error((std::string)e.what());
                     }
@@ -124,23 +124,23 @@ objectPtrImpl::~objectPtrImpl()
                     (*_refCount)--;
                     if (*_refCount == 0)
                     {
-                        delete _obj;
-                        delete _refCount;
+                        object::reuse(_obj);
+                        deleteInt(_refCount);
                         _obj = nullptr;
                         _refCount = nullptr;
                     }
                 }
                 else
                 {
-                    delete _obj;
-                    delete _refCount;
+                    object::reuse(_obj);
+                    deleteInt(_refCount);
                     _obj = nullptr;
                     _refCount = nullptr;
                 }
             }
             else
             {
-                delete _refCount;
+                deleteInt(_refCount);
                 _refCount = nullptr;
             }
         }
@@ -152,7 +152,7 @@ object &objectPtrImpl::operator*()
     //TODO remove check;
     //if (_obj == nullptr)
     //    throw std::runtime_error("getting pointer to NULL");
-    _obj->_thisPtr = this;
+    //_obj->_thisPtr = this;
     return *_obj;
 }
 
@@ -161,7 +161,7 @@ object *objectPtrImpl::operator->()
     //TODO remove check;
     //if (_obj == nullptr)
     //    throw std::runtime_error("getting pointer to NULL");
-    _obj->_thisPtr = this;
+    //_obj->_thisPtr = this;
     return _obj;
 }
 
@@ -170,7 +170,7 @@ const object &objectPtrImpl::operator*() const
     //TODO remove check;
     //if (_obj == nullptr)
     //    throw std::runtime_error("getting pointer to NULL");
-    _obj->_thisPtr = this;
+    //_obj->_thisPtr = this;
     return *_obj;
 }
 const object *objectPtrImpl::operator->() const
@@ -178,6 +178,37 @@ const object *objectPtrImpl::operator->() const
     //TODO remove check;
     //if (_obj == nullptr)
     //    throw std::runtime_error("getting pointer to NULL");
-    _obj->_thisPtr = this;
+    //_obj->_thisPtr = this;
     return _obj;
+}
+
+objectPtrImpl::buffer objectPtrImpl::memory;
+
+int *objectPtrImpl::newInt()
+{
+    if (memory.length == 0)
+    {
+        //console::log("new empty");
+        return reinterpret_cast<int*>(std::malloc(sizeof(int)));
+    }
+
+    int *ptr = memory.data[memory.tail++];
+    if (memory.tail == buffer::maxLength)
+        memory.tail = 0;
+    memory.length--;
+    return ptr;
+}
+
+void objectPtrImpl::deleteInt(int *ptr)
+{
+    if (memory.length == buffer::maxLength)
+    {
+        //console::log("delete full");
+        std::free(ptr);
+        return;
+    }
+    memory.data[memory.head++] = reinterpret_cast<int *>(ptr);
+    if (memory.head == buffer::maxLength)
+        memory.head = 0;
+    memory.length++;
 }

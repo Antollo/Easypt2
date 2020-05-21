@@ -71,14 +71,14 @@ void Node::text(const std::string &t)
     {
     case NUMBER_LITERAL:
         if (t.find('.') == std::string::npos)
-            data->value = makeObject(static_cast<number>(std::stoi(t)));
+            data->value = object::makeObject(static_cast<number>(std::stoi(t)));
         else
-            data->value = makeObject(static_cast<number>(std::stod(t)));
+            data->value = object::makeObject(static_cast<number>(std::stod(t)));
         data->value->setConst();
         break;
 
     case STRING_LITERAL:
-        data->value = makeObject(parseString(t));
+        data->value = object::makeObject(parseString(t));
         data->value->setConst();
         break;
 
@@ -96,13 +96,13 @@ void Node::addChild(Node &arg)
     {
         arg.names() = names();
         names().clear();
-        // makeObject(Node)
-        data->value = makeObject(arg);
+        // object::makeObject(Node)
+        data->value = object::makeObject(arg);
         data->value->setConst();
         break;
     }
     default:
-        children.push_back(arg);
+        _children.push_back(arg);
         break;
     }
 }
@@ -117,89 +117,89 @@ object::objectPtr Node::evaluate(stack &st) const
         size_t i = 0;
         try
         {
-            for (; i < children.size(); i++)
-                children[i].evaluate(localStack);
+            for (; i < _children.size(); i++)
+                _children[i].evaluate(localStack);
         }
         catch (objectException &e)
         {
-            children[i].exception();
+            _children[i].exception();
             throw e;
         }
         catch (std::exception &e)
         {
-            children[i].exception();
+            _children[i].exception();
             throw e;
         }
         return nullptr;
     }
 
     case IF:
-        assert(children.size() == 2);
-        if (children[0].evaluate(st)->getConverted<bool>())
-            children[1].evaluate(st);
+        assert(_children.size() == 2);
+        if (_children[0].evaluate(st)->getConverted<bool>())
+            _children[1].evaluate(st);
         return nullptr;
 
     case IF_ELSE:
-        assert(children.size() == 3);
-        if (children[0].evaluate(st)->getConverted<bool>())
-            children[1].evaluate(st);
+        assert(_children.size() == 3);
+        if (_children[0].evaluate(st)->getConverted<bool>())
+            _children[1].evaluate(st);
         else
-            children[2].evaluate(st);
+            _children[2].evaluate(st);
         return nullptr;
 
     case WHILE:
-        assert(children.size() == 2);
-        while (children[0].evaluate(st)->getConverted<bool>())
-            children[1].evaluate(st);
+        assert(_children.size() == 2);
+        while (_children[0].evaluate(st)->getConverted<bool>())
+            _children[1].evaluate(st);
         return nullptr;
 
     case FOR:
-        assert(children.size() == 4);
-        children[0].evaluate(st);
-        while (children[1].evaluate(st)->getConverted<bool>())
+        assert(_children.size() == 4);
+        _children[0].evaluate(st);
+        while (_children[1].evaluate(st)->getConverted<bool>())
         {
-            children[3].evaluate(st);
-            children[2].evaluate(st);
+            _children[3].evaluate(st);
+            _children[2].evaluate(st);
         }
         return nullptr;
 
     case STATEMENT:
-        assert(children.size() == 1);
-        children[0].evaluate(st);
+        assert(_children.size() == 1);
+        _children[0].evaluate(st);
         return nullptr;
 
     case CALL_OPERATOR:
     {
-        assert(children.size() >= 1);
-        auto a = children[0].evaluate(st);
-        object::arrayType args(children.size() - 1);
-        for (size_t i = 1; i < children.size(); i++)
-            args[i - 1] = children[i].evaluate(st);
+        assert(_children.size() >= 1);
+        auto a = _children[0].evaluate(st);
+        object::arrayType args(_children.size() - 1);
+        for (size_t i = 1; i < _children.size(); i++)
+            args[i - 1] = _children[i].evaluate(st);
 
         try
         {
-            return (*a)(nullptr, std::move(args), &st);
+            return (*a)(a, std::move(args), &st);
         }
         catch (objectException &e)
         {
-            children[0].exception(children[0].toName());
+            _children[0].exception(_children[0].toName());
             throw e;
         }
         catch (std::exception &e)
         {
-            children[0].exception(children[0].toName());
+            _children[0].exception(_children[0].toName());
             throw e;
         }
     }
 
     case READ_OPERATOR:
     {
-        assert(children.size() >= 1);
+        assert(_children.size() >= 1);
         static name readOperator = "readOperator"_n;
-        auto a = children[0].evaluate(st);
-        object::arrayType args(children.size() - 1);
-        for (size_t i = 1; i < children.size(); i++)
-            args[i - 1] = children[i].evaluate(st);
+        auto a = _children[0].evaluate(st);
+        object::arrayType args(_children.size() - 1);
+        for (size_t i = 1; i < _children.size(); i++)
+            args[i - 1] = _children[i].evaluate(st);
 
         try
         {
@@ -207,25 +207,25 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         catch (objectException &e)
         {
-            children[0].exception(children[0].toName() + ".readOperator");
+            _children[0].exception(_children[0].toName() + ".readOperator");
             throw e;
         }
         catch (std::exception &e)
         {
-            children[0].exception(children[0].toName() + ".readOperator");
+            _children[0].exception(_children[0].toName() + ".readOperator");
             throw e;
         }
     }
 
     case METHOD_CALL_OPERATOR:
     {
-        assert(children.size() >= 2);
-        assert(children[1]._token == IDENTIFIER);
-        auto a = children[0].evaluate(st);
-        auto b = (*a)[children[1]._text];
-        object::arrayType args(children.size() - 2);
-        for (size_t i = 2; i < children.size(); i++)
-            args[i - 2] = children[i].evaluate(st);
+        assert(_children.size() >= 2);
+        assert(_children[1]._token == IDENTIFIER);
+        auto a = _children[0].evaluate(st);
+        auto b = (*a)[_children[1]._text];
+        object::arrayType args(_children.size() - 2);
+        for (size_t i = 2; i < _children.size(); i++)
+            args[i - 2] = _children[i].evaluate(st);
 
         try
         {
@@ -233,69 +233,69 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         catch (objectException &e)
         {
-            children[0].exception(children[0].toName() + "." + children[1].toName());
+            _children[0].exception(_children[0].toName() + "." + _children[1].toName());
             throw e;
         }
         catch (std::exception &e)
         {
-            children[0].exception(children[0].toName() + "." + children[1].toName());
+            _children[0].exception(_children[0].toName() + "." + _children[1].toName());
             throw e;
         }
     }
 
     case ARRAY_LITERAL:
     {
-        object::arrayType arr(children.size());
-        for (size_t i = 0; i < children.size(); i++)
-            arr[i] = children[i].evaluate(st);
-        return makeObject(arr);
+        object::arrayType arr(_children.size());
+        for (size_t i = 0; i < _children.size(); i++)
+            arr[i] = _children[i].evaluate(st);
+        return object::makeObject(arr);
     }
 
     case DOT:
     {
-        assert(children.size() == 2);
-        assert(children[1]._token == IDENTIFIER);
-        return (*(children[0].evaluate(st)))[children[1]._text];
+        assert(_children.size() == 2);
+        assert(_children[1]._token == IDENTIFIER);
+        return (*(_children[0].evaluate(st)))[_children[1]._text];
     }
 
     case LET:
-        assert(children.size() == 0);
-        return st.insert(_text, makeEmptyObject());
+        assert(_children.size() == 0);
+        return st.insert(_text, object::makeEmptyObject());
 
     case ASSIGNMENT:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
         if (a->isConst())
             throw std::runtime_error("tried to modify constant value");
-        auto b = children[1].evaluate(st);
+        auto b = _children[1].evaluate(st);
         *a = *b;
         a->setConst(false);
         return a;
     }
 
     case INIT_ASSIGNMENT:
-        assert(children.size() == 2);
-        if (children[0]._token == LET)
+        assert(_children.size() == 2);
+        if (_children[0]._token == LET)
         {
-            return st.insert(children[0]._text, children[1].evaluate(st));
+            return st.insert(_children[0]._text, _children[1].evaluate(st));
         }
-        else if (children[0]._token == IDENTIFIER)
+        else if (_children[0]._token == IDENTIFIER)
         {
-            assert(!children[0]._text.isEmpty());
-            auto &a = st[children[0]._text];
+            assert(!_children[0]._text.isEmpty());
+            auto &a = st[_children[0]._text];
             if (a->isConst())
                 throw std::runtime_error("tried to modify constant value");
-            a = children[1].evaluate(st);
+            a = _children[1].evaluate(st);
             return a;
         }
-        else if (children[0]._token == DOT && children[0].children[1]._token == IDENTIFIER)
+        else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
         {
-            assert(children[0].children.size() == 2);
-            auto &a = (*(children[0].evaluate(st)))[children[1]._text];
+            assert(_children[0]._children.size() == 2);
+            auto &a = (*(_children[0].evaluate(st)))[_children[1]._text];
             if (a->isConst())
                 throw std::runtime_error("tried to modify constant value");
-            a = children[1].evaluate(st);
+            a = _children[1].evaluate(st);
             return a;
         }
         throw std::runtime_error("left side of init_assignment is not identifier or dot operator");
@@ -303,27 +303,28 @@ object::objectPtr Node::evaluate(stack &st) const
 
     case JSON_ASSIGNMENT:
     {
-        assert(children.size() == 2);
-        auto a = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[1].evaluate(st);
         if (a->isConst())
         {
-            auto b = makeEmptyObject();
+            auto b = object::makeEmptyObject();
             *b = *a;
             b->setConst(false);
             a = b;
         }
-        if (children[0]._token == IDENTIFIER)
-            return st.insert(children[0]._text, a);
+        if (_children[0]._token == IDENTIFIER)
+            return st.insert(_children[0]._text, a);
         else
-            return st.insert(static_cast<name>(children[0].evaluate(st)->getConverted<std::string>()), a);
+            return st.insert(static_cast<name>(_children[0].evaluate(st)->getConverted<std::string>()), a);
     }
+
     case JSON:
     {
         stack localJsonStack(&st);
-        for (auto &child : children)
+        for (auto &child : _children)
             child.evaluate(localJsonStack);
 
-        auto obj = makeEmptyObject();
+        auto obj = object::makeEmptyObject();
         for (auto x : localJsonStack)
             obj->addProperty(x.first, x.second);
         return obj;
@@ -332,85 +333,101 @@ object::objectPtr Node::evaluate(stack &st) const
     case CLASS:
     {
         stack localJsonStack(&st);
-        for (auto &child : children)
+        for (auto &child : _children)
             child.evaluate(localJsonStack);
 
-        auto obj = makeEmptyObject();
+        auto obj = object::makeEmptyObject();
         for (auto x : localJsonStack)
             obj->addProperty(x.first, x.second);
 
         auto Class = st["Class"_n];
-        obj = (*Class)(nullptr, {obj}, &st);
+        if (!_children.empty() && _children.back()._token == IDENTIFIER)
+        {
+            auto &prototype = (*obj)[name::prototype];
+            prototype = (*_children.back().evaluate(st))["classPrototype"_n];
+            (*prototype)["super"_n] = (*prototype)["constructor"_n];
+        }
+        obj = (*Class)(Class, {obj}, &st);
         st.insert(_text, obj);
         return obj;
     }
 
     case RETURN:
-        assert(children.size() == 1);
-        throw children[0].evaluate(st);
+        assert(_children.size() == 1);
+        throw _children[0].evaluate(st);
 
     case THROW:
-        assert(children.size() == 1);
-        throw objectException(children[0].evaluate(st));
+        assert(_children.size() == 1);
+        throw objectException(_children[0].evaluate(st));
 
     case TRY:
     {
-        assert(children.size() == 2);
+        assert(_children.size() == 2);
         try
         {
-            children[0].evaluate(st);
+            _children[0].evaluate(st);
         }
         catch (objectException &e)
         {
             stackTrace.clear();
             stack localStack(&st);
             localStack.insert("exception"_n, e.getPtr());
-            children[1].evaluate(localStack);
+            _children[1].evaluate(localStack);
         }
         catch (std::exception &e)
         {
             stackTrace.clear();
             stack localStack(&st);
-            localStack.insert("exception"_n, makeObject((std::string)e.what()));
-            children[1].evaluate(localStack);
+            localStack.insert("exception"_n, object::makeObject((std::string)e.what()));
+            _children[1].evaluate(localStack);
         }
         return nullptr;
     }
 
     case USER_OPERATOR:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
-        return (*st[_text])(nullptr, {a, b}, &st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        auto op = st[_text];
+        return (*op)(op, {a, b}, &st);
+    }
+
+    case INSTANCEOF:
+    {
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        return object::makeObject(a->hasOwnProperty(name::prototype) && b->hasOwnProperty("classPrototype"_n) && (*a)[name::prototype].get() == (*b)["classPrototype"_n].get());
     }
 
     case ADDITION:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<number>(a->get<const number>() + b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() + b->getConverted<number>()));
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<std::string>(a->get<const std::string>() + b->getConverted<std::string>()));
+            return object::makeObject(static_cast<std::string>(a->get<const std::string>() + b->getConverted<std::string>()));
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
         {
             // TODO: in place
             object::arrayType arr = a->get<const object::arrayType>();
             object::arrayType toAdd = b->getConverted<object::arrayType>();
             arr.insert(arr.end(), toAdd.begin(), toAdd.end());
-            return makeObject(arr);
+            return object::makeObject(arr);
         }
         return (*(*a)["+"_n])(a, {b}, &st);
     }
+
     case MULTIPLICATION:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<number>(a->get<const number>() * b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() * b->getConverted<number>()));
         if (a->isOfType<std::string>() && b->isConvertible<number>())
         {
             const std::string &str = a->get<const std::string>();
@@ -419,7 +436,7 @@ object::objectPtr Node::evaluate(stack &st) const
             res.reserve(str.size() * i);
             while (i--)
                 res += str;
-            return makeObject(res);
+            return object::makeObject(res);
         }
         if (a->isOfType<object::arrayType>() && b->isConvertible<number>())
         {
@@ -429,164 +446,233 @@ object::objectPtr Node::evaluate(stack &st) const
             res.reserve(arr.size() * i);
             while (i--)
                 res.insert(res.begin(), arr.begin(), arr.end());
-            return makeObject(res);
+            return object::makeObject(res);
         }
         return (*(*a)["*"_n])(a, {b}, &st);
     }
+
     case SUBTRACTION:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<number>(a->get<const number>() - b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() - b->getConverted<number>()));
         return (*(*a)["-"_n])(a, {b}, &st);
     }
+
     case DIVISION:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<number>(a->get<const number>() / b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() / b->getConverted<number>()));
         return (*(*a)["/"_n])(a, {b}, &st);
     }
+
     case MODULUS:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<number>(a->get<const number>() % b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() % b->getConverted<number>()));
         return (*(*a)["%"_n])(a, {b}, &st);
     }
+
     case AND:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() && b->getConverted<bool>()));
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        object::objectPtr b;
+        if (a->isOfType<bool>())
+        {
+            if (a->get<const bool>() == false)
+                return object::makeObject(false);
+            b = _children[1].evaluate(st);
+            if (b->isConvertible<bool>())
+                return object::makeObject(b->getConverted<bool>());
+        }
+        else
+            b = _children[1].evaluate(st);
         return (*(*a)["&&"_n])(a, {b}, &st);
     }
+
+    case OR:
+    {
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        if (a->isOfType<bool>() && b->isConvertible<bool>())
+            return object::makeObject(static_cast<bool>(a->get<const bool>() || b->getConverted<bool>()));
+        return (*(*a)["&&"_n])(a, {b}, &st);
+    }
+
+    case BITWISE_AND:
+    {
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        if (a->isOfType<number>() && b->isConvertible<number>())
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) & static_cast<int>(b->getConverted<number>())));
+        return (*(*a)["&"_n])(a, {b}, &st);
+    }
+
+    case BITWISE_OR:
+    {
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        if (a->isOfType<number>() && b->isConvertible<number>())
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) | static_cast<int>(b->getConverted<number>())));
+        return (*(*a)["|"_n])(a, {b}, &st);
+    }
+
+    case SHIFT_LEFT:
+    {
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        if (a->isOfType<number>() && b->isConvertible<number>())
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) << static_cast<int>(b->getConverted<number>())));
+        return (*(*a)["<<"_n])(a, {b}, &st);
+    }
+
+    case SHIFT_RIGHT:
+    {
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
+        if (a->isOfType<number>() && b->isConvertible<number>())
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) >> static_cast<int>(b->getConverted<number>())));
+        return (*(*a)[">>"_n])(a, {b}, &st);
+    }
+
     case EQUAL:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<bool>(a->get<const number>() == b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() == b->getConverted<number>()));
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<bool>(a->get<const std::string>() == b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() == b->getConverted<std::string>()));
 
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return makeObject(static_cast<bool>(a->get<const object::arrayType>() == b->getConverted<object::arrayType>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() == b->getConverted<object::arrayType>()));
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>()));
 
         return (*(*a)["=="_n])(a, {b}, &st);
     }
+
     case NOT_EQUAL:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<bool>(a->get<const number>() != b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() != b->getConverted<number>()));
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<bool>(a->get<const std::string>() != b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() != b->getConverted<std::string>()));
 
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return makeObject(static_cast<bool>(a->get<const object::arrayType>() != b->getConverted<object::arrayType>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() != b->getConverted<object::arrayType>()));
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() != b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() != b->getConverted<bool>()));
 
         return (*(*a)["!="_n])(a, {b}, &st);
     }
+
     case LESS:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<bool>(a->get<const number>() < b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() < b->getConverted<number>()));
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<bool>(a->get<const std::string>() < b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() < b->getConverted<std::string>()));
 
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return makeObject(static_cast<bool>(a->get<const object::arrayType>() < b->getConverted<object::arrayType>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() < b->getConverted<object::arrayType>()));
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() < b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() < b->getConverted<bool>()));
 
         return (*(*a)["<"_n])(a, {b}, &st);
     }
+
     case GREATER:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<bool>(a->get<const number>() > b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() > b->getConverted<number>()));
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<bool>(a->get<const std::string>() > b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() > b->getConverted<std::string>()));
 
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return makeObject(static_cast<bool>(a->get<const object::arrayType>() > b->getConverted<object::arrayType>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() > b->getConverted<object::arrayType>()));
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() > b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() > b->getConverted<bool>()));
 
         return (*(*a)[">"_n])(a, {b}, &st);
     }
+
     case LESS_EQUAL:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<bool>(a->get<const number>() <= b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() <= b->getConverted<number>()));
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<bool>(a->get<const std::string>() <= b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() <= b->getConverted<std::string>()));
 
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return makeObject(static_cast<bool>(a->get<const object::arrayType>() <= b->getConverted<object::arrayType>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() <= b->getConverted<object::arrayType>()));
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() <= b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() <= b->getConverted<bool>()));
 
         return (*(*a)["<="_n])(a, {b}, &st);
     }
+
     case GREATER_EQUAL:
     {
-        assert(children.size() == 2);
-        auto a = children[0].evaluate(st);
-        auto b = children[1].evaluate(st);
+        assert(_children.size() == 2);
+        auto a = _children[0].evaluate(st);
+        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return makeObject(static_cast<bool>(a->get<const number>() >= b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() >= b->getConverted<number>()));
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return makeObject(static_cast<bool>(a->get<const std::string>() >= b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() >= b->getConverted<std::string>()));
 
         if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return makeObject(static_cast<bool>(a->get<const object::arrayType>() >= b->getConverted<object::arrayType>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() >= b->getConverted<object::arrayType>()));
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return makeObject(static_cast<bool>(a->get<const bool>() >= b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() >= b->getConverted<bool>()));
 
         return (*(*a)[">="_n])(a, {b}, &st);
     }
+
     case INCREMENT:
     {
-        assert(children.size() == 1);
-        auto a = children[0].evaluate(st);
+        assert(_children.size() == 1);
+        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
         {
             a->get<number>()++;
@@ -594,10 +680,11 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         return (*(*a)["++"_n])(a, {}, &st);
     }
+
     case DECREMENT:
     {
-        assert(children.size() == 1);
-        auto a = children[0].evaluate(st);
+        assert(_children.size() == 1);
+        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
         {
             a->get<number>()--;
@@ -608,29 +695,40 @@ object::objectPtr Node::evaluate(stack &st) const
 
     case NOT:
     {
-        assert(children.size() == 1);
-        auto a = children[0].evaluate(st);
+        assert(_children.size() == 1);
+        auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
-            return makeObject(!a->getConverted<bool>());
+            return object::makeObject(!a->getConverted<bool>());
         return (*(*a)["!"_n])(a, {}, &st);
+    }
+
+    case COMPLEMENT:
+    {
+        assert(_children.size() == 1);
+        auto a = _children[0].evaluate(st);
+        if (a->isOfType<number>())
+            return object::makeObject(static_cast<number>(~static_cast<int>(a->get<const number>())));
+        return (*(*a)["~"_n])(a, {}, &st);
     }
 
     case IDENTIFIER:
         assert(!_text.isEmpty());
         return st[_text];
 
+    case FUNCTION:
+        if (!_text.isEmpty())
+            st.insert(_text, data->value);
     case NUMBER_LITERAL:
     case STRING_LITERAL:
-    case FUNCTION:
         assert(data->value != nullptr);
         return data->value;
 
     default:
-        for (auto &child : children)
+        for (auto &child : _children)
             console::warn(LLgetSymbol(child._token));
         break;
     }
-    return makeEmptyObject();
+    return object::makeEmptyObject();
 }
 
 std::string Node::toString() const
@@ -643,12 +741,12 @@ std::string Node::toString() const
     case NUMBER_LITERAL:
         return static_cast<std::string>(_text);
     case DOT:
-        return "<" + children[0].toString() + "." + children[1].toString() + ">";
+        return "<" + _children[0].toString() + "." + _children[1].toString() + ">";
     case CALL_OPERATOR:
     {
-        std::string r = "<" + children[0].toString() + ">(";
-        for (size_t i = 1; i < children.size(); i++)
-            r += children[i].toString() + ", ";
+        std::string r = "<" + _children[0].toString() + ">(";
+        for (size_t i = 1; i < _children.size(); i++)
+            r += _children[i].toString() + ", ";
         if (r.back() == ' ')
         {
             r.pop_back();
@@ -660,9 +758,9 @@ std::string Node::toString() const
     }
     case READ_OPERATOR:
     {
-        std::string r = "<" + children[0].toString() + ">[";
-        for (size_t i = 1; i < children.size(); i++)
-            r += children[i].toString() + ", ";
+        std::string r = "<" + _children[0].toString() + ">[";
+        for (size_t i = 1; i < _children.size(); i++)
+            r += _children[i].toString() + ", ";
         if (r.back() == ' ')
         {
             r.pop_back();
@@ -674,9 +772,9 @@ std::string Node::toString() const
     }
     case METHOD_CALL_OPERATOR:
     {
-        std::string r = "<" + children[0].toString() + "." + children[1].toString() + ">(";
-        for (size_t i = 2; i < children.size(); i++)
-            r += children[i].toString() + ", ";
+        std::string r = "<" + _children[0].toString() + "." + _children[1].toString() + ">(";
+        for (size_t i = 2; i < _children.size(); i++)
+            r += _children[i].toString() + ", ";
         if (r.back() == ' ')
         {
             r.pop_back();
@@ -687,11 +785,11 @@ std::string Node::toString() const
         return r;
     }
     case STATEMENT:
-        return children[0].toString();
+        return _children[0].toString();
     case COMPOUND_STATEMENT:
     {
         std::string r = "{\n";
-        for (const auto &arg : children)
+        for (const auto &arg : _children)
             r += arg.toString() + "\n";
         r += "}";
         return r;
@@ -699,7 +797,7 @@ std::string Node::toString() const
     case ARRAY_LITERAL:
     {
         std::string r = "Array [";
-        for (const auto &arg : children)
+        for (const auto &arg : _children)
             r += arg.toString() + ", ";
         if (r.back() == ' ')
         {
@@ -713,37 +811,37 @@ std::string Node::toString() const
     case IF:
     case IF_ELSE:
     {
-        std::string r = "if (" + children[0].toString() + ") {\n";
-        for (size_t i = 1; i < children.size(); i++)
-            r += children[i].toString() + "\n";
+        std::string r = "if (" + _children[0].toString() + ") {\n";
+        for (size_t i = 1; i < _children.size(); i++)
+            r += _children[i].toString() + "\n";
         r += "}";
         return r;
     }
     case WHILE:
     {
-        std::string r = "while (" + children[0].toString() + ") {\n";
-        for (size_t i = 1; i < children.size(); i++)
-            r += children[i].toString() + "\n";
+        std::string r = "while (" + _children[0].toString() + ") {\n";
+        for (size_t i = 1; i < _children.size(); i++)
+            r += _children[i].toString() + "\n";
         r += "}";
         return r;
     }
     case LET:
         return "let " + static_cast<std::string>(_text);
     case RETURN:
-        return "return " + children[0].toString();
+        return "return " + _children[0].toString();
     case THROW:
-        return "return " + children[0].toString();
+        return "return " + _children[0].toString();
     case TRY:
     {
         std::string r = "try ";
-        r += children[0].toString() + " catch ";
-        r += children[1].toString();
+        r += _children[0].toString() + " catch ";
+        r += _children[1].toString();
         return r;
     }
     case FUNCTION:
     {
         std::string r = "function {\n";
-        for (const auto &arg : children)
+        for (const auto &arg : _children)
             r += arg.toString() + "\n";
         r += "}";
         return r;
@@ -751,7 +849,7 @@ std::string Node::toString() const
     case JSON:
     {
         std::string r = "json {\n";
-        for (const auto &arg : children)
+        for (const auto &arg : _children)
             r += arg.toString() + "\n";
         r += "}";
         return r;
@@ -759,24 +857,24 @@ std::string Node::toString() const
     case CLASS:
     {
         std::string r = "class " + static_cast<std::string>(_text) + " {\n";
-        for (const auto &arg : children)
+        for (const auto &arg : _children)
             r += arg.toString() + "\n";
         r += "}";
         return r;
     }
     default:
-        switch (children.size())
+        switch (_children.size())
         {
         case 0:
             return "<" + toName() + ">";
         case 1:
-            return "<" + toName() + " " + children[0].toString() + ">";
+            return "<" + toName() + " " + _children[0].toString() + ">";
         case 2:
-            return "<" + children[0].toString() + " " + toName() + " " + children[1].toString() + ">";
+            return "<" + _children[0].toString() + " " + toName() + " " + _children[1].toString() + ">";
         default:
         {
             std::string r = "<" + toName();
-            for (const auto &arg : children)
+            for (const auto &arg : _children)
                 r += " " + arg.toString();
             r += ">";
             return r;

@@ -58,13 +58,13 @@ token expressionStatement::operator()(stack *st, executionMemory &memory)
             {
                 object::objectPtr caller = stack.top().resolve(st);
                 stack.pop();
-                //st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
+                //st->insert("#called"_n, object::makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*(*caller)[it->getName()])(caller, std::move(arr), st)));
                 it++;
             }
             else
             {
-                //st->insert("#called"_n, makeObject(static_cast<std::string>(it->getName())));
+                //st->insert("#called"_n, object::makeObject(static_cast<std::string>(it->getName())));
                 stack.push(token((*it->resolve(st))(nullptr, std::move(arr), st)));
             }
             break;

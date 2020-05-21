@@ -8,77 +8,77 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "write"_n, {
         for (auto &el : args)
             console::write(el->getConverted<std::string>());
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "debug"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::debug(temp);
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "log"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::log(temp);
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "warn"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::warn(temp);
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "error"_n, {
         std::string temp;
         for (auto &el : args)
             temp += el->getConverted<std::string>();
         console::error(temp);
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "writeLine"_n, {
         for (auto &el : args)
             console::write(el->getConverted<std::string>());
         console::newLine();
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "newLine"_n, {
         console::newLine();
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "read"_n, {
         std::string temp;
         console::read(temp);
-        return makeObject(temp);
+        return object::makeObject(temp);
     });
     addFunctionL(consoleObj, "readAsync"_n, {
-        return makeObject(object::objectPromise::makePromise([]() {
+        return object::makeObject(object::objectPromise::makePromise([]() {
             std::string temp;
             console::read(temp);
-            return makeObject(temp);
+            return object::makeObject(temp);
         }, object::objectPromise::executionPolicy::asynchronous));
     });
     addFunctionL(consoleObj, "readLine"_n, {
         std::string temp;
         console::readLine(temp);
-        return makeObject(temp);
+        return object::makeObject(temp);
     });
     addFunctionL(consoleObj, "readLine"_n, {
         std::string temp;
         console::readLine(temp);
-        return makeObject(temp);
+        return object::makeObject(temp);
     });
     addFunctionL(consoleObj, "controlSequence"_n, {
         argsConvertibleGuard<std::string>(args);
         console::controlSequence(args[0]->getConverted<std::string>());
-        return makeEmptyObject();
+        return thisObj;
     });
     addFunctionL(consoleObj, "getOutput"_n, {
         argsGuard<std::nullptr_t>(args);
-        return makeObject(console::getOutput([&args, &st]() {
-            (*args[0])(nullptr, {}, st);
+        return object::makeObject(console::getOutput([&args, &st]() {
+            (*args[0])(args[0], {}, st);
         }));
     });
 }

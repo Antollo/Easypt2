@@ -19,7 +19,7 @@ Manually add following `tasks.json` to your project's `.vscode` folder:
         {
             "label": "Run Easypt source",
             "type": "process",
-            "command": "easypyt2",
+            "command": "easypyt",
             "args": [
                 "-file",
                 "${file}"
@@ -38,13 +38,13 @@ Manually add following `tasks.json` to your project's `.vscode` folder:
 }
 ```
 
-Add easypt interpreter (`easypt2.exe` - Windows or `easypt2` - Linux) to PATH. You can get latest interpreter from [here](https://ci.appveyor.com/project/Antollo/easypt2).
+Add easypt interpreter (`easypt.exe` - Windows or `easypt` - Linux) to PATH. You can get latest interpreter from [here](https://ci.appveyor.com/project/Antollo/easypt2).
 
 Now you can run your code with `Ctrl+Shift+B`.
 
 ## Last changes
 
-- `json` and `class` highlights
+- `instanceOf` and `else` highlight.
 
 ## For more information
 
