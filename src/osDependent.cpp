@@ -94,6 +94,13 @@ std::wstring utf8_decode(const std::string &str)
     MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
     return wstrTo;
 }
+
+/*BOOL WINAPI consoleHandler(DWORD signal) {
+    if (signal == CTRL_C_EVENT)
+        console::error("CTRL_C_EVENT");
+    return TRUE;
+}*/
+
 #else
 // Solution from: https://stackoverflow.com/a/30169485
 static void sigaction_segv(int signal, siginfo_t *si, void *arg)
@@ -121,6 +128,9 @@ void initialize()
     _setmode(_fileno(stdout), _O_WTEXT);
     _setmode(_fileno(stdin), _O_WTEXT);
     std::wcout << std::boolalpha;
+
+    //SetConsoleCtrlHandler(consoleHandler, TRUE);
+
     //Colors in console
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE)

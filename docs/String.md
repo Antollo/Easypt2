@@ -28,9 +28,11 @@ console.write("a".getByteAt(0));
 - [`readOperator`](String.classPrototype.readOperator.md)
 - [`length`](String.classPrototype.length.md)
 - [`setByteAt`](String.classPrototype.setByteAt.md)
-- [`search`](String.classPrototype.search.md)
 - [`insertFrom`](String.classPrototype.insertFrom.md)
 - [`substring`](String.classPrototype.substring.md)
+- [`split`](String.classPrototype.split.md)
+- [`indexOf`](String.classPrototype.indexOf.md)
+- [`search`](String.classPrototype.search.md)
 - [`searchAll`](String.classPrototype.searchAll.md)
 - `prototype`
 

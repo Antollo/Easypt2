@@ -1,4 +1,3 @@
-//#include "statement.h"
 #include "Node.h"
 #include "nobject.h"
 #include "runtime.h"
@@ -68,12 +67,12 @@ void runtime::init(stack *st)
     Class::init(st);
     Promise::init(st);
     Time::init(st);
+    Tcp::init(st);
 }
 
 void runtime::fini(stack *st)
 {
-    while (!object::objectPromise::loopEmpty())
-        object::objectPromise::loop();
+    while(coroutine<object::objectPtr>::stepAll());
     object::setGlobalStack(nullptr);
     st->clear();
 }

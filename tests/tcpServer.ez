@@ -1,0 +1,13 @@
+let s = TcpServer();
+let port = 3000;
+await s.bind(port);
+console.log("Listening on ", port);
+let client = await s.listen();
+while (true) {
+    try {
+        await client.send(console.getOutput(execute, await client.receive()));
+    } catch {
+        console.error(exception);
+        await client.send(exception);
+    }
+}

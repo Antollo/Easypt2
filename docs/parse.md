@@ -8,8 +8,8 @@
 
 ### Description:
 
-Parses code from string to Function object. It is dangerous (it could parse malicious 
-code) function.
+Parses code from string to `Function` object. It is dangerous
+(it could parse malicious code) function.
 
 #### Example:
 

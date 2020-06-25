@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Return value: `/*String*/`
+#### Parameters: `/*String*/`
 
 ### Description:
 

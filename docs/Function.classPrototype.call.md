@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `caller, ...`
+#### Parameters: `caller, [...]`
 
 ### Description:
 
@@ -13,6 +13,7 @@ and passes following to this function.
 
 ```js
 let x = String.classPrototype.substring.call("abc", 1, 1);
+// equivalent of "abc".substring(1, 1)
 console.write(x);
 ```
 

@@ -33,7 +33,8 @@ class MyClass extends MyBaseClass {
         console.write("method ");
     },
     function destructor {
-        // TODO: base class destructor calling
+        // TODO: auto base class destructor calling
+        this.prototype.prototype.destructor();
         console.write("destructor ");
     }
 };
@@ -45,7 +46,7 @@ obj.method();
 ##### Expected output:
 
 ```
-baseConstructor baseDestructor | baseConstructor constructor method destructor 
+baseConstructor baseDestructor | baseConstructor constructor method baseDestructor destructor 
 ```
 
 #### Members:

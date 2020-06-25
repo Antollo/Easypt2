@@ -38,7 +38,7 @@ void treeParser::parseStream(std::istream &_stream, Node &node)
     exceptionToThrow = false;
     exception.clear();
     extern int yylineno;
-    yylineno = 0;
+    yylineno = 1;
     //yyrestart(nullptr);
     parse();
     stream = nullptr;

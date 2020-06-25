@@ -31,8 +31,6 @@ file.open("test3.ez");
 let x = function { console.debug(args[0]); };
 x(5);
 //console.writeLine(tr);
-import("../library/docs");
-return 1;
 
 
 let p1 = Promise(function { console.log(1); });
@@ -44,14 +42,12 @@ let p5 = Promise(function { console.log(5); });
 console.log("start");
 Object.condition = "one";
 Timeout(7005).then(function { console.log(75); Object.condition = "two"; });
-Timeout(20).then(function { console.log(20); });
 
 ConditionalPromise(function { console.log(Object.condition); }, function { return "one" == Object.condition; });
+let a = console.readAsync().then( function{ console.log(args[0]); });
+let b = console.readAsync().then( function{ console.log(args[0]); });
+let c = console.readAsync().then( function{ console.log(args[0]); });
+let d = console.readAsync().then( function{ console.log(args[0]); });
+let e = console.readAsync().then( function{ console.log(args[0]); });
 
-console.readAsync().then( function{ console.log(args[0]); });
-console.readAsync().then( function{ console.log(args[0]); });
-console.readAsync().then( function{ console.log(args[0]); });
-console.readAsync().then( function{ console.log(args[0]); });
-console.readAsync().then( function{ console.log(args[0]); });
-
-console.log(10);
+Timeout(100).then(function { console.log(20); });

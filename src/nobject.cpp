@@ -5,36 +5,17 @@ object::objectPtr object::numberPrototype, object::stringPrototype, object::bool
     object::objectPrototype, object::functionPrototype, object::promisePrototype, object::classPrototype;
 stack *object::globalStack;
 
-object::buffer object::memory = {0, 0, 0};
+allocatorBuffer<0> object::memory;
 object::buffer object::objects = {0, 0, 0};
 
-void *object::operator new(size_t size)
+void *object::operator new(size_t)
 {
-    if (memory.length == 0)
-    {
-        //console::log("new empty");
-        return std::malloc(size);
-    }
-    
-    void *ptr = memory.data[memory.tail++];
-    if (memory.tail == buffer::maxLength)
-        memory.tail = 0;
-    memory.length--;
-    return ptr;
+    return static_cast<object*>(memory.allocate(sizeof(object)));
 }
 
 void object::operator delete(void *ptr)
 {
-    if (memory.length == buffer::maxLength)
-    {
-        //console::log("delete full");
-        std::free(ptr);
-        return;
-    }
-    memory.data[memory.head++] = reinterpret_cast<object *>(ptr);
-    if (memory.head == buffer::maxLength)
-        memory.head = 0;
-    memory.length++;
+    memory.deallocate(ptr);
 }
 
 void object::reuse(object *ptr)
@@ -79,7 +60,14 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
     }
     if (isOfType<functionType>())
     {
+        if (_capturedStack != nullptr)
+            st = _capturedStack.get();
         stack localStack(st);
+		if (_capturedStack != nullptr)
+		{
+			auto referenceToFather = localStack.insert("_stack"_n, makeEmptyObject());
+			referenceToFather->captureStack(_capturedStack);
+		}
         const functionType &node = get<const functionType>();
         for (size_t i = 0; i < node.names().size() && i < args.size(); i++)
             localStack.insert(node.names()[i], args[i]);
@@ -88,7 +76,9 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
             localStack.insert(name::thisObj, thisObj);
         try
         {
-            node.evaluate(localStack);
+            auto evalRet = node.evaluate(localStack);
+            if (evalRet != nullptr)
+                return evalRet;
         }
         catch (const object::objectPtr &ret)
         {
@@ -126,6 +116,7 @@ object::objectPtr &object::read(const name &n)
 void object::clear()
 {
     _properties.clear();
+    _capturedStack.reset();
     _value = nullptr;
     _isConst = false;
     _prototype = nullptr;

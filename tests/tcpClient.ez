@@ -1,0 +1,5 @@
+let t = TcpClient();
+await t.connect("127.0.0.1", 3000);
+await t.send("GET / HTTP/1.1\r\nHost: motherfuckingwebsite.com\r\n\r\n");
+console.log("send");
+console.writeLine(await t.receive());

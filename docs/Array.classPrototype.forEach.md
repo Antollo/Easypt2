@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `calback /*Function*/`
+#### Parameters: `callback /*Function*/`
 
 ### Description:
 

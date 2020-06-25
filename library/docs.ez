@@ -199,35 +199,10 @@ function makeDocs {
     file.writeLine("## Tutorial\n\n`TODO`\n");
 };
 
-/*let i = 0;
-let stack = getStack();
-let stackNames = stack.getOwnPropertyNames();
-
-while (i < stackNames.length()) {
-    let obj <- stack[stackNames[i]];
-    if (!obj.hasOwnProperty("description"))
-        console.controlSequence("91m");
-    console.writeLine(stackNames[i]);
-    console.controlSequence("0m");
-    let objNames = obj.getOwnPropertyNames();
-    if (obj.hasOwnProperty("classPrototype")) {
-        let prototypeNames = obj.classPrototype.getOwnPropertyNames();
-        objNames.insertFrom(objNames.length(), prototypeNames, 0, prototypeNames.length());
-    }
-    let j = 0;
-    while (j < objNames.length()) {
-        if (!Object.readOperator.call(obj, objNames[j]).hasOwnProperty("description"))
-            console.controlSequence("91m");
-        console.writeLine("\t", objNames[j]);
-        console.controlSequence("0m");
-        j++;
-    }
-    i++;
-}*/
-
 import("../library/docsData.ez");
 
 makeDocs();
 testAllExamples();
+console.debug("Done");
 
 return help;

@@ -1,4 +1,6 @@
-let text = "xd";
+function () {};
+() => {};
+/*let text = "xd";
 text = text = "b";
 console.log(text, "działa");
 console.error(2137.5);
@@ -19,17 +21,6 @@ for (let i = 0; i<arr.length(); i++)
     console.debug(arr[i]);
 }
 
-function nwd (x, y) {
-    let a = x;
-    let b = y;
-    while (a != b) {
-        if (a < b)
-            b <- b - a;
-        else
-            a <- a - b;
-    }
-    return a;
-};
 
 let arr = Array();
 let i = 0;
@@ -39,14 +30,28 @@ while(i<1000) {
     i++;
 }
 console.warn("Zażółć gęślą jaźń.\n");
-let a = 144;
-let b = 20480000;
+*/
+
+
+function nwd (x, y) {
+    let a = x;
+    let b = y;
+    while (a != b) {
+        if (a < b)
+            b = b - a;
+        else
+            a = a - b;
+    }
+    return a;
+};
 let time = Time.sinceEpoch.asFloatingPoint();
 let x = nwd(144, 20480000);
+let x = 1;
+console.log(Time.sinceEpoch.asFloatingPoint() - time);
+console.log(x);
+
 // 1170 - old time
 // 580 - new time
-console.log(Time.sinceEpoch.asFloatingPoint() - time);
-
 let u = {a:7, b:8};
 console.log(u.a);
 
@@ -56,10 +61,14 @@ class Printer {
     },
     print: function {
         console.writeLine("Printer");
-    }
+    },
+    destructor: function { 
+        console.writeLine("Printer destructor"); 
+    },
+    "await": () => "works";
 };
 
-class Myclass extends Printer {
+/*class Myclass extends Printer {
     constructor: function {
         //getStack().forEach(console.log);
         this.super();
@@ -89,5 +98,95 @@ try {
     file.open("protocols.txt");
 } catch {
     console.write("error");
+}*/
+
+//function gcd (x, y) {
+//  if (y == 0)
+//    return x;
+//  else
+//    return gcd(y, x%y);
+//};
+//let time = Time.sinceEpoch.asFloatingPoint();
+//let x = gcd(144, 20480000);
+//console.log(Time.sinceEpoch.asFloatingPoint() - time);
+//console.log(x);
+
+
+//let t = TcpClient();
+//Timeout(20).then(function { console.warn(20); });
+//Timeout(250).then(function { console.warn(250); });
+//t.connect("motherfuckingwebsite.com", 80).await();
+//t.send("GET / HTTP/1.1\r\nHost: motherfuckingwebsite.com\r\n\r\n").await();
+//console.log("send");
+//console.writeLine(t.receive().await());
+let p <- Printer();
+console.log(await p);
+let s = TcpServer();
+await s.bind(3000);
+let i = 0;
+while (true) {
+    await ConditionalPromise(() => console.log(i);, () => i >= 2; );
+    console.warn("listening");
+    i++;
+    s.listen().then(function (c) {
+        i--;
+        try {
+            console.log("listening");
+            await c.receive();
+            console.log("sending");
+            await c.send("HTTP/1.1 200 OK\r\n\r\nHello");
+            await c.close();
+            console.log("closing");
+        } catch {
+            console.error(exception);
+        }
+    });
 }
+        //Timeout(1000).await();
+        //try {
+            //console.log("sending");
+            //c.send("HTTP/1.1 200 OK\r\n\r\nHello").then(function {
+            //    //console.log("sent end");
+            //    c.close();
+            //});
+            //try {
+            //    console.debug("opened", msg);
+            //    //c.send("HTTP/1.1 200 OK\r\n\r\nHello").await();
+            //    //console.warn("sent");
+            //    c.send("HTTP/1.1 200 OK\r\n\r\nHello").then(function {
+            //        console.log("sent");
+            //        //c.close().then(function {
+            //        //    console.error("closed");
+            //        //});
+            //        try {
+            //            c.close().await();
+            //        } catch {
+            //            console.error(exception);
+            //        }
+            //        console.error("closed");
+            //    });
+            //    //c.close().await();
+            //    //console.error("closed");
+            //} catch {
+            //    console.error(exception);
+            //}
+            //console.log("sent");
+        //} catch {
+        //    console.error(exception);
+        //    c.close();
+        //}
+        //Timeout(1000).await();
+        //c.send("HTTP/1.1 200 OK\r\n\r\nHello").await();
+    //});
+
+//Timeout(1000).await();
+
+// sudo apt install g++-10
+
+/*
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt install gcc-10
+sudo apt install g++-10
+*/
 

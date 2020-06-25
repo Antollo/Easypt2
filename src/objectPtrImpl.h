@@ -2,7 +2,7 @@
 #define OBJECTPTRIMPL_H_
 
 #include <stdexcept>
-#include <array>
+#include "allocator.h"
 
 class object;
 
@@ -27,15 +27,7 @@ public:
     inline object *get() { return _obj; }
 
 private:
-    struct buffer
-    {
-        int length, head, tail;
-        static constexpr int maxLength = 64;
-        std::array<int *, maxLength> data;
-    };
-    static buffer memory;
-    static int *newInt();
-    static void deleteInt(int *ptr);
+    static allocatorBuffer<sizeof(int)> memory;
     object *_obj;
     int *_refCount;
 };

@@ -1,3 +1,4 @@
+#define _REGEX_MAX_STACK_COUNT 100000
 #include <regex>
 #include <iterator>
 #include "../library.h"
@@ -94,6 +95,35 @@ void String::init(stack *st)
         assert<std::less_equal>(pos + length, me.size());
         me.erase(me.begin() + pos, me.begin() + pos + length);
         return thisObj;
+    });
+
+    addFunctionL(object::stringPrototype, "split"_n, {
+        argsConvertibleGuard<std::string>(args);
+        const std::string &me = thisObj->get<const std::string>();
+        const std::string &delim = args[0]->getConverted<const std::string>();
+        int begin = 0, end, delimSize = delim.size();
+
+        object::arrayType res;
+
+        while ((end = me.find (delim, begin)) != std::string::npos) {
+            res.push_back(object::makeObject(me.substr(begin, end - begin)));
+            begin = end + delimSize;
+        }
+        res.push_back(object::makeObject(me.substr(begin)));
+
+        return object::makeObject(res);
+    });
+
+    addFunctionL(object::stringPrototype, "indexOf"_n, {
+        argsConvertibleGuard<std::string>(args);
+        std::string &me = thisObj->get<std::string>();
+        std::string key = args[0]->getConverted<std::string>();
+        int pos = 0;
+        if (args.size() >= 2)
+            pos = static_cast<int>(args[1]->getConverted<number>());
+        assert<std::greater_equal>(pos, 0);
+        assert<std::less>(pos, me.size());
+        return object::makeObject(static_cast<number>(me.find(key, pos)));
     });
 
     addFunctionL(object::stringPrototype, "search"_n, {

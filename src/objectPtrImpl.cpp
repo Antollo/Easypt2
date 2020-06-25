@@ -3,12 +3,14 @@
 #include "console.h"
 #include "core.h"
 
+allocatorBuffer<sizeof(int)> objectPtrImpl::memory;
+
 objectPtrImpl::objectPtrImpl(object *obj)
 {
     _obj = obj;
     if (_obj != nullptr)
     {
-        _refCount = newInt();
+        _refCount = static_cast<int*>(memory.allocate());
         *_refCount = 1;
     }
     else
@@ -32,7 +34,7 @@ objectPtrImpl &objectPtrImpl::operator=(const objectPtrImpl &ptr)
         {
             if (_obj != nullptr)
                 object::reuse(_obj);
-            deleteInt(_refCount);
+            memory.deallocate(_refCount);
         }
     }
     _obj = ptr._obj;
@@ -60,7 +62,7 @@ objectPtrImpl &objectPtrImpl::operator=(objectPtrImpl &&ptr)
         {
             if (_obj != nullptr)
                 object::reuse(_obj);
-            deleteInt(_refCount);
+            memory.deallocate(_refCount);
         }
     }
     _obj = ptr._obj;
@@ -125,7 +127,7 @@ objectPtrImpl::~objectPtrImpl()
                     if (*_refCount == 0)
                     {
                         object::reuse(_obj);
-                        deleteInt(_refCount);
+                        memory.deallocate(_refCount);
                         _obj = nullptr;
                         _refCount = nullptr;
                     }
@@ -133,14 +135,14 @@ objectPtrImpl::~objectPtrImpl()
                 else
                 {
                     object::reuse(_obj);
-                    deleteInt(_refCount);
+                    memory.deallocate(_refCount);
                     _obj = nullptr;
                     _refCount = nullptr;
                 }
             }
             else
             {
-                deleteInt(_refCount);
+                memory.deallocate(_refCount);
                 _refCount = nullptr;
             }
         }
@@ -180,35 +182,4 @@ const object *objectPtrImpl::operator->() const
     //    throw std::runtime_error("getting pointer to NULL");
     //_obj->_thisPtr = this;
     return _obj;
-}
-
-objectPtrImpl::buffer objectPtrImpl::memory;
-
-int *objectPtrImpl::newInt()
-{
-    if (memory.length == 0)
-    {
-        //console::log("new empty");
-        return reinterpret_cast<int*>(std::malloc(sizeof(int)));
-    }
-
-    int *ptr = memory.data[memory.tail++];
-    if (memory.tail == buffer::maxLength)
-        memory.tail = 0;
-    memory.length--;
-    return ptr;
-}
-
-void objectPtrImpl::deleteInt(int *ptr)
-{
-    if (memory.length == buffer::maxLength)
-    {
-        //console::log("delete full");
-        std::free(ptr);
-        return;
-    }
-    memory.data[memory.head++] = reinterpret_cast<int *>(ptr);
-    if (memory.head == buffer::maxLength)
-        memory.head = 0;
-    memory.length++;
 }

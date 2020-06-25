@@ -1,4 +1,24 @@
 #include "../library.h"
+#include <cstdint>
+
+std::string toId(std::uintptr_t ptr)
+{
+    constexpr int base = '9' - '0' + 'z' - 'a' + 'Z' - 'A' + 3;
+    std::string res;
+    do
+    {
+        int c = ptr % base;
+        ptr /= base;
+        if (c <= '9' - '0')
+            c += '0';
+        else if (c <= '9' - '0' + 'z' - 'a' + 1)
+            c += 'a' - ('9' - '0' + 1);
+        else if (c <= '9' - '0' + 'z' - 'a' + 'Z' - 'A' + 2)
+            c += 'A' - ('9' - '0' + 'z' - 'a' + 2);
+        res.push_back(c);
+    } while (ptr);
+    return res;
+}
 
 void Object::init(stack *st)
 {
@@ -6,12 +26,12 @@ void Object::init(stack *st)
 
     (*Object)["classPrototype"_n] = object::objectPrototype;
     (*object::objectPrototype)[name::prototype] = object::objectPrototype;
-    
+
     addFunctionL(object::objectPrototype, "hasOwnProperty"_n, {
         argsConvertibleGuard<std::string>(args);
         return object::makeObject(thisObj->hasOwnProperty(static_cast<name>(args[0]->getConverted<std::string>())));
     });
-    
+
     addFunctionL(object::objectPrototype, "removeProperty"_n, {
         argsConvertibleGuard<std::string>(args);
         thisObj->removeProperty(static_cast<name>(args[0]->getConverted<std::string>()));
@@ -34,8 +54,7 @@ void Object::init(stack *st)
     });
 
     addFunctionL(object::objectPrototype, "getId"_n, {
-        auto ptr = thisObj.get();
-	    std::string byteBuffer(reinterpret_cast<char*>(&ptr), reinterpret_cast<char*>(&ptr) + sizeof(decltype(ptr)));
-        return object::makeObject(byteBuffer);
+        std::uintptr_t ptr = reinterpret_cast<std::uintptr_t>(thisObj.get());
+        return object::makeObject(toId(ptr));
     });
 }

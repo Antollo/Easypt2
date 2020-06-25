@@ -4,10 +4,10 @@ set_source_files_properties(parser/gram.c PROPERTIES LANGUAGE CXX)
 set_source_files_properties(parser/lex.yy.c PROPERTIES LANGUAGE CXX)
 
 add_library(libeasypt OBJECT console.cpp core.cpp name.cpp nobject.cpp number.cpp
-osDependent.cpp runtime.cpp stack.cpp objectPtrImpl.cpp file.cpp
+osDependent.cpp runtime.cpp stack.cpp objectPtrImpl.cpp file.cpp coroutine.cpp
 library/consoleObj.cpp library/operators.cpp library/Object.cpp library/Array.cpp
 library/File.cpp library/String.cpp library/Number.cpp library/Boolean.cpp library/Class.cpp
-library/Promise.cpp library/Time.cpp
+library/Promise.cpp library/Time.cpp library/Tcp.cpp
 parser/gram.c parser/lex.yy.c parser/gramUtility.cpp parser/treeParser.cpp parser/Node.cpp)
 
 target_include_directories(libeasypt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/parser)

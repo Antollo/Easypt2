@@ -38,7 +38,21 @@ object::objectPtr stack::toObject()
 
 void stack::toObject(object::objectPtr& obj)
 {
+    obj->addProperties(begin(), end());
     if (previous != nullptr)
         previous->toObject(obj);
-        obj->addProperties(begin(), end());
+}
+
+stack stack::flatCopy()
+{
+    stack st;
+    flatCopy(st);
+    return st;
+}
+
+void stack::flatCopy(stack& st)
+{
+    st.storage.insert(begin(), end());
+    if (previous != nullptr)
+        previous->flatCopy(st);
 }

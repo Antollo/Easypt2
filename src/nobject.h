@@ -11,10 +11,10 @@
 #include "name.h"
 #include "stack.h"
 #include "number.h"
-//#include "statement.h"
 #include "Node.h"
-#include "promise.h"
+#include "coroutine.h"
 #include "file.h"
+#include "allocator.h"
 
 template <class T>
 struct always_false : std::false_type
@@ -24,17 +24,19 @@ struct always_false : std::false_type
 template <class T>
 using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
-objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl> &&args, stack *st);
-class objectMemory;
+objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
+
+class tcpClient;
+class tcpServer;
 
 class object
 {
 public:
     using objectPtr = objectPtrImpl;
-    using arrayType = std::vector<objectPtr>;
+    using arrayType = std::vector<objectPtr, allocator<objectPtr>>;
     using nativeFunctionType = objectPtr (*)(objectPtr, arrayType &&, stack *);
-    using propertiesType = std::unordered_map<name, objectPtr>;
-    using objectPromise = promise<objectPtr>;
+    using propertiesType = std::unordered_map<name, objectPtr, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtr>>>;
+    using objectCoroutine = std::shared_ptr<coroutine<objectPtr>>;
     using functionType = Node;
 
     static functionType makeFunction()
@@ -94,7 +96,7 @@ public:
             _prototype = arrayPrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
             _prototype = booleanPrototype;
-        else if constexpr (std::is_same_v<std::decay_t<T>, objectPromise::promisePtr>)
+        else if constexpr (std::is_same_v<std::decay_t<T>, objectCoroutine>)
             _prototype = promisePrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, functionType> || std::is_same_v<std::decay_t<T>, nativeFunctionType>)
         {
@@ -120,7 +122,15 @@ public:
     template <class T>
     bool isOfType() const
     {
-        return typeid(remove_cref_t<T>).hash_code() == getTypeHashCode();
+        return std::visit([](auto &&value) -> bool {
+            using A = std::decay_t<decltype(value)>;
+
+            if constexpr (std::is_same_v<remove_cref_t<T>, A>)
+                return true;
+            else
+                return false;
+        },
+                          _value);
     }
 
     template <class T>
@@ -153,16 +163,26 @@ public:
     template <class T>
     bool isConvertible() const
     {
-        if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
-            if (isOfType<nullptr_t>() || isOfType<functionType>() || isOfType<nativeFunctionType>())
+        return std::visit([](auto &&value) -> bool {
+            using A = std::decay_t<decltype(value)>;
+
+            if constexpr (std::is_same_v<remove_cref_t<T>, A>)
+            {
                 return true;
-        if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
-        {
-            return isOfType<number>() || isOfType<std::string>() || isOfType<arrayType>() || isOfType<bool>();
-        }
-        // TODO user conversions
-        else
+            }
+            else if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
+            {
+                if constexpr (std::is_same_v<A, nullptr_t> || std::is_same_v<A, functionType> || std::is_same_v<A, nativeFunctionType>)
+                    return true;
+            }
+            else if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
+            {
+                return std::is_same_v<A, number> || std::is_same_v<A, std::string> || std::is_same_v<A, arrayType> || std::is_same_v<A, bool>;
+            }
             return false;
+            // TODO user conversions
+        },
+                          _value);
     }
 
     template <class T>
@@ -243,6 +263,7 @@ public:
             }
 
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
+ 
         },
                           _value);
 
@@ -268,6 +289,16 @@ public:
     arrayType getOwnPropertyNames();
     void clear();
 
+    void captureStack(stack &&st)
+    {
+        _capturedStack = std::make_shared<stack>(std::move(st));
+    }
+
+	void captureStack(std::shared_ptr<stack> st)
+	{
+		_capturedStack = st;
+	}
+
     static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
     static void setGlobalStack(stack *newGlobalStack)
     {
@@ -276,30 +307,28 @@ public:
 
 private:
     friend class objectPtrImpl;
-    std::variant<nullptr_t, bool, number, std::string, arrayType, objectPromise::promisePtr, functionType, nativeFunctionType, file> _value;
+    std::variant<nullptr_t, bool, number, std::string, arrayType, objectCoroutine, functionType, nativeFunctionType, std::shared_ptr<file>, std::shared_ptr<tcpClient>, std::shared_ptr<tcpServer>> _value;
     propertiesType _properties;
     bool _isConst;
     objectPtr _prototype;
+    std::shared_ptr<stack> _capturedStack;
 
     static stack *globalStack;
 
     struct buffer
     {
         int length, head, tail;
-        static constexpr int maxLength = 64;
+        static constexpr int maxLength = 128;
         std::array<object *, maxLength> data;
     };
-    static buffer memory, objects;
+    static buffer objects;
     static void reuse(object *ptr);
+    static allocatorBuffer<0> memory;
 
     objectPtr &read(const name &n);
     const char *getTypeName() const
     {
         return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
-    }
-    std::size_t getTypeHashCode() const
-    {
-        return std::visit([](auto &&v) { return typeid(v).hash_code(); }, _value);
     }
 };
 

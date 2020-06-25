@@ -2,22 +2,22 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `/*Function*/`
+#### Parameters: `/*Function*/, [...]`
 
 #### Return value: `/*String*/`
 
 ### Description:
 
-Calls provided function and intercet output written 
-by that function. Useful for testing.
+Calls provided function (forwards arguments) and intercept 
+output written by that function. Useful for testing.
 
 #### Example:
 
 ```js
-function f {
-    console.write("abc");
+function f (a) {
+    console.write(a);
 };
-let output = console.getOutput(f);
+let output = console.getOutput(f, "abc");
 console.write(output);
 ```
 

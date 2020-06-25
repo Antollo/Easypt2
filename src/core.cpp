@@ -29,15 +29,15 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
         else
             throw std::runtime_error("file " + fileName.string() + " not found");
     }
-    else if (args[0]->isOfType<file>())
+    else if (args[0]->isOfType<std::shared_ptr<file>>())
     {
-        file &sourceFile = args[0]->get<file>();
-        fileName = sourceFile.getPath();
+        auto &sourceFile = args[0]->get<std::shared_ptr<file>>();
+        fileName = sourceFile->getPath();
 
-        if (!sourceFile.isOpen())
+        if (!sourceFile->isOpen())
             throw std::runtime_error("file " + fileName.string() + " is not opened");
 
-        fileNameString = sourceFile.getPath().string();
+        fileNameString = sourceFile->getPath().string();
     }
     else
         throw std::runtime_error("wrong type of argument");

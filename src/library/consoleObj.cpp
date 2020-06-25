@@ -1,5 +1,4 @@
 #include "../library.h"
-#include "../promise.h"
 
 void consoleObj::init(stack *st)
 {
@@ -54,11 +53,14 @@ void consoleObj::init(stack *st)
         return object::makeObject(temp);
     });
     addFunctionL(consoleObj, "readAsync"_n, {
-        return object::makeObject(object::objectPromise::makePromise([]() {
+        return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([]() {
             std::string temp;
-            console::read(temp);
+            auto f =  std::async(std::launch::async, [&temp](){
+                console::read(temp);
+            });
+            await f;
             return object::makeObject(temp);
-        }, object::objectPromise::executionPolicy::asynchronous));
+        }));
     });
     addFunctionL(consoleObj, "readLine"_n, {
         std::string temp;
@@ -78,7 +80,7 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "getOutput"_n, {
         argsGuard<std::nullptr_t>(args);
         return object::makeObject(console::getOutput([&args, &st]() {
-            (*args[0])(args[0], {}, st);
+            (*args[0])(args[0], object::arrayType(args.begin() + 1, args.end()), st);
         }));
     });
 }

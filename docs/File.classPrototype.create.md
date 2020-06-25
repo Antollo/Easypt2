@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `/*String*/`
+#### Parameters: `path /*String*/`
 
 #### Return value: `/*File*/`
 

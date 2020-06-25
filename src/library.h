@@ -68,4 +68,9 @@ namespace Time
 void init(stack *st);
 };
 
+namespace Tcp
+{
+void init(stack *st);
+};
+
 #endif /* !LIBRARY_H_ */

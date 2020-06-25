@@ -14,5 +14,5 @@ Remove-Item $LLnextgenPath -Recurse -ErrorAction Ignore
 Invoke-WebRequest -Uri $LLnextgenUrl -OutFile $LLnextgenZip
 Expand-Archive $LLnextgenZip -DestinationPath $LLnextgenPath
 
-Invoke-Expression "$env:TEMP\flex\bin\flex --version"
-Invoke-Expression "$env:TEMP\LLnextgen\LLnextgen\LLnextgen --version"
+Invoke-Expression "& '$env:TEMP\flex\bin\flex' --version"
+Invoke-Expression "& '$env:TEMP\LLnextgen\LLnextgen\LLnextgen' --version"

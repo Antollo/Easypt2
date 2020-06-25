@@ -29,7 +29,8 @@ namespace filesystem = std::experimental::filesystem;
 #ifndef _UNICODE
 #define _UNICODE
 #endif
-#pragma comment(linker, "/STACK:134217728")
+#pragma comment(linker, "/STACK:4194304")
+#pragma comment(linker, "/HEAP:4194304")
 #include <Windows.h>
 #include <eh.h>
 #include <io.h>

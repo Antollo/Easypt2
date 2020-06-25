@@ -4,53 +4,19 @@
 
 ## Example:
 
-```c
+```js
 console.write("What's your name?\t");
 let name = console.readLine();
 console.writeLine("Hello " + name + "! Nice to meet you.");
 ```
 
-Run with: `easypt -file my_file.ez`. Longer example:
+Run with: `easypt -file my_file.ez`. Another example:
 
-```
-console.writeLine("a\nb");
-console.writeLine(1+2);
-console.writeLine(1.0+2.0);
-console.writeLine(0.3+0.7);
-console.writeLine("a"+"b");
-console.writeLine(7/2);
-console.writeLine(7%2);
-console.writeLine("1"+1);
-console.writeLine(1+"1");
-console.writeLine(1+2*3);
+```js
+let arr = "ab: cd\n\re: f\n\rg: hij".split("\n\r");
 
-let f = function { console.writeLine(args[0]); };
-f("function");
-
-if (true)  
-    console.writeLine(true);
-if (false)  
-    console.writeLine(false);
-
-if (1=="1")  
-    console.writeLine(true);
-if (1==2)  
-    console.writeLine(false);
-
-console.writeLine("s"[0]);
-
-let i = 10;
-while (i)
-{
-    console.write(i);
-    i=i-1;
-}
-
-console.newLine();
-
-let u;
-u.p = "property";
-console.write(u.p);
+for(let i = 0; i<arr.length(); i++)
+    console.writeLine(arr[i]);
 ```
 
 

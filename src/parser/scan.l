@@ -34,6 +34,7 @@ while                       { return WHILE; }
 for                         { return FOR; }
 let                         { return LET; }
 function                    { return FUNCTION; }
+await                       { return AWAIT; }
 
 {identifier}                {
                                 treeParser::text = yytext;
@@ -47,6 +48,8 @@ function                    { return FUNCTION; }
                                 treeParser::text = yytext;
                                 return STRING_LITERAL;
                             }
+\(/({identifier},{ws})*{identifier}?\){ws}=> { return FAT_ARROW_BEGIN; }
+=>                          { return FAT_ARROW; }
 @{identifier}@              { treeParser::text = std::string(yytext + 1, std::strlen(yytext) - 2); return USER_OPERATOR; }
 ==                          { treeParser::text = yytext; return EQUAL; }
 !=                          { treeParser::text = yytext; return NOT_EQUAL; }

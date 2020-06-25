@@ -1,3 +1,5 @@
+#error "deprecated"
+
 #ifndef PROMISE_H_
 #define PROMISE_H_
 
@@ -15,6 +17,10 @@ template <class R>
 class promise : public std::enable_shared_from_this<promise<R>>
 {
 public:
+    static void init()
+    {
+        m.lock();
+    }
     using promisePtr = std::shared_ptr<promise>;
     enum class executionPolicy
     {
@@ -33,7 +39,7 @@ public:
     }
 
     template <class F, class C>
-    static std::shared_ptr<promise> makePromise(F &&callback, executionPolicy ep , C &&condition)
+    static std::shared_ptr<promise> makePromise(F &&callback, C &&condition, executionPolicy ep = executionPolicy::synchronous)
     {
         auto pr = std::shared_ptr<promise>(new promise(std::forward<F>(callback), ep, std::forward<C>(condition)));
         promises.push_back(pr);
@@ -68,10 +74,10 @@ public:
                             consumed = true;
                             R temp = future.get();
                             return cbf(temp); },
-                           policy,
                            [this]() {
                                return isReady();
-                           });
+                           },
+                           policy);
     }
     R await()
     {
@@ -88,32 +94,63 @@ public:
     }
     static void loop()
     {
-        console::debug("loop");
+        //console::debug("loop");
+        static int counter = 0;
+        static constexpr int maxCounter = 1000000;
         typename list::iterator i, j;
         for (i = promises.begin(); i != promises.end();)
         {
+            counter = counter >= maxCounter ? maxCounter : counter + 1;
+
             j = i++;
             (*j)->tick();
+
+            good = true;
+            m.unlock();
+            cv.notify_one();
+
+            if (counter == maxCounter)
+                std::this_thread::sleep_for(std::chrono::microseconds(1));
+                
             if ((*j)->isReady())
             {
-                console::debug("consumable: ", (*j)->consumable, " consumed: ", (*j)->consumed);
+                //console::debug("consumable: ", (*j)->consumable, " consumed: ", (*j)->consumed);
                 if ((*j)->consumable && (*j)->consumed)
                 {
-                    console::debug("released");
+                    //console::debug("released");
                     promises.erase(j);
+                    counter = 0;
                 }
                 else if (!(*j)->consumable && j->use_count() == 1)
                 {
-                    console::debug("released !consumable");
+                    //console::debug("released !consumable");
                     promises.erase(j);
+                    counter = 0;
                 }
             }
+
+            m.lock();
         }
     }
     static bool loopEmpty()
     {
         return promises.empty();
     }
+
+    class promiseLock
+    {
+    public:
+        promiseLock() : lk(m)
+        {
+            //console::debug("waiting");
+            cv.wait(lk, [] { return good; });
+            good = false;
+            //console::debug("finished");
+        }
+
+    private:
+        std::unique_lock<std::mutex> lk;
+    };
 
 private:
     template <class F>
@@ -147,11 +184,10 @@ private:
     }
     bool isReady()
     {
-        if (ended) return true;
+        if (ended)
+            return true;
         return ended = future.valid() && future.wait_for(std::chrono::milliseconds::zero()) == std::future_status::ready;
     }
-    using list = typename std::list<std::shared_ptr<promise>>;
-    static list promises;
 
     std::packaged_task<R(void)> pt;
     std::function<R(R)> cbf;
@@ -161,9 +197,27 @@ private:
     std::atomic<bool> consumed;
     executionPolicy ep;
     std::thread thread;
+
+    using list = typename std::list<std::shared_ptr<promise>>;
+    static list promises;
+    static 
+
+    friend class promiseLock;
+    static std::condition_variable cv;
+    static std::mutex m;
+    static bool good;
 };
 
 template <class R>
 typename promise<R>::list promise<R>::promises;
+
+template <class R>
+typename std::condition_variable promise<R>::cv;
+
+template <class R>
+typename std::mutex promise<R>::m;
+
+template <class R>
+typename bool promise<R>::good = false;
 
 #endif /* !PROMISE_H_ */

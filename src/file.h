@@ -26,11 +26,11 @@ public:
     int size();
     void clear();
     void close();
-    inline bool isOpen() { return _f->is_open(); }
+    inline bool isOpen() { return _f.is_open(); }
     inline std::filesystem::path getPath() { return _path; }
 
 private:
-    std::shared_ptr<std::fstream> _f;
+    std::fstream _f;
     std::filesystem::path _path;
     enum class lastOperationType
     {

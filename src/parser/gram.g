@@ -70,6 +70,10 @@
 %token EXTENDS;
 %token INSTANCEOF;
 
+%token FAT_ARROW_BEGIN;
+%token FAT_ARROW;
+%token AWAIT;
+
 %start parse, input;
 
 input { Node a(INI); }
@@ -271,6 +275,9 @@ factorBase(Node& me)  { Node b(INI); }:
     NOT
     expression(0, b) { me.token(NOT); me.addChild(b); }
     |
+    AWAIT
+    expression(0, b) { me.token(AWAIT); me.addChild(b); }
+    |
     IDENTIFIER { me.token(IDENTIFIER); me.text(treeParser::text); }
     |
     NUMBER_LITERAL { me.token(NUMBER_LITERAL); me.text(treeParser::text); }
@@ -296,6 +303,16 @@ factorBase(Node& me)  { Node b(INI); }:
     ]
     { b.init(INI); }
     compoundStatement(b) { me.token(FUNCTION); me.addChild(b); }
+    |
+    FAT_ARROW_BEGIN
+    [
+        IDENTIFIER { me.addName(treeParser::text); }
+        ',' ..?
+    ]*
+    PARENTHESES_CLOSE
+    FAT_ARROW
+    { b.init(INI); }
+    statement(b) { me.token(FUNCTION); me.addChild(b); }
     |
     JSON
     BRACES_OPEN

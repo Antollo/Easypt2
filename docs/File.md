@@ -4,7 +4,7 @@
 
 ### Description:
 
-`File` class provides file input and output operations.
+File class provides file input and output operations.
 
 #### Example:
 
@@ -23,15 +23,15 @@ if (1+3 != 4) {
 
 #### Members:
 
-- [`create`](File.classPrototype.create.md)
-- [`write`](File.classPrototype.write.md)
+- [`readTo`](File.classPrototype.readTo.md)
 - [`constructor`](File.classPrototype.constructor.md)
 - [`open`](File.classPrototype.open.md)
 - [`read`](File.classPrototype.read.md)
 - [`readLine`](File.classPrototype.readLine.md)
 - [`writeLine`](File.classPrototype.writeLine.md)
 - [`readBytes`](File.classPrototype.readBytes.md)
-- [`readTo`](File.classPrototype.readTo.md)
+- [`write`](File.classPrototype.write.md)
+- [`create`](File.classPrototype.create.md)
 - [`remove`](File.classPrototype.remove.md)
 - [`close`](File.classPrototype.close.md)
 - [`size`](File.classPrototype.size.md)

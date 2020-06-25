@@ -23,7 +23,6 @@ if (1+3 != 4) {
 
 ### Properties:
 
-- [`readAsync`](console.readAsync.md)
 - [`write`](console.write.md)
 - [`debug`](console.debug.md)
 - [`log`](console.log.md)
@@ -32,6 +31,7 @@ if (1+3 != 4) {
 - [`writeLine`](console.writeLine.md)
 - [`newLine`](console.newLine.md)
 - [`read`](console.read.md)
+- [`readAsync`](console.readAsync.md)
 - [`readLine`](console.readLine.md)
 - [`controlSequence`](console.controlSequence.md)
 - [`getOutput`](console.getOutput.md)

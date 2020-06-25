@@ -9,6 +9,7 @@
 #include "objectPtrImpl.h"
 #include "stack.h"
 #include "console.h"
+#include "number.h"
 
 class Node
 {
@@ -24,6 +25,11 @@ public:
 
     std::string toString() const;
     objectPtrImpl evaluate(stack &st) const;
+    number evaluateNumber(stack &st) const;
+    bool evaluateBoolean(stack &st) const;
+    // TODO, this will give us few milliseconds maybe:
+    // void evaluateVoid(stack &st) const;
+
     void addChild(Node &arg);
     void addName(const std::string &n)
     {
@@ -56,7 +62,7 @@ private:
 
     struct dataType
     {
-        int line;
+        int line, numeric;
         std::string file;
         std::vector<name> names;
         objectPtrImpl value;
