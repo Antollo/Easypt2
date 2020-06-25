@@ -26,6 +26,11 @@
 #include <netdb.h>
 
 #define lastError errno 
+#define SOCKET int
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
+#define SD_SEND SHUT_WR
+#define closesocket(descriptor) ::close(descriptor)
 
 #endif
 

@@ -117,15 +117,15 @@ private:
 };
 
 template <class T>
-typename allocatorBuffer<allocator<T>::a * sizeof(T)> allocator<T>::memoryA;
+allocatorBuffer<allocator<T>::a * sizeof(T)> allocator<T>::memoryA;
 
 template <class T>
-typename allocatorBuffer<allocator<T>::b * sizeof(T)> allocator<T>::memoryB;
+allocatorBuffer<allocator<T>::b * sizeof(T)> allocator<T>::memoryB;
 
 template <class T>
-typename allocatorBuffer<allocator<T>::c * sizeof(T)> allocator<T>::memoryC;
+allocatorBuffer<allocator<T>::c * sizeof(T)> allocator<T>::memoryC;
 
 template <class T>
-typename allocatorBuffer<allocator<T>::d * sizeof(T)> allocator<T>::memoryD;
+allocatorBuffer<allocator<T>::d * sizeof(T)> allocator<T>::memoryD;
 
 #endif /* !ALLOCATOR_H_ */
