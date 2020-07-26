@@ -23,13 +23,13 @@ if (1+3 != 4) {
 
 #### Members:
 
-- [`readTo`](File.classPrototype.readTo.md)
-- [`constructor`](File.classPrototype.constructor.md)
+- [`writeLine`](File.classPrototype.writeLine.md)
+- [`readBytes`](File.classPrototype.readBytes.md)
+- `constructor`
 - [`open`](File.classPrototype.open.md)
 - [`read`](File.classPrototype.read.md)
 - [`readLine`](File.classPrototype.readLine.md)
-- [`writeLine`](File.classPrototype.writeLine.md)
-- [`readBytes`](File.classPrototype.readBytes.md)
+- [`readTo`](File.classPrototype.readTo.md)
 - [`write`](File.classPrototype.write.md)
 - [`create`](File.classPrototype.create.md)
 - [`remove`](File.classPrototype.remove.md)

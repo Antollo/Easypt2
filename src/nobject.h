@@ -172,10 +172,13 @@ public:
             }
             else if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
             {
-                if constexpr (std::is_same_v<A, nullptr_t> || std::is_same_v<A, functionType> || std::is_same_v<A, nativeFunctionType>)
-                    return true;
+                return true;
             }
-            else if constexpr (std::is_same_v<remove_cref_t<T>, number> || std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType> || std::is_same_v<remove_cref_t<T>, bool>)
+            else if constexpr (std::is_same_v<remove_cref_t<T>, number>)
+            {
+                return std::is_same_v<A, nullptr_t> || std::is_same_v<A, number> || std::is_same_v<A, std::string> || std::is_same_v<A, arrayType> || std::is_same_v<A, bool>;
+            }
+            else if constexpr (std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType>)
             {
                 return std::is_same_v<A, number> || std::is_same_v<A, std::string> || std::is_same_v<A, arrayType> || std::is_same_v<A, bool>;
             }
@@ -202,6 +205,8 @@ public:
                     return static_cast<number>(value.size());
                 else if constexpr (std::is_same_v<A, bool>)
                     return static_cast<number>(value);
+                else if constexpr (std::is_same_v<A, std::nullptr_t>)
+                    return static_cast<number>(0);
                 /*else
                 {
                     auto converter = read("number"_n);
@@ -215,9 +220,11 @@ public:
                 if constexpr (std::is_same_v<A, number>)
                     return static_cast<std::string>(value);
                 else if constexpr (std::is_same_v<A, arrayType>)
-                    return "["s + std::to_string(value.size()) + "]"s;
+                    return toJson();
                 else if constexpr (std::is_same_v<A, bool>)
                     return value ? "true"s : "false"s;
+                else
+                    return toJson();
                 /*else
                 {
                     auto converter = read("string"_n);
@@ -252,7 +259,7 @@ public:
                     return static_cast<bool>(value.size());
                 else if constexpr (std::is_same_v<A, nullptr_t>)
                     return _properties.size() != 0;
-                else if constexpr (std::is_same_v<A, functionType> || std::is_same_v<A, nativeFunctionType>)
+                else
                     return true;
                 /*else
                 {
@@ -287,6 +294,7 @@ public:
     inline void addProperties(propertiesType::iterator begin, propertiesType::iterator end) { _properties.insert(begin, end); }
     inline void removeProperty(const name &n) { _properties.erase(n); }
     arrayType getOwnPropertyNames();
+    std::string toJson() const;
     void clear();
 
     void captureStack(stack &&st)
@@ -330,6 +338,7 @@ private:
     {
         return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
     }
+    void toJson(std::string& str, const int indentation = 1) const;
 };
 
 class objectException : public std::exception

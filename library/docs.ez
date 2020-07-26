@@ -46,8 +46,8 @@ function listProperties {
     let list = "";
     args[0].getOwnPropertyNames().forEach(function {
         if (args[0].search("returns|parameters|description|example|expectedOutput").length() == 0) {
-            list.insertFrom(list.length(), args[0]);
-            list.insertFrom(list.length(), "\n");
+            list.append(args[0]);
+            list.append("\n");
         }
     });
     if (list.length())
@@ -124,10 +124,13 @@ function mdCodeLink (name, link) {
 
 function mdListProperties (object, name) {
     let list = "";
-    args[0].getOwnPropertyNames().forEach(function {
+    object.getOwnPropertyNames().forEach(function {
         if (args[0].search("returns|parameters|description|example|expectedOutput").length() == 0) {
-            list.insertFrom(list.length(), "- " + mdCodeLink(args[0], name + "." + args[0]));
-            list.insertFrom(list.length(), "\n");
+            if (Object.classPrototype.readOperator.call(object, args[0]).hasOwnProperty("description"))
+                list.append("- " + mdCodeLink(args[0], name + "." + args[0]));
+            else
+                list.append("- `" + args[0] + "`");
+            list.append("\n");
         }
     });
     return list;
@@ -182,10 +185,14 @@ function recursiveDoc {
 function makeDocs {
     let file <- File();
     file.create(prefix + "index.md");
-    file.writeLine("# Easypt reference");
-    file.writeLine("## Grammar\n\n`TODO`\n");
-    file.writeLine("## Operators\n\n`TODO`\n");
+    file.writeLine("# Easypt reference\n");
+    file.writeLine("## Language\n");
+    file.writeLine("See the [grammar](grammar.md).\n");
+    file.writeLine("See the [expressions reference](expressions.md).\n");
+    file.writeLine("See the [statements reference](statements.md).\n");
     file.writeLine("## Built-in objects functions and classes\n");
+
+    file.writeLine("- " + mdCodeLink("module", "module"));
 
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();

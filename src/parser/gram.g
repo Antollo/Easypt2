@@ -3,7 +3,7 @@
     #include "Node.h"
     #include "treeParser.h"
 
-    #define op(x) (100 - operatorPriority(x))
+    #define op(x) operatorPriority(x)
     #define INI yylineno, treeParser::file
 
     extern int yylineno;
@@ -73,6 +73,8 @@
 %token FAT_ARROW_BEGIN;
 %token FAT_ARROW;
 %token AWAIT;
+%token DELETE_;
+%token BREAK;
 
 %start parse, input;
 
@@ -85,12 +87,12 @@ input { Node a(INI); }
     ;
 
 simpleStatement(Node& me) { Node a(INI); } :
-    expression(0, a) { me.addChild(a); } ';'
+    expression(100, a) { me.addChild(a); } ';'
     { me.token(STATEMENT); }
     ;
 
 jsonStatement(Node& me) { Node a(INI); } :
-    expression(0, a) { me.addChild(a); }
+    expression(100, a) { me.addChild(a); }
     [
         ','
     |
@@ -118,7 +120,7 @@ ifStatement(Node& me) { Node a(INI), b(INI), c(INI); } :
     IF
     PARENTHESES_OPEN
     { a.init(INI); }
-    expression(0, a) { me.addChild(a); }
+    expression(100, a) { me.addChild(a); }
     PARENTHESES_CLOSE
     { b.init(INI); }
     statement(b)
@@ -138,7 +140,7 @@ whileStatement(Node& me) { Node a(INI), b(INI); } :
     WHILE
     PARENTHESES_OPEN
     { a.init(INI); }
-    expression(0, a) { me.addChild(a); }
+    expression(100, a) { me.addChild(a); }
     PARENTHESES_CLOSE
     { b.init(INI); }
     statement(b)
@@ -149,13 +151,13 @@ forStatement(Node& me) { Node a(INI), b(INI), c(INI), d(INI); } :
     FOR
     PARENTHESES_OPEN
     { a.init(INI); }
-    expression(0, a) { me.addChild(a); }
+    expression(100, a) { me.addChild(a); }
     ';'
     { b.init(INI); }
-    expression(0, b) { me.addChild(b); }
+    expression(100, b) { me.addChild(b); }
     ';'
     { c.init(INI); }
-    expression(0, c) { me.addChild(c); }
+    expression(100, c) { me.addChild(c); }
     PARENTHESES_CLOSE
     { d.init(INI); }
     statement(d)
@@ -174,14 +176,14 @@ tryCatchStatement(Node& me) { Node a(INI), b(INI); } :
 
 returnStatement(Node& me) { Node a(INI); } :
     RETURN
-    expression(0, a)
+    expression(100, a)
     ';'
     { me.token(RETURN); me.addChild(a); }
     ;
 
 throwStatement(Node& me) { Node a(INI); } :
     THROW
-    expression(0, a)
+    expression(100, a)
     ';'
     { me.token(THROW); me.addChild(a); }
     ;
@@ -204,17 +206,21 @@ statement(Node& me) :
         returnStatement(me)
     |
         throwStatement(me)
+    |
+        BREAK
+        ';'
+        { me.token(BREAK); }
     ]
     ;
 
 expression(int priority, Node& me) { Node a(INI), b(INI); int token; } :
     factor(me)
     [
-        %while (op(LLsymb) >= priority)
+        %while (op(LLsymb) <= priority)
         { a = Node(INI); std::swap(me, a); me.addChild(a); me.token(token = LLsymb); me.text(treeParser::text); }
         [
             leftAssociativeOperator
-            expression(op(token) + 1, b)    { me.addChild(b); }
+            expression(op(token) - 1, b)    { me.addChild(b); }
         |
             rightAssociativeOperator
             expression(op(token), b)        { me.addChild(b); }
@@ -238,19 +244,19 @@ expression(int priority, Node& me) { Node a(INI), b(INI); int token; } :
 
 expressionList(Node& me) { Node a(INI); } :
     |
-    expression(0, a) { me.addChild(a); } expressionListTail(me)
+    expression(100, a) { me.addChild(a); } expressionListTail(me)
     ;
 
-expressionListTail(Node& me) { Node a(INI); }:
+expressionListTail(Node& me) { Node a(INI); } :
     [
         ','
         { a.init(INI); }
-        expression(0, a) { me.addChild(a); a = Node(INI); }
+        expression(100, a) { me.addChild(a); a = Node(INI); }
     ]*
     ;
 
 
-factor(Node& me)  { Node a(INI); }:
+factor(Node& me)  { Node a(INI); } :
     factorBase(a)
     [
         %prefer
@@ -263,20 +269,23 @@ factor(Node& me)  { Node a(INI); }:
     ]
     ;
 
-factorBase(Node& me)  { Node b(INI); }:
-    PARENTHESES_OPEN expression(0, me) PARENTHESES_CLOSE
+factorBase(Node& me)  { Node b(INI); } :
+    PARENTHESES_OPEN expression(100, me) PARENTHESES_CLOSE
     |
     SUBTRACTION
     expression(op(MULTIPLICATION), b) { me.token(SUBTRACTION); Node a(INI); a.token(NUMBER_LITERAL); a.text("0"); me.addChild(a); me.addChild(b); }
     |
     COMPLEMENT
-    expression(0, b) { me.token(COMPLEMENT); me.addChild(b); }
+    expression(100, b) { me.token(COMPLEMENT); me.addChild(b); }
     |
     NOT
-    expression(0, b) { me.token(NOT); me.addChild(b); }
+    expression(100, b) { me.token(NOT); me.addChild(b); }
     |
     AWAIT
-    expression(0, b) { me.token(AWAIT); me.addChild(b); }
+    expression(100, b) { me.token(AWAIT); me.addChild(b); }
+    |
+    DELETE_
+    expression(100, b) { me.token(DELETE_); me.addChild(b); }
     |
     IDENTIFIER { me.token(IDENTIFIER); me.text(treeParser::text); }
     |
@@ -313,11 +322,6 @@ factorBase(Node& me)  { Node b(INI); }:
     FAT_ARROW
     { b.init(INI); }
     statement(b) { me.token(FUNCTION); me.addChild(b); }
-    |
-    JSON
-    BRACES_OPEN
-    jsonStatements(me) { me.token(JSON); }
-    BRACES_CLOSE
     |
     BRACES_OPEN
     jsonStatements(me) { me.token(JSON); }

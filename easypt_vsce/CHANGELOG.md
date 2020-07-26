@@ -1,8 +1,12 @@
 # Change Log
 
+### 2.0.5
+
+- `await`, `break` and `delete` highlights.
+
 ### 2.0.4
 
-- `instanceOf` and `else` highlight.
+- `instanceOf` and `else` highlights.
 
 ### 2.0.3
 

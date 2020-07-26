@@ -15,8 +15,10 @@ public:
     objectPtrImpl &operator=(const objectPtrImpl &ptr);
     objectPtrImpl(objectPtrImpl &&ptr);
     objectPtrImpl &operator=(objectPtrImpl &&ptr);
-    bool operator==(std::nullptr_t) const;
-    bool operator!=(std::nullptr_t) const;
+    inline bool operator==(std::nullptr_t) const { return _obj == nullptr; };
+    inline bool operator!=(std::nullptr_t) const { return _obj != nullptr; };
+    inline bool operator==(const objectPtrImpl &ptr) const { return _obj == ptr._obj; };
+    inline bool operator!=(const objectPtrImpl &ptr) const { return _obj != ptr._obj; };
     ~objectPtrImpl();
 
     inline operator bool() const { return _obj != nullptr; }

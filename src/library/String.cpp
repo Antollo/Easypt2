@@ -49,7 +49,6 @@ void String::init(stack *st)
 
     addFunctionL(object::stringPrototype, "insertFrom"_n, {
         argsConvertibleGuard<number, std::string>(args);
-        argsGuard<nullptr_t, std::string>(args);
         std::string &dest = thisObj->get<std::string>();
         const std::string &src = args[1]->get<const std::string>();
         int destPos = static_cast<int>(args[0]->getConverted<number>());
@@ -61,7 +60,7 @@ void String::init(stack *st)
             srcPos = static_cast<int>(args[2]->getConverted<number>());
             if (args.size() > 3)
             {
-                argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
+                argsConvertibleGuard<nullptr_t, nullptr_t, number, number>(args);
                 srcLength = static_cast<int>(args[3]->getConverted<number>());
             }
         }
@@ -71,6 +70,29 @@ void String::init(stack *st)
         assert<std::greater_equal>(srcLength, 0);
         assert<std::less_equal>(srcPos + srcLength, src.size());
         dest.insert(dest.begin() + destPos, src.begin() + srcPos, src.begin() + srcPos + srcLength);
+        return thisObj;
+    });
+
+    addFunctionL(object::stringPrototype, "append"_n, {
+        argsConvertibleGuard<std::string>(args);
+        std::string &dest = thisObj->get<std::string>();
+        const std::string &src = args[0]->get<const std::string>();
+        int srcPos = 0;
+        int srcLength = src.size();
+        if (args.size() > 1)
+        {
+            argsConvertibleGuard<nullptr_t, number>(args);
+            srcPos = static_cast<int>(args[1]->getConverted<number>());
+            if (args.size() > 2)
+            {
+                argsConvertibleGuard<nullptr_t, number, number>(args);
+                srcLength = static_cast<int>(args[2]->getConverted<number>());
+            }
+        }
+        assert<std::greater_equal>(srcPos, 0);
+        assert<std::greater_equal>(srcLength, 0);
+        assert<std::less_equal>(srcPos + srcLength, src.size());
+        dest.insert(dest.end(), src.begin() + srcPos, src.begin() + srcPos + srcLength);
         return thisObj;
     });
 

@@ -47,6 +47,7 @@ public:
     template <class T, class... Ts>
     static void read(T &t, Ts &... args)
     {
+        lastFormattedInputFunction = true;
         if constexpr (std::is_same_v<T, std::string>)
         {
             std::wstring temp;
@@ -69,15 +70,16 @@ public:
         if constexpr (std::is_same_v<T, std::string>)
         {
             std::wstring temp;
-            std::getline(std::wcin >> std::ws, temp);
+            std::getline(lastFormattedInputFunction ? std::wcin >> std::ws : std::wcin, temp);
             t = utf8_encode(temp);
         }
         else
         {
             std::wstring temp;
-            std::getline(std::wcin >> std::ws, temp);
+            std::getline(lastFormattedInputFunction ? std::wcin >> std::ws : std::wcin, temp);
             t = static_cast<T>(utf8_encode(temp));
         }
+        lastFormattedInputFunction = false;
         if constexpr (sizeof...(args))
             readLine(args...);
     }
@@ -148,6 +150,7 @@ public:
     template <class T, class... Ts>
     static void read(T &t, Ts &... args)
     {
+        lastFormattedInputFunction = true;
         std::cin >> t;
         //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if constexpr (sizeof...(args))
@@ -158,8 +161,9 @@ public:
     static void readLine(T &t, Ts &... args)
     {
         std::string temp;
-        std::getline(std::cin >> std::ws, temp);
+        std::getline(lastFormattedInputFunction ? std::wcin >> std::ws : std::wcin, temp);
         t = static_cast<T>(temp);
+        lastFormattedInputFunction = false;
         if constexpr (sizeof...(args))
             readLine(args...);
     }
@@ -221,6 +225,7 @@ public:
 
 private:
     static std::string now();
+    static bool lastFormattedInputFunction;
 };
 
 #endif /* !CONSOLE_H_ */

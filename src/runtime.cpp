@@ -34,9 +34,9 @@ void runtime::init(stack *st)
     object::promisePrototype = object::makeEmptyObject();
     (*object::promisePrototype)[name::prototype] = object::objectPrototype;
 
-    addFunctionL(object::functionPrototype, "callOperator"_n, {
+    /*addFunctionL(object::functionPrototype, "callOperator"_n, {
         return (*thisObj)(thisObj, std::move(args), st);
-    });
+    });*/
 
     addFunctionL(object::functionPrototype, "call"_n, {
         argsConvertibleGuard<nullptr_t>(args);
@@ -53,7 +53,7 @@ void runtime::init(stack *st)
     insertObject("execute"_n, execute);
     insertObject("getStack"_n, getStack);
 
-    object::objectPtr Function = insertObject("Function"_n, nullptr);
+    object::objectPtr Function = insertObject("Function"_n, constructorCaller);
     (*Function)["classPrototype"_n] = object::functionPrototype;
 
     operators::init(st);

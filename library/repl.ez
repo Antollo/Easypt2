@@ -1,0 +1,10 @@
+let input;
+let src <- String();
+while (true)
+    if (input = console.write("> ").readLine())
+        src.append(input);
+    else
+        try
+            (execute(src) && false) || src.erase(0, src.length());
+        catch
+            (console.error(exception) && false) || src.erase(0, src.length());

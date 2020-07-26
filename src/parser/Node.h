@@ -27,8 +27,7 @@ public:
     objectPtrImpl evaluate(stack &st) const;
     number evaluateNumber(stack &st) const;
     bool evaluateBoolean(stack &st) const;
-    // TODO, this will give us few milliseconds maybe:
-    // void evaluateVoid(stack &st) const;
+    void evaluateVoid(stack &st) const;
 
     void addChild(Node &arg);
     void addName(const std::string &n)
@@ -68,6 +67,10 @@ private:
         objectPtrImpl value;
     };
 
+    struct breakType
+    {
+    };
+
     int _token;
     name _text;
     std::vector<Node> _children;
@@ -95,6 +98,7 @@ private:
             console::error(stackTrace[i]);
         stackTrace.clear();
     }
+    static std::string parseString(const std::string &source);
 
     static std::vector<std::string> stackTrace;
 };

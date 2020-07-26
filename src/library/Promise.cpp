@@ -23,7 +23,7 @@ void Promise::init(stack *st)
 
         return object::makeObject(thisObj->get<object::objectCoroutine>()->then([args](object::objectPtr r) {
             object::arrayType argsCopy = args;
-            return (*argsCopy[0])(argsCopy[0], {r, argsCopy[0]}, nullptr);
+            return (*argsCopy[0])(argsCopy[0], {r}, nullptr);
         }));
     });
 

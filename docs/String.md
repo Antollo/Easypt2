@@ -4,8 +4,8 @@
 
 ### Description:
 
-Represents text as sequence of characters (UTF-8 code units).
-Provides methods for manipulating such sequences. String 
+Represents text as a sequence of characters (UTF-8 code units).
+Provides methods for manipulating such sequences. Strings 
 are indexed with non-negative integers.
 
 #### Example:
@@ -23,13 +23,14 @@ console.write("a".getByteAt(0));
 #### Members:
 
 - [`getByteAt`](String.classPrototype.getByteAt.md)
-- [`constructor`](String.classPrototype.constructor.md)
-- [`erase`](String.classPrototype.erase.md)
+- `constructor`
 - [`readOperator`](String.classPrototype.readOperator.md)
 - [`length`](String.classPrototype.length.md)
 - [`setByteAt`](String.classPrototype.setByteAt.md)
-- [`insertFrom`](String.classPrototype.insertFrom.md)
 - [`substring`](String.classPrototype.substring.md)
+- [`insertFrom`](String.classPrototype.insertFrom.md)
+- [`append`](String.classPrototype.append.md)
+- [`erase`](String.classPrototype.erase.md)
 - [`split`](String.classPrototype.split.md)
 - [`indexOf`](String.classPrototype.indexOf.md)
 - [`search`](String.classPrototype.search.md)

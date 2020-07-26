@@ -40,7 +40,6 @@ void Array::init(stack *st)
 
     addFunctionL(object::arrayPrototype, "insertFrom"_n, {
         argsConvertibleGuard<number, object::arrayType>(args);
-        argsGuard<nullptr_t, object::arrayType>(args);
         object::arrayType &dest = thisObj->get<object::arrayType>();
         const object::arrayType &src = args[1]->get<const object::arrayType>();
         int destPos = static_cast<int>(args[0]->getConverted<number>());
@@ -52,7 +51,7 @@ void Array::init(stack *st)
             srcPos = static_cast<int>(args[2]->getConverted<number>());
             if (args.size() > 3)
             {
-                argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
+                argsConvertibleGuard<nullptr_t, nullptr_t, number, number>(args);
                 srcLength = static_cast<int>(args[3]->getConverted<number>());
             }
         }

@@ -1,6 +1,6 @@
 ## Name: `Function`
 
-#### Instance of: [`Object`](Object.md)
+#### Instance of: [`Class`](Class.md)
 
 ### Description:
 
@@ -20,6 +20,12 @@ console.write(sum(1, 3));
 ```
 4
 ```
+
+#### Members:
+
+- [`call`](Function.classPrototype.call.md)
+- `prototype`
+
 
 ### Properties:
 

@@ -44,7 +44,7 @@ Now you can run your code with `Ctrl+Shift+B`.
 
 ## Last changes
 
-- `instanceOf` and `else` highlight.
+- `await`, `break` and `delete` highlights.
 
 ## For more information
 

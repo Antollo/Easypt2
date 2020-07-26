@@ -27,6 +27,7 @@ public:
     objectPtrImpl toObject();
     stack flatCopy();
     void clear();
+    void erase(const name &n);
 
 private:
     void toObject(objectPtrImpl& obj);

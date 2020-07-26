@@ -7,7 +7,7 @@
 ### Description:
 
 Returns array of bytes unique for each Object instance.
-It can be equal to id of destructed object.
+It can be equal to the id of the destructed object.
 
 #### Example:
 

@@ -316,7 +316,7 @@ Object.classPrototype.getId @returns@
 "/*String*/";
 Object.classPrototype.getId @description@
 "Returns array of bytes unique for each Object instance.
-It can be equal to id of destructed object.";
+It can be equal to the id of the destructed object.";
 Object.classPrototype.getId @example@
 "console.writeLine(1.getId());
 console.writeLine(\"ABC\".getId());
@@ -401,8 +401,8 @@ module.name @example@
 "console.writeLine(module.name);";
 
 String @description@
-"Represents text as sequence of characters (UTF-8 code units).
-Provides methods for manipulating such sequences. String 
+"Represents text as a sequence of characters (UTF-8 code units).
+Provides methods for manipulating such sequences. Strings 
 are indexed with non-negative integers.";
 String @example@
 "console.write(\"a\".getByteAt(0));";
@@ -542,7 +542,24 @@ let b = str.indexOf(\"are\", a + 1);
 let c = str.indexOf(\"yellow\");
 console.write(a, \" \", b, \" \", c);";
 String.classPrototype.indexOf @expectedOutput@
-"6 25 -1";
+"6 23 -1";
+
+String.classPrototype.append @parameters@
+"str /*String*/, [position /*Number*/, length /*Number*/]";
+String.classPrototype.append @description@
+"Appends str to this string (or optionally 
+substring starting from given position 
+and of given length).";
+String.classPrototype.append @example@
+"let str = \"Roses are \";
+let str2 = \"red, Violets are blue.\";
+str.append(str2);
+console.write(str);
+str = \"Roses are \";
+str.append(str2, 17, 5);
+console.write(\" | \", str);";
+String.classPrototype.append @expectedOutput@
+"Roses are red, Violets are blue. | Roses are blue.";
 
 Boolean @description@
 "Represents boolean value.";
@@ -553,8 +570,8 @@ Boolean @expectedOutput@
 
 Number @description@
 "Represents number represented as at least 4 bytes
-integer or at least 8 bytes floating point number,
-implementation should choose appropriate representation
+integer or at least 8 bytes floating-point number,
+implementation should choose an appropriate representation
 dynamically.";
 Number @example@
 "console.write(1 + 2 * 3);";
@@ -574,7 +591,7 @@ Function @expectedOutput@
 Function.classPrototype.call @parameters@
 "caller, [...]";
 Function.classPrototype.call @description@
-"Calls function with first argument as caller
+"Calls function with the first argument as caller
 and passes following to this function.";
 Function.classPrototype.call @example@
 "let x = String.classPrototype.substring.call(\"abc\", 1, 1);

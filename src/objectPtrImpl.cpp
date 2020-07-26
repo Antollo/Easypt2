@@ -72,20 +72,6 @@ objectPtrImpl &objectPtrImpl::operator=(objectPtrImpl &&ptr)
     return *this;
 }
 
-bool objectPtrImpl::operator==(std::nullptr_t) const
-{
-    if (_obj == nullptr)
-        return true;
-    return false;
-}
-
-bool objectPtrImpl::operator!=(std::nullptr_t) const
-{
-    if (_obj != nullptr)
-        return true;
-    return false;
-}
-
 objectPtrImpl::~objectPtrImpl()
 {
     if (_refCount != nullptr)

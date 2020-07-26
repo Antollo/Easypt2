@@ -6,7 +6,7 @@
 
 ### Description:
 
-Calls function with first argument as caller
+Calls function with the first argument as caller
 and passes following to this function.
 
 #### Example:

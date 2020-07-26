@@ -24,7 +24,7 @@ arr.forEach(function {
 
 #### Members:
 
-- [`constructor`](Array.classPrototype.constructor.md)
+- `constructor`
 - [`erase`](Array.classPrototype.erase.md)
 - [`readOperator`](Array.classPrototype.readOperator.md)
 - [`length`](Array.classPrototype.length.md)

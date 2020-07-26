@@ -51,7 +51,7 @@ baseConstructor baseDestructor | baseConstructor constructor method baseDestruct
 
 #### Members:
 
-- [`constructor`](Class.classPrototype.constructor.md)
+- `constructor`
 - `prototype`
 
 

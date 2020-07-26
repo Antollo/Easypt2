@@ -1,3 +1,33 @@
+function parseHttpMessage(msg) {
+    let obj;
+    let headersArray;
+    let idx <- msg.indexOf("\r\n\r\n");
+    if(idx != -1)
+    {
+        headersArray <- msg.substring(0, idx).split("\r\n");
+        obj.body <-  msg.substring(idx + 4, msg.length() - idx - 4);
+    }
+    else
+        headersArray <- msg.split("\r\n");
+
+    let msgLineArray <- headersArray[0].split(" ");
+    if(msgLineArray[0].indexOf("HTTP") == 0) {
+        obj.httpVersion <- msgLineArray[0];
+        obj.statusCode <- msgLineArray[1];
+        obj.reasonPhrase <- msgLineArray[2];
+    } else {
+        obj.method <- msgLineArray[0];
+        obj.requestUri <- msgLineArray[1];
+        obj.httpVersion <- msgLineArray[2];
+    }
+    let element;
+    for (let j = 1; j < headersArray.length(); j++) {
+        element <- headersArray[j].split(": ");
+        obj.headers[element[0]] = element[1];
+    }
+    return obj;
+};
+
 class HttpServer {
     constructor: function {
         this.tcpServer <- TcpServer();
@@ -9,58 +39,20 @@ class HttpServer {
         await this.tcpServer.bind(port);
         let i <- this.i;
         while (this.open) {
-            await ConditionalPromise(() => {}, () => i >= 2; );
-            i++;
-            this.tcpServer.listen().then((c) => {
-                i--;
-                //try {
-                    let request = await c.receive();
-                    //console.writeLine(request);
-                    let requestObject;
-                    let a <- request.indexOf(" ");
-                    requestObject.method <- request.substring(0, a);
-                    //console.log("<",requestObject.method,">");
-                    let b <- request.indexOf(" ", a+1);
-                    requestObject.uri <- request.substring(a+1, b-a-1);
-                    //console.log("<",requestObject.uri,">");
+            let client = await this.tcpServer.listen();
+            Promise(() => {
+                try {
+                    let obj <- parseHttpMessage(await client.receive());
+                    if(obj.body)
+                        while(obj.body.length() < obj.headers["Content-Length"])
+                            obj.body.append(await client.receive());
+                    //console.log(obj);
 
-                    a <- request.indexOf("\n", b);
-                    b <- request.indexOf(":", a);
-
-                    let temp;
-
-                    while (b != -1)
-                    {
-                        //console.warn(b);
-                        temp <- request.substring(a+1, b-a-1);
-                        //console.log("<",temp,">");
-
-                        a <- request.indexOf("\n", b);
-
-                        temp <- request.substring(b+2, a-b-2);
-                        //console.log("<",temp,">");
-                        //console.warn(a);
-
-                        b <- request.indexOf(":", a);
-
-                    }
-
-                    //request.searchAll("[^\\:\\n]*:[^\\n]*").forEach((x) => {
-                    //    let entry <- request.substring(x.position, x.length);
-                    //    let pos <- entry.search(":")[0].position;
-                    //    let key <- entry.substring(0, pos);
-                    //    requestObject[key] = entry.substring(pos + 2, entry.length() - pos - 2);
-                    //});
-                    //let methodAndURI <- request.search("([A-Z]*)\\s(\\S*)");
-                    //console.warn(methodAndURI.length());
-                    //requestObject.method <- request.substring(methodAndURI[1].position, methodAndURI[1].length);
-                    //requestObject.uri <- request.substring(methodAndURI[2].position, methodAndURI[2].length);
-                    //console.writeLine(requestObject.uri);
-                    await c.send("HTTP/1.0 200 OK\r\n\r\nHello");
-                    await c.close();
-                /*} catch {
+                    await client.send("HTTP/1.0 200 OK\r\n\r\nHello");
+                    await client.close();
+                } catch {
                     console.error(exception);
-                }*/
+                }
             });
         }
     },
@@ -70,6 +62,37 @@ class HttpServer {
     }
 };
 
+function request(method, requestUri, headers, body, port, httpVersion)
+{
+    if(args.length() < 6)
+        let httpVersion <- "HTTP/1.1";
+    if(args.length() < 5)
+        let port <- 80;
+    if(args.length() < 4)
+        let body <- "";
+
+    let r = method;
+    r.append(" ").append(requestUri).append(" ").append(httpVersion).append("\r\n");
+    headers.getOwnPropertyNames().forEach((name) => {
+        if (name != "prototype")
+            r.append(name).append(": ").append(headers[name]).append("\r\n");
+    });
+    
+    r.append("\r\n").append(body);
+
+    let server = TcpClient();
+    await server.connect(headers["Host"], port);
+    await server.send(r);
+    let obj <- parseHttpMessage(await server.receive());
+    if(obj.body)
+        while(obj.body.length() < obj.headers["Content-Length"])
+            obj.body.append(await server.receive());
+    return obj;
+};
+
+//let r = request("GET", "/", { Host: "motherfuckingwebsite.com" });
+//console.log(r);
+
+
 let h <- HttpServer();
-await h.listen(3000);
-await Promise(() => { console.error("e"); });
+h.listen(1717);

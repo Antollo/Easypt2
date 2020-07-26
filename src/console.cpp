@@ -17,3 +17,5 @@ void console::stackTrace()
 {
     Node::printStackTrace();
 }
+
+bool console::lastFormattedInputFunction = false;

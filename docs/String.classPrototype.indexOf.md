@@ -25,7 +25,7 @@ console.write(a, " ", b, " ", c);
 ##### Expected output:
 
 ```
-6 25 -1
+6 23 -1
 ```
 
 ### Properties:

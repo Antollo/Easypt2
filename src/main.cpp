@@ -40,7 +40,7 @@ int main(int argc, char **argv)
             }
             else if (isFlag(argv[i], "repl"))
             {
-                (*import)(import, {object::makeObject(std::string("repl.ez"))}, &globalStack);
+                (*import)(import, {object::makeObject(std::string("library/repl.ez"))}, &globalStack);
             }
             else if (isFlag(argv[i], "help"))
             {

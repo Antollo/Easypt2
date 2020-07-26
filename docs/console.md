@@ -31,7 +31,7 @@ if (1+3 != 4) {
 - [`writeLine`](console.writeLine.md)
 - [`newLine`](console.newLine.md)
 - [`read`](console.read.md)
-- [`readAsync`](console.readAsync.md)
+- `readAsync`
 - [`readLine`](console.readLine.md)
 - [`controlSequence`](console.controlSequence.md)
 - [`getOutput`](console.getOutput.md)

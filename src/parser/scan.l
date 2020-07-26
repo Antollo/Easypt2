@@ -16,77 +16,93 @@ number [0-9]+([.][0-9]+)?
 string \"[^"\\]*(\\.[^"\\]*)*\"
 multilineComment \/\*([^*]*(\*[^\/])*)*\*\/
 comment \/\/.*
-%%
-{multilineComment}          ;
-{comment}$                  ;
-{comment}/\0                ;
-json                        { return JSON; }
-class                       { return CLASS; }
-extends                     { return EXTENDS; }
-instanceOf                  { return INSTANCEOF; }
-return                      { return RETURN; }
-throw                       { return THROW; }
-try                         { return TRY; }
-catch                       { return CATCH; }
-if                          { return IF; }
-else                        { return ELSE; }
-while                       { return WHILE; }
-for                         { return FOR; }
-let                         { return LET; }
-function                    { return FUNCTION; }
-await                       { return AWAIT; }
 
-{identifier}                {
+%s COMMENT
+%s MULTILINE_COMMENT
+
+%%
+<INITIAL>\/\*               { BEGIN MULTILINE_COMMENT; }
+<MULTILINE_COMMENT>\*\/     { BEGIN INITIAL; }
+<MULTILINE_COMMENT>\n       ;
+<MULTILINE_COMMENT>.        ;
+<MULTILINE_COMMENT><<EOF>>  {
+                                treeParser::throwLater("multiline comment not closed in " + treeParser::file + ":" + std::to_string(yylineno)); 
+                                BEGIN INITIAL;
+                            }
+
+<INITIAL>\/\/               { BEGIN COMMENT; }
+<COMMENT>\n                 { BEGIN INITIAL; }
+<COMMENT><<EOF>>            { BEGIN INITIAL; }
+<COMMENT>.                  ;
+
+<INITIAL>json               { return JSON; }
+<INITIAL>class              { return CLASS; }
+<INITIAL>extends            { return EXTENDS; }
+<INITIAL>instanceOf         { return INSTANCEOF; }
+<INITIAL>return             { return RETURN; }
+<INITIAL>throw              { return THROW; }
+<INITIAL>try                { return TRY; }
+<INITIAL>catch              { return CATCH; }
+<INITIAL>if                 { return IF; }
+<INITIAL>else               { return ELSE; }
+<INITIAL>while              { return WHILE; }
+<INITIAL>for                { return FOR; }
+<INITIAL>let                { return LET; }
+<INITIAL>function           { return FUNCTION; }
+<INITIAL>await              { return AWAIT; }
+<INITIAL>delete             { return DELETE_; }
+<INITIAL>break              { return BREAK; }
+
+<INITIAL>{identifier}       {
                                 treeParser::text = yytext;
                                 return IDENTIFIER;
                             }
-{number}                    {
+<INITIAL>{number}           {
                                 treeParser::text = yytext;
                                 return NUMBER_LITERAL;
                             }
-{string}                    {
+<INITIAL>{string}           {
                                 treeParser::text = yytext;
                                 return STRING_LITERAL;
                             }
-\(/({identifier},{ws})*{identifier}?\){ws}=> { return FAT_ARROW_BEGIN; }
-=>                          { return FAT_ARROW; }
-@{identifier}@              { treeParser::text = std::string(yytext + 1, std::strlen(yytext) - 2); return USER_OPERATOR; }
-==                          { treeParser::text = yytext; return EQUAL; }
-!=                          { treeParser::text = yytext; return NOT_EQUAL; }
-\<                          { treeParser::text = yytext; return LESS; }
-\<=                         { treeParser::text = yytext; return LESS_EQUAL; }
-\>                          { treeParser::text = yytext; return GREATER; }
-\>=                         { treeParser::text = yytext; return GREATER_EQUAL; }
-\%                          { treeParser::text = yytext; return MODULUS; }
-=                           { treeParser::text = yytext; return ASSIGNMENT; }
-:                           { treeParser::text = yytext; return JSON_ASSIGNMENT; }
-\<\-                        { treeParser::text = yytext; return INIT_ASSIGNMENT; }
-!                           { treeParser::text = yytext; return NOT; }
-~                           { treeParser::text = yytext; return COMPLEMENT; }
-\+\+                        { treeParser::text = yytext; return INCREMENT; }
-\-\-                        { treeParser::text = yytext; return DECREMENT; }
-\+                          { treeParser::text = yytext; return ADDITION; }
-\-                          { treeParser::text = yytext; return SUBTRACTION; }
-\*                          { treeParser::text = yytext; return MULTIPLICATION; }
-\/                          { treeParser::text = yytext; return DIVISION; }
-\|\|                        { treeParser::text = yytext; return OR; }
-&&                          { treeParser::text = yytext; return AND; }
-\|                          { treeParser::text = yytext; return BITWISE_OR; }
-&                           { treeParser::text = yytext; return BITWISE_AND; }
-\<\<                        { treeParser::text = yytext; return SHIFT_LEFT; }
-\>\>                        { treeParser::text = yytext; return SHIFT_RIGHT; }
-,                           { return ','; }
-;                           { return ';'; }
-\.                          { return DOT; }
-\{                          { return BRACES_OPEN; }
-\}                          { return BRACES_CLOSE; }
-\(                          { return PARENTHESES_OPEN; }
-\)                          { return PARENTHESES_CLOSE; }
-\[                          { return BRACKET_OPEN; }
-\]                          { return BRACKET_CLOSE; }
-{ws}                        ;
-.                           {
-
+<INITIAL>\(/({identifier},{ws})*{identifier}?\){ws}=> { return FAT_ARROW_BEGIN; }
+<INITIAL>=>                 { return FAT_ARROW; }
+<INITIAL>@{identifier}@     { treeParser::text = std::string(yytext + 1, std::strlen(yytext) - 2); return USER_OPERATOR; }
+<INITIAL>==                 { treeParser::text = yytext; return EQUAL; }
+<INITIAL>!=                 { treeParser::text = yytext; return NOT_EQUAL; }
+<INITIAL>\<                 { treeParser::text = yytext; return LESS; }
+<INITIAL>\<=                { treeParser::text = yytext; return LESS_EQUAL; }
+<INITIAL>\>                 { treeParser::text = yytext; return GREATER; }
+<INITIAL>\>=                { treeParser::text = yytext; return GREATER_EQUAL; }
+<INITIAL>\%                 { treeParser::text = yytext; return MODULUS; }
+<INITIAL>=                  { treeParser::text = yytext; return ASSIGNMENT; }
+<INITIAL>:                  { treeParser::text = yytext; return JSON_ASSIGNMENT; }
+<INITIAL>\<\-               { treeParser::text = yytext; return INIT_ASSIGNMENT; }
+<INITIAL>!                  { treeParser::text = yytext; return NOT; }
+<INITIAL>~                  { treeParser::text = yytext; return COMPLEMENT; }
+<INITIAL>\+\+               { treeParser::text = yytext; return INCREMENT; }
+<INITIAL>\-\-               { treeParser::text = yytext; return DECREMENT; }
+<INITIAL>\+                 { treeParser::text = yytext; return ADDITION; }
+<INITIAL>\-                 { treeParser::text = yytext; return SUBTRACTION; }
+<INITIAL>\*                 { treeParser::text = yytext; return MULTIPLICATION; }
+<INITIAL>\/                 { treeParser::text = yytext; return DIVISION; }
+<INITIAL>\|\|               { treeParser::text = yytext; return OR; }
+<INITIAL>&&                 { treeParser::text = yytext; return AND; }
+<INITIAL>\|                 { treeParser::text = yytext; return BITWISE_OR; }
+<INITIAL>&                  { treeParser::text = yytext; return BITWISE_AND; }
+<INITIAL>\<\<               { treeParser::text = yytext; return SHIFT_LEFT; }
+<INITIAL>\>\>               { treeParser::text = yytext; return SHIFT_RIGHT; }
+<INITIAL>,                  { return ','; }
+<INITIAL>;                  { return ';'; }
+<INITIAL>\.                 { return DOT; }
+<INITIAL>\{                 { return BRACES_OPEN; }
+<INITIAL>\}                 { return BRACES_CLOSE; }
+<INITIAL>\(                 { return PARENTHESES_OPEN; }
+<INITIAL>\)                 { return PARENTHESES_CLOSE; }
+<INITIAL>\[                 { return BRACKET_OPEN; }
+<INITIAL>\]                 { return BRACKET_CLOSE; }
+<INITIAL>{ws}               ;
+<INITIAL>.                  {
                                 treeParser::throwLater("invalid character <" + std::string(1, yytext[0]) + "> in " + treeParser::file + ":" + std::to_string(yylineno));
                             }
 %%

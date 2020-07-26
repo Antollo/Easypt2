@@ -20,6 +20,11 @@ void stack::clear()
     storage.clear();
 }
 
+void stack::erase(const name &n)
+{
+    storage.erase(n);
+}
+
 stack::iterator stack::begin()
 {
     return storage.begin();

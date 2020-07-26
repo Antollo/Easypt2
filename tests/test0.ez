@@ -32,6 +32,14 @@ while(i<1000) {
 console.warn("Zażółć gęślą jaźń.\n");
 */
 
+let str = "Roses are ";
+let str2 = "red, Violets are blue.";
+str.append(str2);
+console.write(str);
+str = "Roses are ";
+str.append(str2, 17, 5);
+console.write(" | ", str);
+
 
 function nwd (x, y) {
     let a = x;
@@ -49,6 +57,7 @@ let x = nwd(144, 20480000);
 let x = 1;
 console.log(Time.sinceEpoch.asFloatingPoint() - time);
 console.log(x);
+return 0;
 
 // 1170 - old time
 // 580 - new time

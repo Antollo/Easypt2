@@ -10,7 +10,7 @@ object::buffer object::objects = {0, 0, 0};
 
 void *object::operator new(size_t)
 {
-    return static_cast<object*>(memory.allocate(sizeof(object)));
+    return static_cast<object *>(memory.allocate(sizeof(object)));
 }
 
 void object::operator delete(void *ptr)
@@ -63,11 +63,11 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
         if (_capturedStack != nullptr)
             st = _capturedStack.get();
         stack localStack(st);
-		if (_capturedStack != nullptr)
-		{
-			auto referenceToFather = localStack.insert("_stack"_n, makeEmptyObject());
-			referenceToFather->captureStack(_capturedStack);
-		}
+        if (_capturedStack != nullptr)
+        {
+            auto referenceToFather = localStack.insert("_stack"_n, makeEmptyObject());
+            referenceToFather->captureStack(_capturedStack);
+        }
         const functionType &node = get<const functionType>();
         for (size_t i = 0; i < node.names().size() && i < args.size(); i++)
             localStack.insert(node.names()[i], args[i]);
@@ -111,6 +111,67 @@ object::objectPtr &object::read(const name &n)
     if (_prototype && _prototype.get() != this)
         return _prototype->read(n);
     return notFound;
+}
+
+std::string object::toJson() const
+{
+    std::string str;
+    toJson(str);
+    return str;
+}
+
+void object::toJson(std::string &str, const int indentation) const
+{
+    std::visit([this, indentation, &str](auto &&value) {
+        std::string tabs(indentation, '\t');
+        using A = std::decay_t<decltype(value)>;
+
+        if constexpr (std::is_same_v<A, std::string>)
+            str += "\"" + value + "\"";
+        else if constexpr (std::is_same_v<A, number>)
+            str += static_cast<std::string>(value);
+        else if constexpr (std::is_same_v<A, arrayType>)
+        {
+            str += "[";
+            for (int i = 0; i < value.size(); i++)
+            {
+                if (i)
+                    str += ", ";
+                value[i]->toJson(str, indentation + 1);
+            }
+            str += "]";
+        }
+        else if constexpr (std::is_same_v<A, bool>)
+            str += value ? "true"s : "false"s;
+        else if constexpr (std::is_same_v<A, objectCoroutine>)
+            str += "<promise>";
+        else if constexpr (std::is_same_v<A, functionType> || std::is_same_v<A, nativeFunctionType>)
+            str += "<function>";
+        else if constexpr (std::is_same_v<A, std::shared_ptr<file>>)
+            str += "<file>";
+        else if constexpr (std::is_same_v<A, std::shared_ptr<tcpClient>>)
+            str += "<tcpClient>";
+        else if constexpr (std::is_same_v<A, std::shared_ptr<tcpServer>>)
+            str += "<tcpServer>";
+        else
+        {
+            std::string tabs(indentation * 4, ' ');
+            str += "{\n";
+            for (const auto &property : _properties)
+            {
+                str += tabs + "\"" + static_cast<std::string>(property.first) + "\": ";
+                property.second->toJson(str, indentation + 1);
+                str += ",\n";
+            }
+            if (!_properties.empty())
+            {
+                str.pop_back();
+                str.pop_back();
+            }
+            str += "\n" + tabs.substr(4) + "}";
+        }
+    },
+               _value);
 }
 
 void object::clear()
