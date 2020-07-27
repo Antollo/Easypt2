@@ -64,7 +64,7 @@ let mul = function {
 
 console.writeLine(3 @mul@ 4);
 
-let obj = json {
+let obj = {
     ev : {
         message : ["Info", "Something not important."]
     }
@@ -87,7 +87,8 @@ let fib = function {
     return fib(args[0] - 1) + fib(args[0] - 2);
 };
 
-console.writeLine(u.getOwnPropertyNames());
+console.writeLine(Object().getOwnPropertyNames());
+console.writeLine([1, "a", false]);
 
 console.writeLine(fib(1));
 
@@ -148,7 +149,7 @@ let f = function {
 //console.debug(console.name);
 //console.test();
 
-let j = json {
+let j = {
     "firstName": "John",
     "lastName": "Smith",
     "isAlive": true,

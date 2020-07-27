@@ -38,13 +38,18 @@ Manually add following `tasks.json` to your project's `.vscode` folder:
 }
 ```
 
-Add easypt interpreter (`easypt.exe` - Windows or `easypt` - Linux) to PATH. You can get latest interpreter from [here](https://ci.appveyor.com/project/Antollo/easypt2).
+Add easypt interpreter (`easypt.exe` - Windows or `easypt` - Linux) to PATH. You can get latest interpreter here:
+
+- [For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win32.exe?branch=master&job=Image%3A%20Visual%20Studio%202017)
+
+- [For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu)
+
 
 Now you can run your code with `Ctrl+Shift+B`.
 
 ## Last changes
 
-- `await`, `break` and `delete` highlights.
+- `json` keyword removed.
 
 ## For more information
 

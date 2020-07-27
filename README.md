@@ -54,7 +54,9 @@ try {
 }
 ```
 
-Run with: `easypt -file my_file.ez`.
+Run with `easypt -file my_file.ez`.
+
+Run `easypt -help` to see other options.
 
 ## Documentation
 
@@ -62,22 +64,26 @@ See the [language reference](https://antollo.github.io/Easypt2/).
  
 ## Downloads
 
-[For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win32.exe?branch=master&job=Image%3A%20Visual%20Studio%202017)
+- [For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win32.exe?branch=master&job=Image%3A%20Visual%20Studio%202017)
 
-[For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu)
+- [For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu)
 
 ## Compiling
 
 #### Windows
 
-```
+```ps1
 ./init.ps1
+cmake .
 cmake --build . --config Release
+ctest --output-on-failure
 ```
 
 #### Linux
 
-```
+```sh
 ./init.sh
+cmake .
 cmake --build . --config Release
+ctest --output-on-failure
 ```

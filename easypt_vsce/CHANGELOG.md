@@ -1,5 +1,9 @@
 # Change Log
 
+### 2.0.6
+
+- `json` keyword removed.
+
 ### 2.0.5
 
 - `await`, `break` and `delete` highlights.

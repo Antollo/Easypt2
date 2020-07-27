@@ -35,7 +35,6 @@ comment \/\/.*
 <COMMENT><<EOF>>            { BEGIN INITIAL; }
 <COMMENT>.                  ;
 
-<INITIAL>json               { return JSON; }
 <INITIAL>class              { return CLASS; }
 <INITIAL>extends            { return EXTENDS; }
 <INITIAL>instanceOf         { return INSTANCEOF; }

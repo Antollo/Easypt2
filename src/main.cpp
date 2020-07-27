@@ -5,10 +5,9 @@
 #include "osDependent.h"
 #include "treeParser.h"
 
-
 inline bool isFlag(std::string a, std::string f)
 {
-    return (a[0] == '-' || a[0] == '/') && a.find(f) == 1;
+    return a.size() >= 2 && (((a[0] == '-' || a[0] == '/') && a.find(f) == 1) || (a[0] == '-' && a[1] == '-' && a.find(f) == 2));
 }
 
 int main(int argc, char **argv)
@@ -40,11 +39,34 @@ int main(int argc, char **argv)
             }
             else if (isFlag(argv[i], "repl"))
             {
-                (*import)(import, {object::makeObject(std::string("library/repl.ez"))}, &globalStack);
+                (*import)(import, {object::makeObject("../library/repl.ez"s)}, &globalStack);
+            }
+            else if (isFlag(argv[i], "doc") && i != argc - 1)
+            {
+                auto help = (*(*import)(import, {object::makeObject("../library/docs.ez"s)}, &globalStack))["help"_n];
+                (*help)(help, {
+                    execute(globalStack["execute"_n],
+                    { object::makeObject("return " + std::string(argv[++i]) + ";") },
+                    &globalStack)
+                }, &globalStack);
+            }
+            else if (isFlag(argv[i], "version"))
+            {
+                console::writeLine("Version from "s + __DATE__);
             }
             else if (isFlag(argv[i], "help"))
             {
-                console::writeLine("See project's repository (there are tutorial and language reference): https://github.com/Antollo/Easypt2"s);
+                console::writeLine("Easypt interpreter\n\n"
+                                   "Usage\n\n"
+                                   "    easypt [options]\n\n"
+                                   "Options\n\n"
+                                   "    -file <file-path>   Import file.\n"
+                                   "    -repl               Starts interactive mode.\n"
+                                   "    -help               Print help.\n"
+                                   "    -doc <expression>   Print help on specified object.\n"
+                                   "    -version            Print version.\n\n"
+                                   "More help at: "
+                                   "https://github.com/Antollo/Easypt2");
             }
         }
         runtime::fini(&globalStack);

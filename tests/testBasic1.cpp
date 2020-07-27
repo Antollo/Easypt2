@@ -42,7 +42,8 @@ return value from second file
 Something not important.
 1
 false
-[2]
+["prototype"]
+[1, "a", false]
 1
 3
 0

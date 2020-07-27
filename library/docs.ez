@@ -208,8 +208,8 @@ function makeDocs {
 
 import("../library/docsData.ez");
 
-makeDocs();
-testAllExamples();
-console.debug("Done");
-
-return help;
+return {
+    help : help,
+    makeDocs : makeDocs,
+    testAllExamples : testAllExamples
+};

@@ -21,7 +21,7 @@ if(!b.good) {
 }
 
 let c = "x";
-let x = json {
+let x = {
     c:"a"
 };
 
@@ -71,7 +71,7 @@ while(i<1000) {
     i++;
 }
 let time = Time.sinceEpoch.asFloatingPoint();
-let x = nwd(144, 20480000);
+let x = nwd(144, 204800000);
 // 1170 - old time
 // 920 - new time
 // 570 - with "<-" and "else"

@@ -27,7 +27,6 @@ string      : \"[^"\\]*(\\.[^"\\]*)*\"
 ### Keywords
 
 ```
-json        : return JSON
 class       : return CLASS
 extends     : return EXTENDS
 instanceOf  : return INSTANCEOF
@@ -351,11 +350,6 @@ factorBase :
     PARENTHESES_CLOSE
     FAT_ARROW
     statement
-    |
-    JSON
-    BRACES_OPEN
-    jsonStatements
-    BRACES_CLOSE
     |
     BRACES_OPEN
     jsonStatements
