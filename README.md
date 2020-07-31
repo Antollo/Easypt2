@@ -10,7 +10,7 @@
 
 ## Overview
 
-__Easypt__ (_blend of easy and script_) is cross-platform structured object-oriented interpreted programming language. Its main goal is to be easy, small and extensible. Project started on 30th August 2018. Implementation of easypt2 interpreter and started on 2nd October 2019 as well as introduction of a new language standard and grammar. Significant improvement of parser was done in May 2020.
+**Easypt** (_blend of easy and script_) is a cross-platform structured object-oriented prototype-based interpreted programming language. Its main goal is to be easy, small and extensible. The project started on 30th August 2018. Implementation of easypt2 interpreter and started on 2nd October 2019 as well as the introduction of a new language standard and grammar. A significant improvement of the parser was done in May 2020.
 
 ## Examples
 
@@ -27,9 +27,24 @@ for (let i = 0; i<arr.length(); i++)
 ```
 
 ```js
+function sum(a, b) { return a + b; };
+console.log(sum(1, 3));
+```
+
+```js
+function sum {
+    let s = args[0];
+    for (let i = 1; i < args.length(); i++)
+        s = s + args[i];
+    return s;
+};
+console.log(sum(1, 3, 5, 7));
+```
+
+```js
 class Myclass {
-    constructor: function {
-        this.sth = args[0];
+    constructor: function (sth) {
+        this.sth = sth;
         console.log("constructor");
     },
     writeSth: function { console.writeLine(this.sth); },
@@ -60,7 +75,7 @@ Run `easypt -help` to see other options.
 
 ## Documentation
 
-See the [language reference](https://antollo.github.io/Easypt2/).
+### See the [language reference](https://antollo.github.io/Easypt2/).
  
 ## Downloads
 
@@ -72,7 +87,7 @@ See the [language reference](https://antollo.github.io/Easypt2/).
 
 #### Windows
 
-```ps1
+```sh
 ./init.ps1
 cmake .
 cmake --build . --config Release
