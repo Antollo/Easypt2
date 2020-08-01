@@ -10,7 +10,7 @@
 
 ## Overview
 
-**Easypt** (_blend of easy and script_) is a cross-platform structured object-oriented prototype-based interpreted programming language. Its main goal is to be easy, small and extensible. The project started on 30th August 2018. Implementation of easypt2 interpreter and started on 2nd October 2019 as well as the introduction of a new language standard and grammar. A significant improvement of the parser was done in May 2020.
+**Easypt** (_blend of easy and script_) is a cross-platform structured object-oriented prototype-based interpreted programming language. Its main goal is to be easy, small and extensible. The project started on 30th August 2018. Implementation of easypt2 interpreter started on 2nd October 2019 as well as the introduction of a new language standard and grammar. A significant improvement of the parser was done in May 2020.
 
 ## Examples
 
