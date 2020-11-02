@@ -15,23 +15,27 @@ public:
     objectPtrImpl &operator=(const objectPtrImpl &ptr);
     objectPtrImpl(objectPtrImpl &&ptr);
     objectPtrImpl &operator=(objectPtrImpl &&ptr);
-    inline bool operator==(std::nullptr_t) const { return _obj == nullptr; };
-    inline bool operator!=(std::nullptr_t) const { return _obj != nullptr; };
-    inline bool operator==(const objectPtrImpl &ptr) const { return _obj == ptr._obj; };
-    inline bool operator!=(const objectPtrImpl &ptr) const { return _obj != ptr._obj; };
+    bool operator==(std::nullptr_t) const { return _obj == nullptr; };
+    bool operator!=(std::nullptr_t) const { return _obj != nullptr; };
+    bool operator==(const objectPtrImpl &ptr) const { return _obj == ptr._obj; };
+    bool operator!=(const objectPtrImpl &ptr) const { return _obj != ptr._obj; };
+    bool operator==(objectPtrImpl &&ptr) const { return _obj == ptr._obj; };
+    bool operator!=(objectPtrImpl &&ptr) const { return _obj != ptr._obj; };
     ~objectPtrImpl();
 
-    inline operator bool() const { return _obj != nullptr; }
-    object &operator*();
-    object *operator->();
-    const object &operator*() const;
-    const object *operator->() const;
-    inline object *get() { return _obj; }
+    operator bool() const { return _obj != nullptr; }
+
+    object &operator*() { return *_obj; }
+    object *operator->() { return _obj; }
+    const object &operator*() const { return *_obj; }
+    const object *operator->() const { return _obj; }
+    object *get() { return _obj; }
 
 private:
-    static allocatorBuffer<sizeof(int)> memory;
+    using refCountType = uint_fast16_t;
+    static allocatorBuffer<sizeof(refCountType)> memory;
     object *_obj;
-    int *_refCount;
+    refCountType *_refCount;
 };
 
 #endif /* !OBJECTPTRIMPL_H_ */

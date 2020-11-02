@@ -66,7 +66,7 @@ int main(int argc, char **argv)
                                    "    -doc <expression>   Print help on specified object.\n"
                                    "    -version            Print version.\n\n"
                                    "More help at: "
-                                   "https://github.com/Antollo/Easypt2");
+                                   "https://antollo.github.io/Easypt2/");
             }
         }
         runtime::fini(&globalStack);

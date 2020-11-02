@@ -42,7 +42,7 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
     else
         throw std::runtime_error("wrong type of argument");
 
-    treeParser::parseFile(fileNameString, root);
+    treeParser::parseFile(fileNameString, *root);
     object::objectPtr sourceFunction = object::makeObject(root);
     object::objectPtr result;
     {
@@ -60,7 +60,7 @@ object::objectPtr ez_parse(object::objectPtr thisObj, object::arrayType &&args, 
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<std::string>();
     object::functionType root = object::makeFunction();
-    treeParser::parseString(temp, root);
+    treeParser::parseString(temp, *root);
     return object::makeObject(root);
 }
 
@@ -69,12 +69,12 @@ object::objectPtr execute(object::objectPtr thisObj, object::arrayType &&args, s
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<std::string>();
     object::functionType root = object::makeFunction();
-    treeParser::parseString(temp, root);
+    treeParser::parseString(temp, *root);
     size_t i = 0;
     try
     {
-        for (; i < root.children().size(); i++)
-            root.children()[i].evaluate(*st);
+        for (; i < root->children().size(); i++)
+            root->children()[i].evaluate(*st);
     }
     catch (const object::objectPtr &ret)
     {

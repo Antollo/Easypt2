@@ -71,15 +71,15 @@ void Node::text(const std::string &t)
     {
     case NUMBER_LITERAL:
         if (t.find('.') == std::string::npos)
-            data->value = object::makeObject(static_cast<number>(std::stoi(t)));
+            _value = object::makeObject(static_cast<number>(std::stoi(t)));
         else
-            data->value = object::makeObject(static_cast<number>(std::stod(t)));
-        data->value->setConst();
+            _value = object::makeObject(static_cast<number>(std::stod(t)));
+        _value->setConst();
         break;
 
     case STRING_LITERAL:
-        data->value = object::makeObject(parseString(t));
-        data->value->setConst();
+        _value = object::makeObject(parseString(t));
+        _value->setConst();
         break;
 
     default:
@@ -97,14 +97,38 @@ void Node::addChild(Node &arg)
         arg.names() = names();
         names().clear();
         // object::makeObject(Node)
-        data->value = object::makeObject(arg);
-        data->value->setConst();
+        _value = object::makeObject(object::functionType(new Node(std::move(arg))));
+        _value->setConst();
         break;
     }
     default:
-        _children.push_back(arg);
+        _children.emplace_back(std::move(arg));
         break;
     }
+}
+
+bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr &b, stack &st) const
+{
+    if (_optimizations >= 20)
+    {
+        try
+        {
+            a->get<number>() = _children[1].evaluateNumber(st);
+            return true;
+        }
+        catch (...)
+        {
+            console::warn("bad number optimization");
+            _optimizations = 0;
+        }
+    }
+    b = _children[1].evaluate(st);
+    if (a->isOfType<number>() && b->isOfType<number>())
+        _optimizations = _optimizations < 100 ? _optimizations + 1 : 100;
+    else
+        _optimizations = _optimizations > 0 ? _optimizations - 1 : 0;
+
+    return false;
 }
 
 object::objectPtr Node::evaluate(stack &st) const
@@ -113,24 +137,46 @@ object::objectPtr Node::evaluate(stack &st) const
     {
     case COMPOUND_STATEMENT:
     {
-        stack localStack(&st);
         size_t i = 0;
-        try
+        if (!shouldHaveStack())
         {
-            for (; i < _children.size(); i++)
-                _children[i].evaluateVoid(localStack);
+            try
+            {
+                for (; i < _children.size(); i++)
+                    _children[i].evaluateVoid(st);
+            }
+            catch (objectException &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            catch (std::exception &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            return nullptr;
         }
-        catch (objectException &e)
+        else
         {
-            _children[i].exception();
-            throw e;
+            stack localStack(&st);
+            try
+            {
+                for (; i < _children.size(); i++)
+                    _children[i].evaluateVoid(localStack);
+            }
+            catch (objectException &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            catch (std::exception &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            return nullptr;
         }
-        catch (std::exception &e)
-        {
-            _children[i].exception();
-            throw e;
-        }
-        return nullptr;
     }
 
     case IF:
@@ -287,24 +333,13 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConst())
             throw std::runtime_error("tried to modify constant value");
-        if (data->numeric >= 100)
+
+        object::objectPtr b;
+        if (!numberAssignmentOptimization(a, b, st))
         {
-            try
-            {
-                a->get<number>() = _children[1].evaluateNumber(st);
-                return a;
-            }
-            catch (...)
-            {
-                console::warn("bad number optimization");
-                data->numeric -= 50;
-            }
+            *a = *b;
+            a->setConst(false);
         }
-        auto b = _children[1].evaluate(st);
-        if (a->isOfType<number>() && b->isOfType<number>())
-            data->numeric = std::min(data->numeric + 1, 1000);
-        *a = *b;
-        a->setConst(false);
         return a;
     }
 
@@ -320,7 +355,9 @@ object::objectPtr Node::evaluate(stack &st) const
             auto &a = st[_children[0]._text];
             if (a->isConst())
                 throw std::runtime_error("tried to modify constant value");
-            a = _children[1].evaluate(st);
+            object::objectPtr b;
+            if (!numberAssignmentOptimization(a, b, st))
+                a = b;
             return a;
         }
         else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
@@ -329,7 +366,9 @@ object::objectPtr Node::evaluate(stack &st) const
             auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
             if (a->isConst())
                 throw std::runtime_error("tried to modify constant value");
-            a = _children[1].evaluate(st);
+            object::objectPtr b;
+            if (!numberAssignmentOptimization(a, b, st))
+                a = b;
             return a;
         }
         throw std::runtime_error("left side of init_assignment is not identifier or dot operator");
@@ -379,8 +418,7 @@ object::objectPtr Node::evaluate(stack &st) const
             child.evaluate(localJsonStack);
 
         auto obj = object::makeEmptyObject();
-        for (auto x : localJsonStack)
-            obj->addProperty(x.first, x.second);
+        localJsonStack.copyToObject(obj);
         return obj;
     }
 
@@ -391,8 +429,7 @@ object::objectPtr Node::evaluate(stack &st) const
             child.evaluate(localJsonStack);
 
         auto obj = object::makeEmptyObject();
-        for (auto x : localJsonStack)
-            obj->addProperty(x.first, x.second);
+        localJsonStack.copyToObject(obj);
 
         auto Class = st["Class"_n];
         if (!_children.empty() && _children.back()._token == IDENTIFIER)
@@ -782,12 +819,12 @@ object::objectPtr Node::evaluate(stack &st) const
 
     case FUNCTION:
         if (!_text.isEmpty())
-            st.insert(_text, data->value);
-        data->value->captureStack(st.flatCopy());
+            st.insert(_text, _value);
+        const_cast<object &>(*_value).captureStack(st.flatCopy());
     case NUMBER_LITERAL:
     case STRING_LITERAL:
-        assert(data->value != nullptr);
-        return data->value;
+        assert(_value != nullptr);
+        return _value;
 
     default:
         for (auto &child : _children)
@@ -803,24 +840,46 @@ void Node::evaluateVoid(stack &st) const
     {
     case COMPOUND_STATEMENT:
     {
-        stack localStack(&st);
         size_t i = 0;
-        try
+        if (!shouldHaveStack())
         {
-            for (; i < _children.size(); i++)
-                _children[i].evaluateVoid(localStack);
+            try
+            {
+                for (; i < _children.size(); i++)
+                    _children[i].evaluateVoid(st);
+            }
+            catch (objectException &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            catch (std::exception &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            return;
         }
-        catch (objectException &e)
+        else
         {
-            _children[i].exception();
-            throw e;
+            stack localStack(&st);
+            try
+            {
+                for (; i < _children.size(); i++)
+                    _children[i].evaluateVoid(localStack);
+            }
+            catch (objectException &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            catch (std::exception &e)
+            {
+                _children[i].exception();
+                throw e;
+            }
+            return;
         }
-        catch (std::exception &e)
-        {
-            _children[i].exception();
-            throw e;
-        }
-        return;
     }
 
     case IF:
@@ -983,24 +1042,12 @@ void Node::evaluateVoid(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConst())
             throw std::runtime_error("tried to modify constant value");
-        if (data->numeric >= 100)
+        object::objectPtr b;
+        if (!numberAssignmentOptimization(a, b, st))
         {
-            try
-            {
-                a->get<number>() = _children[1].evaluateNumber(st);
-                return;
-            }
-            catch (...)
-            {
-                console::warn("bad number optimization");
-                data->numeric -= 50;
-            }
+            *a = *b;
+            a->setConst(false);
         }
-        auto b = _children[1].evaluate(st);
-        if (a->isOfType<number>() && b->isOfType<number>())
-            data->numeric = std::min(data->numeric + 1, 1000);
-        *a = *b;
-        a->setConst(false);
         return;
     }
 
@@ -1017,7 +1064,9 @@ void Node::evaluateVoid(stack &st) const
             auto &a = st[_children[0]._text];
             if (a->isConst())
                 throw std::runtime_error("tried to modify constant value");
-            a = _children[1].evaluate(st);
+            object::objectPtr b;
+            if (!numberAssignmentOptimization(a, b, st))
+                a = b;
             return;
         }
         else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
@@ -1026,7 +1075,9 @@ void Node::evaluateVoid(stack &st) const
             auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
             if (a->isConst())
                 throw std::runtime_error("tried to modify constant value");
-            a = _children[1].evaluate(st);
+            object::objectPtr b;
+            if (!numberAssignmentOptimization(a, b, st))
+                a = b;
             return;
         }
         throw std::runtime_error("left side of init_assignment is not identifier or dot operator");
@@ -1077,8 +1128,7 @@ void Node::evaluateVoid(stack &st) const
             child.evaluate(localJsonStack);
 
         auto obj = object::makeEmptyObject();
-        for (auto x : localJsonStack)
-            obj->addProperty(x.first, x.second);
+        localJsonStack.copyToObject(obj);
         return;
     }
 
@@ -1089,8 +1139,7 @@ void Node::evaluateVoid(stack &st) const
             child.evaluate(localJsonStack);
 
         auto obj = object::makeEmptyObject();
-        for (auto x : localJsonStack)
-            obj->addProperty(x.first, x.second);
+        localJsonStack.copyToObject(obj);
 
         auto Class = st["Class"_n];
         if (!_children.empty() && _children.back()._token == IDENTIFIER)
@@ -1450,8 +1499,8 @@ void Node::evaluateVoid(stack &st) const
 
     case FUNCTION:
         if (!_text.isEmpty())
-            st.insert(_text, data->value);
-        data->value->captureStack(st.flatCopy());
+            st.insert(_text, _value);
+        const_cast<object &>(*_value).captureStack(st.flatCopy());
     case NUMBER_LITERAL:
     case STRING_LITERAL:
         return;
@@ -1568,8 +1617,8 @@ number Node::evaluateNumber(stack &st) const
     }
 
     case NUMBER_LITERAL:
-        assert(data->value != nullptr);
-        return data->value->get<const number>();
+        assert(_value != nullptr);
+        return _value->get<const number>();
     }
     return evaluate(st)->getConverted<number>();
 }
@@ -1578,6 +1627,8 @@ bool Node::evaluateBoolean(stack &st) const
 {
     switch (_token)
     {
+    case IDENTIFIER:
+        return st[_text]->getConverted<bool>();
     case INSTANCEOF:
     {
         assert(_children.size() == 2);

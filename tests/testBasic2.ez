@@ -75,5 +75,9 @@ let x = nwd(144, 204800000);
 // 1170 - old time
 // 920 - new time
 // 570 - with "<-" and "else"
+// 470 - with Node structure optimisation
+// 260 - with stack optimization
 //console.log(Time.sinceEpoch.asFloatingPoint() - time);
 //console.log(x);
+
+//import("../../library/docs.ez").testAllExamples();

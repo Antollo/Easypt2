@@ -1,7 +1,8 @@
 #include "name.h"
 
-std::unordered_map<unsigned int, std::string> name::codeToNameMap;
-std::unordered_map<std::string, unsigned int> name::nameToCodeMap;
+std::unordered_map<name::codeType, std::string> name::codeToNameMap;
+std::unordered_map<std::string, name::codeType> name::nameToCodeMap;
+const name name::empty(name::emptyCode);
 const name name::prototype(name::prototypeCode);
 const name name::args(name::argsCode);
 const name name::thisObj(name::thisObjCode);
@@ -43,17 +44,4 @@ name::name(const std::string &textName)
     {
         code = nameToCodeMap[textName];
     }
-}
-
-name::operator std::string() const
-{
-    return codeToNameMap[code];
-}
-name::operator int() const
-{
-    return code;
-}
-bool name::operator==(const name &x) const
-{
-    return code == x.code;
 }

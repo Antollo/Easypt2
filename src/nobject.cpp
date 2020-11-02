@@ -37,8 +37,11 @@ object::objectPtr &object::operator[](const name &n)
 {
     if (n == name::prototype)
         return _prototype;
-    if (_properties.count(n))
-        return _properties[n];
+    {
+        auto it = _properties.find(n);
+        if (it != _properties.end())
+            return it->second;
+    }
     if (_prototype)
     {
         object::objectPtr &res = _prototype->read(n);
@@ -69,14 +72,14 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
             referenceToFather->captureStack(_capturedStack);
         }
         const functionType &node = get<const functionType>();
-        for (size_t i = 0; i < node.names().size() && i < args.size(); i++)
-            localStack.insert(node.names()[i], args[i]);
+        for (size_t i = 0; i < node->names().size() && i < args.size(); i++)
+            localStack.insert(node->names()[i], args[i]);
         localStack.insert(name::args, makeObject(std::move(args)));
         if (thisObj)
             localStack.insert(name::thisObj, thisObj);
         try
         {
-            auto evalRet = node.evaluate(localStack);
+            auto evalRet = node->evaluate(localStack);
             if (evalRet != nullptr)
                 return evalRet;
         }
@@ -106,8 +109,11 @@ object::objectPtr &object::read(const name &n)
     static object::objectPtr notFound(nullptr);
     if (n == name::prototype)
         return _prototype;
-    if (_properties.count(n))
-        return _properties[n];
+    {
+        auto it = _properties.find(n);
+        if (it != _properties.end())
+            return it->second;
+    }
     if (_prototype && _prototype.get() != this)
         return _prototype->read(n);
     return notFound;
