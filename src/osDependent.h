@@ -3,7 +3,7 @@
 
 #include <string>
 #include <algorithm>
-
+#include <unordered_map>
 #include <iostream>
 #include <string>
 #include <locale>
@@ -35,7 +35,7 @@ namespace filesystem = std::experimental::filesystem;
 #include <eh.h>
 #include <io.h>
 #include <fcntl.h>
-//using libraryType = HMODULE;
+using libraryType = HMODULE;
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
@@ -44,32 +44,30 @@ namespace filesystem = std::experimental::filesystem;
 #include <sys/types.h>
 #include <unistd.h>
 #include <linux/limits.h>
-//#include <dlfcn.h>
-//using libraryType = void *;
+#include <dlfcn.h>
+using libraryType = void *;
 
 #include <cstdio>
 #include <cstring>
 #include <csignal>
 #else
 #pragma message("OS not fully supported")
-//using libraryType = bool;
+using libraryType = bool;
 #endif
 
 std::filesystem::path getExecutablePath();
 void initialize();
 void initializeThread();
 
-/*class dynamicLibrary
+class dynamicLibrary
 {
 public:
-    dynamicLibrary();
-    void loadLibrary(const std::string &fileName);
-    void *getFunction(const std::string &functionName);
-    ~dynamicLibrary();
-
+    static int loadLibrary(const std::string &fileName);
+    static void *getFunction(int library, const std::string &functionName);
+    static void unloadLibraries();
 private:
-    libraryType library;
-};*/
+    static std::unordered_map<int, libraryType> libraries;
+};
 
 #if defined(_WIN32)
 std::string utf8_encode(const std::wstring &wstr);

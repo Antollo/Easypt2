@@ -3,14 +3,14 @@
 #include "console.h"
 #include "core.h"
 
-allocatorBuffer<sizeof(int)> objectPtrImpl::memory;
+allocatorBuffer<sizeof(objectPtrImpl::refCountType)> objectPtrImpl::memory;
 
 objectPtrImpl::objectPtrImpl(object *obj)
 {
     _obj = obj;
     if (_obj != nullptr)
     {
-        _refCount = static_cast<int*>(memory.allocate());
+        _refCount = static_cast<refCountType*>(memory.allocate());
         *_refCount = 1;
     }
     else
@@ -133,39 +133,4 @@ objectPtrImpl::~objectPtrImpl()
             }
         }
     }
-}
-
-object &objectPtrImpl::operator*()
-{
-    //TODO remove check;
-    //if (_obj == nullptr)
-    //    throw std::runtime_error("getting pointer to NULL");
-    //_obj->_thisPtr = this;
-    return *_obj;
-}
-
-object *objectPtrImpl::operator->()
-{
-    //TODO remove check;
-    //if (_obj == nullptr)
-    //    throw std::runtime_error("getting pointer to NULL");
-    //_obj->_thisPtr = this;
-    return _obj;
-}
-
-const object &objectPtrImpl::operator*() const
-{
-    //TODO remove check;
-    //if (_obj == nullptr)
-    //    throw std::runtime_error("getting pointer to NULL");
-    //_obj->_thisPtr = this;
-    return *_obj;
-}
-const object *objectPtrImpl::operator->() const
-{
-    //TODO remove check;
-    //if (_obj == nullptr)
-    //    throw std::runtime_error("getting pointer to NULL");
-    //_obj->_thisPtr = this;
-    return _obj;
 }

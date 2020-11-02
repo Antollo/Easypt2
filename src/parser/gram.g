@@ -265,7 +265,7 @@ factor(Node& me)  { Node a(INI); } :
         %prefer
         DECREMENT { me.token(DECREMENT); me.addChild(a); }
     |
-        { me = a; }
+        { me = std::move(a); }
     ]
     ;
 

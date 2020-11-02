@@ -102,20 +102,11 @@ std::wstring utf8_decode(const std::string &str)
 }*/
 
 #else
-// Solution from: https://stackoverflow.com/a/30169485
+
 static void sigaction_segv(int signal, siginfo_t *si, void *arg)
 {
-    //ucontext_t *ctx = (ucontext_t *)arg;
-
-#if __WORDSIZE == 64
     printf("Caught SIGSEGV, addr %p\n", si->si_addr);
     std::exit(1);
-    //ctx->uc_mcontext.gregs[REG_RIP] += 10;
-#else
-    printf("Caught SIGSEGV, addr %p\n", si->si_addr);
-    std::exit(1);
-    //ctx->uc_mcontext.gregs[REG_EIP] += 10;
-#endif
 }
 #endif
 
@@ -169,76 +160,62 @@ void initializeThread()
 #endif
 }
 
-/*dynamicLibrary::dynamicLibrary()
-{
-#if defined(_WIN32)
-    library = nullptr;
-#elif defined(__linux__)
-    library = nullptr;
-#else
-    library = false;
-    if (!library)
-        throw(std::runtime_error("dynamic libraries are not supported on this OS"));
-#endif
-}
+std::unordered_map<int, libraryType> dynamicLibrary::libraries;
 
-void dynamicLibrary::loadLibrary(const std::string &fileName)
+
+int dynamicLibrary::loadLibrary(const std::string &fileName)
 {
 #if defined(_WIN32)
-    library = LoadLibraryA((fileName + ".dll").c_str());
+    libraryType library = LoadLibraryA((fileName + ".dll").c_str());
     if (!library)
     {
         std::filesystem::path executablePath = getExecutablePath().parent_path();
         library = LoadLibraryA((executablePath / std::filesystem::path(fileName + ".dll")).string().c_str());
         if (!library)
-            throw(std::runtime_error("library " + fileName + " not found"));
+            throw std::runtime_error("library " + fileName + " not found");
     }
 #elif defined(__linux__)
-    library = dlopen(("./lib" + fileName + ".so").c_str(), RTLD_LAZY);
+    libraryType library = dlopen((fileName + ".so").c_str(), RTLD_LAZY);
     if (!library)
     {
         std::filesystem::path executablePath = getExecutablePath().parent_path();
-        library = dlopen((executablePath / std::filesystem::path("lib" + fileName + ".so")).string().c_str(), RTLD_LAZY);
+        library = dlopen((executablePath / std::filesystem::path(fileName + ".so")).string().c_str(), RTLD_LAZY);
         if (!library)
-            throw(std::runtime_error("library " + fileName + " not found"));
+            throw std::runtime_error("library " + fileName + " not found");
     }
 #else
-    if (!library)
-        throw(std::runtime_error("dynamic libraries are not supported on this OS"));
+    throw std::runtime_error("dynamic libraries are not supported on this OS");
 #endif
+    static int i = 0;
+    libraries[i] = library;
+    return i;
 }
-void *dynamicLibrary::getFunction(const std::string &functionName)
+
+void *dynamicLibrary::getFunction(int i, const std::string &functionName)
 {
-    if (!library)
-        throw(std::runtime_error("library not found"));
+    if (libraries.count(i))
+        throw std::runtime_error("library does not exist");
 #if defined(_WIN32)
-    void *function = reinterpret_cast<void *>(GetProcAddress(library, functionName.c_str()));
+    void *function = reinterpret_cast<void *>(GetProcAddress(libraries[i], functionName.c_str()));
     if (!function)
-        throw(std::runtime_error("function " + functionName + " not found"));
+        throw std::runtime_error("function " + functionName + " not found");
     return function;
 #elif defined(__linux__)
-    void *function = reinterpret_cast<void *>(dlsym(library, functionName.c_str()));
+    void *function = reinterpret_cast<void *>(dlsym(libraries[i], functionName.c_str()));
     if (!function)
-        throw(std::runtime_error("function " + functionName + " not found"));
+        throw std::runtime_error("function " + functionName + " not found");
     return function;
 #else
-    if (!library)
-        throw(std::runtime_error("dynamic libraries are not supported on this OS"));
+    throw std::runtime_error("dynamic libraries are not supported on this OS");
 #endif
 }
-dynamicLibrary::~dynamicLibrary()
+
+void dynamicLibrary::unloadLibraries()
 {
+    for (const auto &library : libraries)
 #if defined(_WIN32)
-    if (library)
-    {
-        FreeLibrary(library);
-        library = nullptr;
-    }
+        FreeLibrary(library.second);
 #elif defined(__linux__)
-    if (library)
-    {
         dlclose(library);
-        library = nullptr;
-    }
 #endif
-}*/
+}

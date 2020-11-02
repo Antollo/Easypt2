@@ -37,11 +37,11 @@ public:
     using nativeFunctionType = objectPtr (*)(objectPtr, arrayType &&, stack *);
     using propertiesType = std::unordered_map<name, objectPtr, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtr>>>;
     using objectCoroutine = std::shared_ptr<coroutine<objectPtr>>;
-    using functionType = Node;
+    using functionType = std::shared_ptr<Node>;
 
     static functionType makeFunction()
     {
-        return Node(0, "root");
+        return std::make_shared<Node>(0, "root");
     }
 
     template <class T>
@@ -291,7 +291,8 @@ public:
         }
         _properties.insert_or_assign(n, ptr);
     }
-    inline void addProperties(propertiesType::iterator begin, propertiesType::iterator end) { _properties.insert(begin, end); }
+    template <class It>
+    inline void addProperties(It begin, It end) { _properties.insert(begin, end); _properties.erase(name::empty);}
     inline void removeProperty(const name &n) { _properties.erase(n); }
     arrayType getOwnPropertyNames();
     std::string toJson() const;
