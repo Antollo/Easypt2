@@ -161,7 +161,7 @@ public:
     static void readLine(T &t, Ts &... args)
     {
         std::string temp;
-        std::getline(lastFormattedInputFunction ? std::wcin >> std::ws : std::wcin, temp);
+        std::getline(lastFormattedInputFunction ? std::cin >> std::ws : std::cin, temp);
         t = static_cast<T>(temp);
         lastFormattedInputFunction = false;
         if constexpr (sizeof...(args))
