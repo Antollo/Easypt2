@@ -15,6 +15,8 @@ target_include_directories(libeasypt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_include_directories(libeasypt SYSTEM PUBLIC parser/fix)
+else ()
+    target_link_libraries(libeasypt ${CMAKE_DL_LIBS})
 endif ()
 
 find_package(Threads REQUIRED)
