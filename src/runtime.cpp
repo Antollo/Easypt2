@@ -34,10 +34,6 @@ void runtime::init(stack *st)
     object::promisePrototype = object::makeEmptyObject();
     (*object::promisePrototype)[name::prototype] = object::objectPrototype;
 
-    /*addFunctionL(object::functionPrototype, "callOperator"_n, {
-        return (*thisObj)(thisObj, std::move(args), st);
-    });*/
-
     addFunctionL(object::functionPrototype, "call"_n, {
         argsConvertibleGuard<nullptr_t>(args);
         auto thisArg = args[0];

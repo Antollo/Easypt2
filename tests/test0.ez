@@ -199,3 +199,31 @@ sudo apt install gcc-10
 sudo apt install g++-10
 */
 
+/*class Point {
+    constructor: function(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+};
+
+class Vector {
+    constructor: function(a, b) {
+        this.a = a;
+        this.b = b;
+    },
+    squaredLength: function() {
+        return (this.a.x - this.b.x) * (this.a.x - this.b.x) + (this.a.y - this.b.y) * (this.a.y - this.b.y);
+    },
+    "<": function(v) {
+        return this.squaredLength() < v.squaredLength();
+    }
+};
+
+let m = Vector(Point(0, 0), Point(1, 2));
+let n = Vector(Point(1, 1), Point(17, 33));
+
+if (m < n) {
+    console.log("Jest ok");
+} else {
+    console.error("Jest źle");
+}*/

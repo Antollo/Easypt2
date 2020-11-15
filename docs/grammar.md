@@ -5,103 +5,103 @@
 ### Identifier, whitespace and literals
 
 ```
-identifier  : [_a-zA-Z][_a-zA-Z0-9]*
-ws          : [ \t\n\r]*
-number      : [0-9]+([.][0-9]+)?
-string      : \"[^"\\]*(\\.[^"\\]*)*\"
+identifier      : [_a-zA-Z][_a-zA-Z0-9]*
+ws              : [ \t\n\r]*
+number          : [0-9]+([.][0-9]+)?
+string          : \"[^"\\]*(\\.[^"\\]*)*\"
 ```
 
 ### Comments
 
 ```
-\/\*        : BEGIN MULTILINE_COMMENT
-\*\/        : END MULTILINE_COMMENT
+\/\*            : BEGIN MULTILINE_COMMENT
+\*\/            : END MULTILINE_COMMENT
 ```
 
 ```
-\/\/        : BEGIN COMMENT
-\n          : END COMMENT
-<<EOF>>     : END COMMENT
+\/\/            : BEGIN COMMENT
+\n              : END COMMENT
+<<EOF>>         : END COMMENT
 ```
 
 ### Keywords
 
 ```
-class       : return CLASS
-extends     : return EXTENDS
-instanceOf  : return INSTANCEOF
-return      : return RETURN
-throw       : return THROW
-try         : return TRY
-catch       : return CATCH
-if          : return IF
-else        : return ELSE
-while       : return WHILE
-for         : return FOR
-let         : return LET
-function    : return FUNCTION
-await       : return AWAIT
-delete      : return DELETE_
-break       : return BREAK
+class           : CLASS
+extends         : EXTENDS
+instanceOf      : INSTANCEOF
+return          : RETURN
+throw           : THROW
+try             : TRY
+catch           : CATCH
+if              : IF
+else            : ELSE
+while           : WHILE
+for             : FOR
+let             : LET
+function        : FUNCTION
+await           : AWAIT
+delete          : DELETE
+break           : BREAK
 ```
 
 ### Identifier
 
 ```
-{identifier}    : return IDENTIFIER;
+{identifier}    : IDENTIFIER;
 ```
 
 ### Literals
 
 ```
-{number}    : return NUMBER_LITERAL;
-{string}    : return STRING_LITERAL;
+{number}        : NUMBER_LITERAL;
+{string}        : STRING_LITERAL;
 ```
 
 ### "Fat arrow"
 
 ```
-\(/({identifier},{ws})*{identifier}?\){ws}=>    : return FAT_ARROW_BEGIN
-=>                                              : return FAT_ARROW
+\(/({identifier},{ws})*{identifier}?\){ws}=>    : FAT_ARROW_BEGIN
+=>                                              : FAT_ARROW
 ```
 
 ### Operators
 
 ```
-@{identifier}@  : return USER_OPERATOR
-==              : return EQUAL
-!=              : return NOT_EQUAL
-\<              : return LESS
-\<=             : return LESS_EQUAL
-\>              : return GREATER
-\>=             : return GREATER_EQUAL
-\%              : return MODULUS
-=               : return ASSIGNMENT
-:               : return JSON_ASSIGNMENT
-\<\-            : return INIT_ASSIGNMENT
-!               : return NOT
-~               : return COMPLEMENT
-\+\+            : return INCREMENT
-\-\-            : return DECREMENT
-\+              : return ADDITION
-\-              : return SUBTRACTION
-\*              : return MULTIPLICATION
-\/              : return DIVISION
-\|\|            : return OR
-&&              : return AND
-\|              : return BITWISE_OR
-&               : return BITWISE_AND
-\<\<            : return SHIFT_LEFT
-\>\>            : return SHIFT_RIGHT
-,               : return ','
-;               : return ';'
-\.              : return DOT
-\:              : return BRACES_OPEN
-\}              : return BRACES_CLOSE
-\(              : return PARENTHESES_OPEN
-\)              : return PARENTHESES_CLOSE
-\[              : return BRACKET_OPEN
-\]              : return BRACKET_CLOSE
+@{identifier}@  : USER_OPERATOR
+==              : EQUAL
+!=              : NOT_EQUAL
+\<              : LESS
+\<=             : LESS_EQUAL
+\>              : GREATER
+\>=             : GREATER_EQUAL
+\%              : MODULUS
+=               : ASSIGNMENT
+:               : JSON_ASSIGNMENT
+\<\-            : INIT_ASSIGNMENT
+!               : NOT
+~               : COMPLEMENT
+\+\+            : INCREMENT
+\-\-            : DECREMENT
+\+              : ADDITION
+\-              : SUBTRACTION
+\*              : MULTIPLICATION
+\/              : DIVISION
+\|\|            : OR
+&&              : AND
+\|              : BITWISE_OR
+&               : BITWISE_AND
+\<\<            : SHIFT_LEFT
+\>\>            : SHIFT_RIGHT
+,               : ','
+;               : ';'
+\.              : DOT
+\:              : BRACES_OPEN
+\}              : BRACES_CLOSE
+\(              : PARENTHESES_OPEN
+\)              : PARENTHESES_CLOSE
+\[              : BRACKET_OPEN
+\]              : BRACKET_CLOSE
 ```
 
 ## Grammar
@@ -112,13 +112,11 @@ input
     [
         statement
     ]*
-    ;
 ```
 
 ```
 simpleStatement :
     expression ';'
-    ;
 ```
 
 ```
@@ -128,7 +126,6 @@ jsonStatement :
         ','
     |
     ]
-    ;
 ```
 
 ```
@@ -138,7 +135,6 @@ compoundStatement :
         statement
     ]*
     BRACES_CLOSE
-    ;
 ```
 
 ```
@@ -146,7 +142,6 @@ jsonStatements :
     [
         jsonStatement
     ]*
-    ;
 ```
 
 ```
@@ -162,7 +157,6 @@ ifStatement :
         statement
     |
     ]
-    ;
 ```
 
 ```
@@ -172,7 +166,6 @@ whileStatement :
     expression
     PARENTHESES_CLOSE
     statement
-    ;
 ```
 
 ```
@@ -186,7 +179,6 @@ forStatement :
     expression
     PARENTHESES_CLOSE
     statement
-    ;
 ```
 
 ```
@@ -195,7 +187,6 @@ tryCatchStatement :
     statement
     CATCH
     statement
-    ;
 ```
 
 ```
@@ -203,7 +194,6 @@ returnStatement :
     RETURN
     expression
     ';'
-    ;
 ```
 
 ```
@@ -211,7 +201,6 @@ throwStatement :
     THROW
     expression
     ';'
-    ;
 ```
 
 ```
@@ -237,7 +226,6 @@ statement :
         BREAK
         ';'
     ]
-    ;
 ```
 
 ```
@@ -264,14 +252,12 @@ expression :
             ]
         ]
     ]*
-    ;
 ```
 
 ```
 expressionList :
     |
     expression expressionListTail
-    ;
 ```
 
 ```
@@ -280,7 +266,6 @@ expressionListTail :
         ','
         expression
     ]*
-    ;
 ```
 
 
@@ -295,7 +280,6 @@ factor :
         DECREMENT
     |
     ]
-    ;
 ```
 
 ```
@@ -314,7 +298,7 @@ factorBase :
     AWAIT
     expression
     |
-    DELETE_
+    DELETE
     expression
     |
     IDENTIFIER
@@ -367,7 +351,6 @@ factorBase :
     BRACES_CLOSE
     |
     BRACKET_OPEN expressionList BRACKET_CLOSE
-    ;
 ```
 
 ```
@@ -394,7 +377,6 @@ leftAssociativeOperator :
     | USER_OPERATOR
     | INSTANCEOF
     ]
-    ;
 ```
 
 ```
@@ -406,5 +388,4 @@ rightAssociativeOperator :
     | NOT
     | COMPLEMENT
     ]
-    ;
 ```

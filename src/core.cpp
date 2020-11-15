@@ -112,5 +112,7 @@ object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType
 
 object::objectPtr getStack(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
-    return st->toObject();
+    auto obj = object::makeEmptyObject();
+    st->copyToObject(obj, true);
+    return obj;
 }
