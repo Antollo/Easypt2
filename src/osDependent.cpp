@@ -216,6 +216,6 @@ void dynamicLibrary::unloadLibraries()
 #if defined(_WIN32)
         FreeLibrary(library.second);
 #elif defined(__linux__)
-        dlclose(library);
+        dlclose(library.second);
 #endif
 }
