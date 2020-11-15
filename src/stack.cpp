@@ -60,13 +60,6 @@ void stack::erase(const name &n)
         storage.erase(n);
 }
 
-object::objectPtr stack::toObject()
-{
-    auto obj = object::makeEmptyObject();
-    copyToObject(obj, true);
-    return obj;
-}
-
 void stack::copyToObject(object::objectPtr &obj, bool recursive)
 {
     if (immediateIndex < immediateStorage.size())
@@ -77,14 +70,14 @@ void stack::copyToObject(object::objectPtr &obj, bool recursive)
         previous->copyToObject(obj, recursive);
 }
 
-stack stack::flatCopy()
+stack stack::copyToFlatStack()
 {
     stack st;
-    flatCopy(st);
+    copyToFlatStack(st);
     return st;
 }
 
-void stack::flatCopy(stack &st)
+void stack::copyToFlatStack(stack &st)
 {
     st.immediateIndex = immediateStorage.size();
     if (immediateIndex < immediateStorage.size())
@@ -95,5 +88,5 @@ void stack::flatCopy(stack &st)
     else
         st.storage.insert(storage.begin(), storage.end());
     if (previous != nullptr)
-        previous->flatCopy(st);
+        previous->copyToFlatStack(st);
 }

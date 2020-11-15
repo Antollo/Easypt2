@@ -1,0 +1,26 @@
+function gcd {
+    let a = args[0];
+    let b = args[1];
+    while (a != b) {
+        if (a < b)
+            b <- b - a;
+        else
+            a <- a - b;
+    }
+    return a;
+};
+
+let iterations = 100;
+let mean = 0;
+let time;
+
+
+for (let i = 0; i < iterations; i++) {
+    time = Time.sinceEpoch.asFloatingPoint();
+    gcd(144, 1836311903);
+    mean = mean + Time.sinceEpoch.asFloatingPoint() - time;
+    console.write("\r--- " + (i / iterations * 100 + 1) + "% ---");
+}
+
+mean = mean / iterations;
+console.writeLine("\nMean time: " + mean + " ms");

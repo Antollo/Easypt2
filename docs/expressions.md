@@ -4,23 +4,23 @@
 
 ### `function` expression
 
-- `function` _identifier_ `(`_parameters_list_`)` _compound_statement_
+- `function` _identifier_ `(`_parameter_list_`)` _compound_statement_
 - `function` _identifier_ _compound_statement_
 
  Defines function with a specified name and optional aliases for arguments.
 
-- `function` `(`_parameters_list_`)` _compound_statement_
+- `function` `(`_parameter_list_`)` _compound_statement_
 - `function` _compound_statement_
 
 Defines function with optional aliases for arguments.
 
 ### `=>` "fat arrow" function
 
-- `(`_parameters_list_`) => ` _compound_statement_
+- `(`_parameter_list_`) => ` _compound_statement_
 
 Defines function with aliases for arguments.
 
-- `(`_parameters_list_`) => ` statement
+- `(`_parameter_list_`) => ` statement
 
 Defines function with aliases for arguments. The return value of the function is the value of an expression that the statement consists of.
 
@@ -35,11 +35,13 @@ _Probably not fully compatible with JSON specification yet._
 ### `class` expression
 
 - `class` _identifier_ _json-expression_
-- `class` _identifier_ _extends_ `identifier` _json-expression_
+- `class` _identifier_ `extends` _identifier_ _json-expression_
 
 Defines a new class (`Class` object) optionally with a specified base class.
 
 ## Declarations
+
+### `let` expression
 
 `let` _identifier_
 

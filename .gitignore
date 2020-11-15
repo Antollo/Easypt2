@@ -14,7 +14,6 @@ flex
 *.zip
 *.tlog
 core.*
-*.js
 *.exe
 CPack*
 install*

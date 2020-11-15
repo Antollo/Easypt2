@@ -3,7 +3,6 @@
 #include "console.h"
 #include "core.h"
 
-allocatorBuffer<sizeof(objectPtrImpl::refCountType)> objectPtrImpl::memory;
 
 objectPtrImpl::objectPtrImpl(object *obj)
 {

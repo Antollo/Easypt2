@@ -5,12 +5,14 @@
 #include <array>
 #include "console.h"
 
-template <int Size, int MaxLength = 128>
+template <int Size, int MaxLength = 160>
 class allocatorBuffer
 {
 public:
-    allocatorBuffer() : length(0), head(0), tail(0)
+    constexpr allocatorBuffer() : length(MaxLength), head(0), tail(0)
     {
+        for (size_t i = 0; i < MaxLength; i++)
+            data[i] = &initialMemory[i];
     }
     void *allocate()
     {
@@ -22,22 +24,7 @@ public:
             length--;
             return ptr;
         }
-        //console::log("new empty");
         return std::malloc(Size);
-    }
-
-    void *allocate(size_t size)
-    {
-        if (length != 0)
-        {
-            void *ptr = data[tail++];
-            if (tail == MaxLength)
-                tail = 0;
-            length--;
-            return ptr;
-        }
-        //console::log("new empty");
-        return std::malloc(size);
     }
 
     void deallocate(void *ptr)
@@ -50,12 +37,13 @@ public:
             length++;
             return;
         }
-        //console::log("delete full");
-        std::free(ptr);
+        if (ptr > &initialMemory[MaxLength - 1] || ptr < &initialMemory[0])
+            std::free(ptr);
     }
 
 private:
     int length, head, tail;
+    std::array<std::array<char, Size>, MaxLength> initialMemory;
     std::array<void *, MaxLength> data;
 };
 
@@ -84,7 +72,6 @@ public:
         if (n <= d)
             return static_cast<T *>(memoryD.allocate());
 
-        //console::log("allocate: ", n);
         return static_cast<T *>(std::malloc(n * sizeof(T)));
     }
 
@@ -94,15 +81,12 @@ public:
             memoryA.deallocate(ptr);
         else if (n <= b)
             memoryB.deallocate(ptr);
-        else if(n <= c)
+        else if (n <= c)
             memoryC.deallocate(ptr);
-        else if(n <= d)
+        else if (n <= d)
             memoryD.deallocate(ptr);
         else
-        {
-            //console::log("deallocate: ", n);
             std::free(ptr);
-        }
     }
 
 private:

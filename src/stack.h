@@ -10,7 +10,8 @@ class stack
 {
 public:
     using storageType = std::unordered_map<name, objectPtrImpl, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtrImpl>>>;
-    using immediateStorageType = std::array<std::pair<name, objectPtrImpl>, 8>;
+    static constexpr size_t immediateStorageSize = 8;
+    using immediateStorageType = std::array<std::pair<name, objectPtrImpl>, immediateStorageSize>;
     using iterator = storageType::iterator;
 
     stack() : previous(nullptr), immediateIndex(0) {}
@@ -24,14 +25,13 @@ public:
     objectPtrImpl &operator[](const name &n);
     objectPtrImpl &insert(const name &n, const objectPtrImpl &obj);
 
-    objectPtrImpl toObject();
     void copyToObject(objectPtrImpl &obj, bool recursive = false);
-    stack flatCopy();
+    stack copyToFlatStack();
     void clear();
     void erase(const name &n);
 
 private:
-    void flatCopy(stack &st);
+    void copyToFlatStack(stack &st);
     void moveToMap()
     {
         storage.insert(immediateStorage.begin(), immediateStorage.end());

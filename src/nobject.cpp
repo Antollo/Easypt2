@@ -5,17 +5,16 @@ object::objectPtr object::numberPrototype, object::stringPrototype, object::bool
     object::objectPrototype, object::functionPrototype, object::promisePrototype, object::classPrototype;
 stack *object::globalStack;
 
-allocatorBuffer<0> object::memory;
-object::buffer object::objects = {0, 0, 0};
+static allocatorBuffer<sizeof(object)> objectMemoryBuffer;
 
 void *object::operator new(size_t)
 {
-    return static_cast<object *>(memory.allocate(sizeof(object)));
+    return static_cast<object *>(objectMemoryBuffer.allocate());
 }
 
 void object::operator delete(void *ptr)
 {
-    memory.deallocate(ptr);
+    objectMemoryBuffer.deallocate(ptr);
 }
 
 void object::reuse(object *ptr)
@@ -93,7 +92,7 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
     throw std::runtime_error("object is not a function");
 }
 
-object::arrayType object::getOwnPropertyNames()
+object::arrayType object::getOwnPropertyNames() const
 {
     arrayType res;
     res.reserve(_properties.size());

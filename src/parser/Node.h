@@ -23,10 +23,16 @@ public:
     Node &operator=(const Node &node) = delete;
     Node &operator=(Node &&node) = default;
 
+    bool operator==(const Node &node) const
+    {
+        if (_token == IDENTIFIER && _token == node._token)
+            return _text == node._text;
+        return _token == node._token && _children == node._children;
+    }
+
     void token(int t) { _token = t; }
     void text(const std::string &t);
 
-    std::string toString() const;
     objectPtrImpl evaluate(stack &st) const;
     number evaluateNumber(stack &st) const;
     bool evaluateBoolean(stack &st) const;

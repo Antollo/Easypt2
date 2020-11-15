@@ -33,7 +33,7 @@ public:
 
 private:
     using refCountType = uint_fast16_t;
-    static allocatorBuffer<sizeof(refCountType)> memory;
+    inline static allocatorBuffer<sizeof(refCountType)> memory;
     object *_obj;
     refCountType *_refCount;
 };

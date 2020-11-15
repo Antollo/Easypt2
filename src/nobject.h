@@ -17,11 +17,6 @@
 #include "allocator.h"
 
 template <class T>
-struct always_false : std::false_type
-{
-};
-
-template <class T>
 using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
@@ -39,6 +34,36 @@ public:
     using objectCoroutine = std::shared_ptr<coroutine<objectPtr>>;
     using functionType = std::shared_ptr<Node>;
 
+    struct type
+    {
+        using Object = nullptr_t;
+        using Boolean = bool;
+        using Number = number;
+        using String = std::string;
+        using Array = std::vector<objectPtr, allocator<objectPtr>>;
+        using Promise = std::shared_ptr<coroutine<objectPtr>>;
+        using Function = std::shared_ptr<Node>;
+        using NativeFunctio = objectPtr (*)(objectPtr, arrayType &&, stack *);
+        using File = std::shared_ptr<file>;
+        using TcpClient = std::shared_ptr<tcpClient>;
+        using TcpServer = std::shared_ptr<tcpServer>;
+    };
+
+    enum class typeIndex
+    {
+        Object,
+        Boolean,
+        Number,
+        String,
+        Array,
+        Promise,
+        Function,
+        NativeFunction,
+        File,
+        TcpClient,
+        TcpServer
+    };
+
     static functionType makeFunction()
     {
         return std::make_shared<Node>(0, "root");
@@ -48,16 +73,14 @@ public:
     static objectPtr makeObject(T &&t)
     {
         if (objects.length == 0)
-        {
-            //console::log("makeObject empty");
             return objectPtr(new object(std::forward<T>(t)));
-        }
 
         object *ptr = objects.data[objects.tail++];
         if (objects.tail == buffer::maxLength)
             objects.tail = 0;
         objects.length--;
         ptr->_value = std::forward<T>(t);
+
         if constexpr (std::is_same_v<std::decay_t<T>, nativeFunctionType>)
             ptr->init<T>(t == constructorCaller);
         else
@@ -65,8 +88,7 @@ public:
         return ptr;
     }
 
-    static objectPtr
-    makeEmptyObject()
+    static objectPtr makeEmptyObject()
     {
         return makeObject(nullptr);
     }
@@ -84,7 +106,7 @@ public:
     }
 
     template <class T>
-    void init(bool isConstructorCaller = false)
+    void init(const bool isConstructorCaller = false)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, nullptr_t>)
             _prototype = objectPrototype;
@@ -122,15 +144,7 @@ public:
     template <class T>
     bool isOfType() const
     {
-        return std::visit([](auto &&value) -> bool {
-            using A = std::decay_t<decltype(value)>;
-
-            if constexpr (std::is_same_v<remove_cref_t<T>, A>)
-                return true;
-            else
-                return false;
-        },
-                          _value);
+        return std::holds_alternative<remove_cref_t<T>>(_value);
     }
 
     template <class T>
@@ -160,44 +174,31 @@ public:
         return std::get<remove_cref_t<T>>(_value);
     }
 
-    template <class T>
-    bool isConvertible() const
+    template <class Visitor>
+    auto visit(objectPtr b, Visitor &&visitor)
     {
-        return std::visit([](auto &&value) -> bool {
-            using A = std::decay_t<decltype(value)>;
+        return std::visit(std::forward<Visitor>(visitor), _value, b->_value);
+    }
 
-            if constexpr (std::is_same_v<remove_cref_t<T>, A>)
-            {
-                return true;
-            }
-            else if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
-            {
-                return true;
-            }
-            else if constexpr (std::is_same_v<remove_cref_t<T>, number>)
-            {
-                return std::is_same_v<A, nullptr_t> || std::is_same_v<A, number> || std::is_same_v<A, std::string> || std::is_same_v<A, arrayType> || std::is_same_v<A, bool>;
-            }
-            else if constexpr (std::is_same_v<remove_cref_t<T>, std::string> || std::is_same_v<remove_cref_t<T>, arrayType>)
-            {
-                return std::is_same_v<A, number> || std::is_same_v<A, std::string> || std::is_same_v<A, arrayType> || std::is_same_v<A, bool>;
-            }
-            return false;
-            // TODO user conversions
-        },
-                          _value);
+    template <class T>
+    constexpr bool isConvertible() const
+    {
+        using RT = remove_cref_t<T>;
+        return std::is_same_v<RT, type::Object> || std::is_same_v<RT, type::Boolean> || std::is_same_v<RT, type::Number> || std::is_same_v<RT, type::String> || std::is_same_v<RT, type::Array>;
     }
 
     template <class T>
     remove_cref_t<T> getConverted()
     {
-        return std::visit([this](auto &&value) -> remove_cref_t<T> {
+        using RT = remove_cref_t<T>;
+
+        return std::visit([this](auto &&value) -> RT {
             using A = std::decay_t<decltype(value)>;
 
-            if constexpr (std::is_same_v<remove_cref_t<T>, A>)
+            if constexpr (std::is_same_v<RT, A>)
                 return value;
 
-            else if constexpr (std::is_same_v<remove_cref_t<T>, number>)
+            else if constexpr (std::is_same_v<RT, number>)
             {
                 if constexpr (std::is_same_v<A, std::string>)
                     return static_cast<number>(value);
@@ -205,17 +206,11 @@ public:
                     return static_cast<number>(value.size());
                 else if constexpr (std::is_same_v<A, bool>)
                     return static_cast<number>(value);
-                else if constexpr (std::is_same_v<A, std::nullptr_t>)
-                    return static_cast<number>(0);
-                /*else
-                {
-                    auto converter = read("number"_n);
-                    if (converter)
-                        return (*converter)(thisObj, {}, nullptr);
-                }*/
+                else
+                    return static_cast<number>(_properties.size());
             }
 
-            else if constexpr (std::is_same_v<remove_cref_t<T>, std::string>)
+            else if constexpr (std::is_same_v<RT, std::string>)
             {
                 if constexpr (std::is_same_v<A, number>)
                     return static_cast<std::string>(value);
@@ -225,31 +220,14 @@ public:
                     return value ? "true"s : "false"s;
                 else
                     return toJson();
-                /*else
-                {
-                    auto converter = read("string"_n);
-                    if (converter)
-                        return (*converter)(thisObj, {}, nullptr);
-                }*/
             }
 
-            else if constexpr (std::is_same_v<remove_cref_t<T>, arrayType>)
+            else if constexpr (std::is_same_v<RT, arrayType>)
             {
-                if constexpr (std::is_same_v<A, number>)
-                    return arrayType{object::makeObject(value)};
-                else if constexpr (std::is_same_v<A, std::string>)
-                    return arrayType{object::makeObject(value)};
-                else if constexpr (std::is_same_v<A, bool>)
-                    return arrayType{object::makeObject(value)};
-                /*else
-                {
-                    auto converter = read("array"_n);
-                    if (converter)
-                        return (*converter)(thisObj, {}, nullptr);
-                }*/
+                return arrayType{object::makeObject(value)};
             }
 
-            else if constexpr (std::is_same_v<remove_cref_t<T>, bool>)
+            else if constexpr (std::is_same_v<RT, bool>)
             {
                 if constexpr (std::is_same_v<A, number>)
                     return static_cast<bool>(value);
@@ -257,62 +235,45 @@ public:
                     return static_cast<bool>(value.size());
                 else if constexpr (std::is_same_v<A, arrayType>)
                     return static_cast<bool>(value.size());
-                else if constexpr (std::is_same_v<A, nullptr_t>)
-                    return _properties.size() != 0;
                 else
-                    return true;
-                /*else
-                {
-                    auto converter = read("boolean"_n);
-                    if (converter)
-                        return (*converter)(thisObj, {}, nullptr);
-                }*/
+                    return _properties.size() != 0;
             }
 
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
- 
         },
                           _value);
-
-        //TODO user conversions
     }
 
-    inline void setConst(bool v = true) { _isConst = v; }
-    inline bool isConst() { return _isConst; }
+    void setConst(bool v = true) { _isConst = v; }
+    bool isConst() const { return _isConst; }
     objectPtr &operator[](const name &n);
     objectPtr operator()(objectPtr thisObj, arrayType &&args, stack *st);
-    inline bool hasOwnProperty(const name &n) { return _properties.count(n) || (n == name::prototype && _prototype); }
-    inline void addProperty(const name &n, objectPtr ptr)
+    bool hasOwnProperty(const name &n) const { return _properties.count(n) || (n == name::prototype && _prototype); }
+    void addProperty(const name &n, objectPtr ptr)
     {
         if (n == name::prototype)
-        {
             _prototype = ptr;
-            return;
-        }
-        _properties.insert_or_assign(n, ptr);
+        else
+            _properties.insert_or_assign(n, ptr);
     }
     template <class It>
-    inline void addProperties(It begin, It end) { _properties.insert(begin, end); _properties.erase(name::empty);}
-    inline void removeProperty(const name &n) { _properties.erase(n); }
-    arrayType getOwnPropertyNames();
+    void addProperties(It begin, It end)
+    {
+        _properties.insert(begin, end);
+        _properties.erase(name::empty);
+    }
+    void removeProperty(const name &n) { _properties.erase(n); }
+    arrayType getOwnPropertyNames() const;
     std::string toJson() const;
     void clear();
 
-    void captureStack(stack &&st)
-    {
-        _capturedStack = std::make_shared<stack>(std::move(st));
-    }
-
-	void captureStack(std::shared_ptr<stack> st)
-	{
-		_capturedStack = st;
-	}
+    void captureStack(stack &&st) { _capturedStack = std::make_shared<stack>(std::move(st)); }
+    void captureStack(const std::shared_ptr<stack> &st) { _capturedStack = st; }
+    void captureStack(std::shared_ptr<stack> &&st) { _capturedStack = std::move(st); }
 
     static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
-    static void setGlobalStack(stack *newGlobalStack)
-    {
-        globalStack = newGlobalStack;
-    }
+
+    static void setGlobalStack(stack *newGlobalStack) { globalStack = newGlobalStack; }
 
 private:
     friend class objectPtrImpl;
@@ -330,16 +291,15 @@ private:
         static constexpr int maxLength = 128;
         std::array<object *, maxLength> data;
     };
-    static buffer objects;
+    inline static buffer objects;
     static void reuse(object *ptr);
-    static allocatorBuffer<0> memory;
 
     objectPtr &read(const name &n);
     const char *getTypeName() const
     {
         return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
     }
-    void toJson(std::string& str, const int indentation = 1) const;
+    void toJson(std::string &str, const int indentation = 1) const;
 };
 
 class objectException : public std::exception

@@ -73,6 +73,71 @@ Run with `easypt -file my_file.ez`.
 
 Run `easypt -help` to see other options.
 
+## Benchmark
+
+### Platform:
+
+  - System: Microsoft Windows [Version 10.0.19041.630]
+  - Processor: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz
+  - RAM: 8GB DDR4 2133MHz
+
+Easypt:
+
+```js
+function gcd {
+    let a = args[0];
+    let b = args[1];
+    while (a != b) {
+        if (a < b)
+            b <- b - a;
+        else
+            a <- a - b;
+    }
+    return a;
+};
+```
+
+Python:
+
+```py
+def gcd(a, b):
+    while a != b:
+        if a < b:
+            b = b - a
+        else:
+            a = a - b
+    return a
+```
+
+JavaScript:
+
+```js
+function gcd(a, b) {
+    while (a != b) {
+        if (a < b)
+            b = b - a
+        else
+            a = a - b
+    }
+    return a
+}
+```
+
+Test:
+
+```js
+gcd(144, 1836311903)
+```
+
+The full code of the benchmark can be found in `/benchmarks`.
+
+![Alt text](benchmarks/test.svg?raw=true "Title")
+
+1. Easypt (local compilation from 15.11.2020)
+1. Python (version 3.9.0)
+1. Node.js¹ (version v15.0.1, JIT compilation disabled - `%NeverOptimizeFunction(gcd)`) 
+1. Node.js² (version v15.0.1) 
+
 ## Documentation
 
 ### See the [language reference](https://antollo.github.io/Easypt2/).

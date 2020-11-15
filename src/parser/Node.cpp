@@ -113,7 +113,32 @@ bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr 
     {
         try
         {
-            a->get<number>() = _children[1].evaluateNumber(st);
+            if (_children[1]._children.size() == 2 && _children[0] == _children[1]._children[0])
+            {
+                switch (_children[1]._token)
+                {
+                case ADDITION:
+                    a->get<number>() += _children[1]._children[1].evaluateNumber(st);
+                    break;
+                case SUBTRACTION:
+                    a->get<number>() -= _children[1]._children[1].evaluateNumber(st);
+                    break;
+                case MULTIPLICATION:
+                    a->get<number>() *= _children[1]._children[1].evaluateNumber(st);
+                    break;
+                case DIVISION:
+                    a->get<number>() /= _children[1]._children[1].evaluateNumber(st);
+                    break;
+                case MODULUS:
+                    a->get<number>() %= _children[1]._children[1].evaluateNumber(st);
+                    break;
+                default:
+                    a->get<number>() = _children[1].evaluateNumber(st);
+                    break;
+                }
+            }
+            else
+                a->get<number>() = _children[1].evaluateNumber(st);
             return true;
         }
         catch (...)
@@ -197,8 +222,15 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 2);
         try
         {
-            while (_children[0].evaluateBoolean(st))
-                _children[1].evaluateVoid(st);
+            if (_children[1]._token == COMPOUND_STATEMENT && !_children[1].shouldHaveStack())
+            {
+                while (_children[0].evaluateBoolean(st))
+                    for (auto &child : _children[1]._children)
+                        child.evaluateVoid(st);
+            }
+            else
+                while (_children[0].evaluateBoolean(st))
+                    _children[1].evaluateVoid(st);
         }
         catch (const breakType &e)
         {
@@ -820,7 +852,7 @@ object::objectPtr Node::evaluate(stack &st) const
     case FUNCTION:
         if (!_text.isEmpty())
             st.insert(_text, _value);
-        const_cast<object &>(*_value).captureStack(st.flatCopy());
+        const_cast<object &>(*_value).captureStack(st.copyToFlatStack());
     case NUMBER_LITERAL:
     case STRING_LITERAL:
         assert(_value != nullptr);
@@ -900,8 +932,15 @@ void Node::evaluateVoid(stack &st) const
         assert(_children.size() == 2);
         try
         {
-            while (_children[0].evaluateBoolean(st))
-                _children[1].evaluateVoid(st);
+            if (_children[1]._token == COMPOUND_STATEMENT && !_children[1].shouldHaveStack())
+            {
+                while (_children[0].evaluateBoolean(st))
+                    for (auto &child : _children[1]._children)
+                        child.evaluateVoid(st);
+            }
+            else
+                while (_children[0].evaluateBoolean(st))
+                    _children[1].evaluateVoid(st);
         }
         catch (const breakType &e)
         {
@@ -1500,7 +1539,7 @@ void Node::evaluateVoid(stack &st) const
     case FUNCTION:
         if (!_text.isEmpty())
             st.insert(_text, _value);
-        const_cast<object &>(*_value).captureStack(st.flatCopy());
+        const_cast<object &>(*_value).captureStack(st.copyToFlatStack());
     case NUMBER_LITERAL:
     case STRING_LITERAL:
         return;
@@ -1521,6 +1560,8 @@ number Node::evaluateNumber(stack &st) const
     //case METHOD_CALL_OPERATOR:
     // TODO
     // sin, cos, sqrt etc.
+    case IDENTIFIER:
+        return st[_text]->getConverted<number>();
     case ADDITION:
     {
         assert(_children.size() == 2);
@@ -1593,7 +1634,7 @@ number Node::evaluateNumber(stack &st) const
         return static_cast<number>(static_cast<int>(a) >> static_cast<int>(b));
     }
 
-        /*case INCREMENT:
+    /*case INCREMENT:
     {
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
@@ -1803,158 +1844,4 @@ bool Node::evaluateBoolean(stack &st) const
     }
     }
     return evaluate(st)->getConverted<bool>();
-}
-
-std::string Node::toString() const
-{
-    switch (_token)
-    {
-    case IDENTIFIER:
-    case STRING_LITERAL:
-        return static_cast<std::string>(_text);
-    case NUMBER_LITERAL:
-        return static_cast<std::string>(_text);
-    case DOT:
-        return "<" + _children[0].toString() + "." + _children[1].toString() + ">";
-    case CALL_OPERATOR:
-    {
-        std::string r = "<" + _children[0].toString() + ">(";
-        for (size_t i = 1; i < _children.size(); i++)
-            r += _children[i].toString() + ", ";
-        if (r.back() == ' ')
-        {
-            r.pop_back();
-            r.back() = ')';
-        }
-        else
-            r.push_back(')');
-        return r;
-    }
-    case READ_OPERATOR:
-    {
-        std::string r = "<" + _children[0].toString() + ">[";
-        for (size_t i = 1; i < _children.size(); i++)
-            r += _children[i].toString() + ", ";
-        if (r.back() == ' ')
-        {
-            r.pop_back();
-            r.back() = ']';
-        }
-        else
-            r.push_back(']');
-        return r;
-    }
-    case METHOD_CALL_OPERATOR:
-    {
-        std::string r = "<" + _children[0].toString() + "." + _children[1].toString() + ">(";
-        for (size_t i = 2; i < _children.size(); i++)
-            r += _children[i].toString() + ", ";
-        if (r.back() == ' ')
-        {
-            r.pop_back();
-            r.back() = ')';
-        }
-        else
-            r.push_back(')');
-        return r;
-    }
-    case STATEMENT:
-        return _children[0].toString();
-    case COMPOUND_STATEMENT:
-    {
-        std::string r = "{\n";
-        for (const auto &arg : _children)
-            r += arg.toString() + "\n";
-        r += "}";
-        return r;
-    }
-    case ARRAY_LITERAL:
-    {
-        std::string r = "Array [";
-        for (const auto &arg : _children)
-            r += arg.toString() + ", ";
-        if (r.back() == ' ')
-        {
-            r.pop_back();
-            r.back() = ']';
-        }
-        else
-            r.push_back(']');
-        return r;
-    }
-    case IF:
-    case IF_ELSE:
-    {
-        std::string r = "if (" + _children[0].toString() + ") {\n";
-        for (size_t i = 1; i < _children.size(); i++)
-            r += _children[i].toString() + "\n";
-        r += "}";
-        return r;
-    }
-    case WHILE:
-    {
-        std::string r = "while (" + _children[0].toString() + ") {\n";
-        for (size_t i = 1; i < _children.size(); i++)
-            r += _children[i].toString() + "\n";
-        r += "}";
-        return r;
-    }
-    case LET:
-        return "let " + static_cast<std::string>(_text);
-    case RETURN:
-        return "return " + _children[0].toString();
-    case THROW:
-        return "return " + _children[0].toString();
-    case BREAK:
-        throw breakType();
-    case TRY:
-    {
-        std::string r = "try ";
-        r += _children[0].toString() + " catch ";
-        r += _children[1].toString();
-        return r;
-    }
-    case FUNCTION:
-    {
-        std::string r = "function {\n";
-        for (const auto &arg : _children)
-            r += arg.toString() + "\n";
-        r += "}";
-        return r;
-    }
-    case JSON:
-    {
-        std::string r = "json {\n";
-        for (const auto &arg : _children)
-            r += arg.toString() + "\n";
-        r += "}";
-        return r;
-    }
-    case CLASS:
-    {
-        std::string r = "class " + static_cast<std::string>(_text) + " {\n";
-        for (const auto &arg : _children)
-            r += arg.toString() + "\n";
-        r += "}";
-        return r;
-    }
-    default:
-        switch (_children.size())
-        {
-        case 0:
-            return "<" + toName() + ">";
-        case 1:
-            return "<" + toName() + " " + _children[0].toString() + ">";
-        case 2:
-            return "<" + _children[0].toString() + " " + toName() + " " + _children[1].toString() + ">";
-        default:
-        {
-            std::string r = "<" + toName();
-            for (const auto &arg : _children)
-                r += " " + arg.toString();
-            r += ">";
-            return r;
-        }
-        }
-    }
 }
