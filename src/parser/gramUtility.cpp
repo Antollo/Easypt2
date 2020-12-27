@@ -81,12 +81,14 @@ int operatorPriority(int token)
         return 15;
     case USER_OPERATOR:
         return 16;
+    case CONDITIONAL:
+        return 17;
     case ASSIGNMENT:
     case JSON_ASSIGNMENT:
     case INIT_ASSIGNMENT:
     case RETURN:
     case THROW:
-        return 17;
+        return 18;
 
     default:
         treeParser::throwLater("operator " + tokenToName(token) + " has no priority");

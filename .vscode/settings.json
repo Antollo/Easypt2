@@ -90,7 +90,8 @@
         "concepts": "cpp",
         "cassert": "cpp",
         "random": "cpp",
-        "compare": "cpp"
+        "compare": "cpp",
+        "bit": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,

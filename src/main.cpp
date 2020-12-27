@@ -26,13 +26,14 @@ int main(int argc, char **argv)
         globalStack["argv"_n]->get<object::arrayType>().resize(argc);
         globalStack["argc"_n]->get<number>() = argc;
 
-        auto import = globalStack["import"_n];
-
         for (int i = 0; i < argc; i++)
             globalStack["argv"_n]->get<object::arrayType>()[i] = object::makeObject(std::string(argv[i]));
 
         for (int i = 0; i < argc; i++)
         {
+            auto import = globalStack["import"_n];
+            auto execute = globalStack["execute"_n];
+
             if (isFlag(argv[i], "file") && i != argc - 1)
             {
                 (*import)(import, {object::makeObject(std::string(argv[++i]))}, &globalStack);
@@ -41,14 +42,14 @@ int main(int argc, char **argv)
             {
                 (*import)(import, {object::makeObject("../library/repl.ez"s)}, &globalStack);
             }
+            else if (isFlag(argv[i], "execute"))
+            {
+                (*execute)(execute, {object::makeObject(std::string(argv[++i]))}, &globalStack);
+            }
             else if (isFlag(argv[i], "doc") && i != argc - 1)
             {
                 auto help = (*(*import)(import, {object::makeObject("../library/docs.ez"s)}, &globalStack))["help"_n];
-                (*help)(help, {
-                    execute(globalStack["execute"_n],
-                    { object::makeObject("return " + std::string(argv[++i]) + ";") },
-                    &globalStack)
-                }, &globalStack);
+                (*help)(help, {(*execute)(execute, {object::makeObject("return " + std::string(argv[++i]) + ";")}, &globalStack)}, &globalStack);
             }
             else if (isFlag(argv[i], "version"))
             {

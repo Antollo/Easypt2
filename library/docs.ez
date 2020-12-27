@@ -93,24 +93,28 @@ function testExample (object, name) {
         } catch {
             console.error("Error in: ", name, " ", exception);
         }
+        return false;
     }
-    return false;
+    return true;
 };
 
 function recursiveTestExample (object, name) {
-    testExample(object, name);
+    let ok = testExample(object, name);
     let names <- object.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++)
         if (names[i] != "prototype")
-            recursiveTestExample(Object.readOperator.call(object, names[i]), name + "." + names[i]);
+            ok = ok && recursiveTestExample(Object.readOperator.call(object, names[i]), name + "." + names[i]);
+    return ok;
 };
 
 function testAllExamples {
+    let ok = true;
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++)
         if (names[i] != "prototype")
-            recursiveTestExample(Object.readOperator.call(stack, names[i]), names[i]);
+            ok = ok && recursiveTestExample(Object.readOperator.call(stack, names[i]), names[i]);
+    return ok;
 };
 
 let prefix = "docs/";
@@ -206,10 +210,10 @@ function makeDocs {
     file.writeLine("## Tutorial\n\n`TODO`\n");
 };
 
-import("../library/docsData.ez");
+import("docsData.ez");
 
 return {
-    help : help,
-    makeDocs : makeDocs,
-    testAllExamples : testAllExamples
+    help: help,
+    makeDocs: makeDocs,
+    testAllExamples: testAllExamples
 };

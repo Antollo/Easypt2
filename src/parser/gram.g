@@ -76,6 +76,8 @@
 %token DELETE_;
 %token BREAK;
 
+%token CONDITIONAL;
+
 %start parse, input;
 
 input { Node a(INI); }
@@ -213,7 +215,7 @@ statement(Node& me) :
     ]
     ;
 
-expression(int priority, Node& me) { Node a(INI), b(INI); int token; } :
+expression(int priority, Node& me) { Node a(INI), b(INI), c(INI); int token; } :
     factor(me)
     [
         %while (op(LLsymb) <= priority)
@@ -224,6 +226,9 @@ expression(int priority, Node& me) { Node a(INI), b(INI); int token; } :
         |
             rightAssociativeOperator
             expression(op(token), b)        { me.addChild(b); }
+        |
+            CONDITIONAL expression(op(CONDITIONAL), b) { me.addChild(b); } 
+            JSON_ASSIGNMENT expression(op(CONDITIONAL), c) { me.addChild(c); } 
         |
             { me.token(CALL_OPERATOR); }
             PARENTHESES_OPEN expressionList(me) PARENTHESES_CLOSE

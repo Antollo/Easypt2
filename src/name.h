@@ -32,6 +32,7 @@ public:
     bool isEmpty() const { return code == emptyCode; }
 
     const static name empty;
+    const static name reserved;
     const static name prototype;
     const static name args;
     const static name thisObj;
@@ -55,9 +56,10 @@ private:
     static std::unordered_map<std::string, codeType> nameToCodeMap;
     static constexpr codeType start = 10;
     static constexpr codeType emptyCode = 0;
-    static constexpr codeType prototypeCode = 1;
-    static constexpr codeType argsCode = 2;
-    static constexpr codeType thisObjCode = 3;
+    static constexpr codeType reservedCode = 1;
+    static constexpr codeType prototypeCode = 2;
+    static constexpr codeType argsCode = 3;
+    static constexpr codeType thisObjCode = 4;
     friend struct std::hash<name>;
 };
 

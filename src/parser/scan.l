@@ -100,6 +100,7 @@ comment \/\/.*
 <INITIAL>\)                 { return PARENTHESES_CLOSE; }
 <INITIAL>\[                 { return BRACKET_OPEN; }
 <INITIAL>\]                 { return BRACKET_CLOSE; }
+<INITIAL>\?                 { return CONDITIONAL; }
 <INITIAL>{ws}               ;
 <INITIAL>.                  {
                                 treeParser::throwLater("invalid character <" + std::string(1, yytext[0]) + "> in " + treeParser::file + ":" + std::to_string(yylineno));

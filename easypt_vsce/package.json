@@ -2,18 +2,24 @@
     "name": "easypt",
     "displayName": "Easypt",
     "description": "Easypt programming language basic support.",
-    "version": "2.0.6",
+    "version": "3.0.0",
     "publisher": "Antollo",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Antollo/Easypt.git"
+        "url": "https://github.com/Antollo/Easypt2"
     },
     "engines": {
-        "vscode": "^1.26.0"
+        "vscode": "^1.34.0"
     },
     "categories": [
         "Programming Languages"
     ],
+    "activationEvents": [
+        "onCommand:extension.runFile",
+        "onCommand:extension.runRepl",
+        "onLanguage:easypt"
+    ],
+    "main": "./out/extension.js",
     "contributes": {
         "languages": [
             {
@@ -40,6 +46,36 @@
                 "language": "easypt",
                 "path": "./snippets/easypt.json"
             }
+        ],
+        "commands": [
+            {
+                "command": "extension.runFile",
+                "title": "Run source file",
+                "enablement": "editorLangId == easypt",
+                "category": "Easypt"
+            },
+            {
+                "command": "extension.runRepl",
+                "title": "Open repl in terminal",
+                "category": "Easypt"
+            }
         ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "lint": "eslint . --ext .ts,.tsx",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^12.12.0",
+        "@types/vscode": "^1.34.0",
+        "@typescript-eslint/eslint-plugin": "^3.0.2",
+        "@typescript-eslint/parser": "^3.0.2",
+        "eslint": "^7.1.0",
+        "typescript": "^4.0.2"
+    },
+    "dependencies": {
+        "lookpath": "^1.1.0"
     }
 }

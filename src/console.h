@@ -131,8 +131,16 @@ public:
         std::wistringstream st(utf8_decode(str));
         std::wstreambuf *buf = std::wcin.rdbuf();
         std::wcin.rdbuf(st.rdbuf());
-        cb();
-        std::wcin.rdbuf(buf);
+        try
+        {
+            cb();
+            std::wcin.rdbuf(buf);
+        }
+        catch(...)
+        {
+            std::wcin.rdbuf(buf);
+            throw;
+        }
     }
 
     template <class CB>
@@ -141,8 +149,16 @@ public:
         std::wostringstream st;
         std::wstreambuf *buf = std::wcout.rdbuf();
         std::wcout.rdbuf(st.rdbuf());
-        cb();
-        std::wcout.rdbuf(buf);
+        try
+        {
+            cb();
+            std::wcout.rdbuf(buf);
+        }
+        catch(...)
+        {
+            std::wcout.rdbuf(buf);
+            throw;
+        }
         return utf8_encode(st.str());
     }
 
@@ -206,8 +222,17 @@ public:
         std::istringstream st(str);
         std::streambuf *buf = std::cin.rdbuf();
         std::cin.rdbuf(st.rdbuf());
-        cb();
-        std::cin.rdbuf(buf);
+        try
+        {
+            cb();
+            std::cin.rdbuf(buf);
+        }
+        catch(...)
+        {
+            std::cin.rdbuf(buf);
+            throw;
+        }
+        
     }
 
     template <class CB>
@@ -216,8 +241,16 @@ public:
         std::ostringstream st;
         std::streambuf *buf = std::cout.rdbuf();
         std::cout.rdbuf(st.rdbuf());
-        cb();
-        std::cout.rdbuf(buf);
+        try
+        {
+            cb();
+            std::cout.rdbuf(buf);
+        }
+        catch(...)
+        {
+            std::cout.rdbuf(buf);
+            throw;
+        }
         return st.str();
     }
 

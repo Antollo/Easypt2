@@ -39,7 +39,7 @@ object::objectPtr &object::operator[](const name &n)
     {
         auto it = _properties.find(n);
         if (it != _properties.end())
-            return it->second;
+            return checkGetter(it->second);
     }
     if (_prototype)
     {
@@ -184,7 +184,6 @@ void object::clear()
     _properties.clear();
     _capturedStack.reset();
     _value = nullptr;
-    _isConst = false;
+    _flags.reset();
     _prototype = nullptr;
-    //_thisPtr = nullptr;
 }

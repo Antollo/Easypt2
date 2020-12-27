@@ -1,0 +1,53 @@
+try
+{
+    throw "Exception";
+} catch {
+    console.writeLine(exception);
+}
+
+class Myclass {
+    constructor: function {
+        this.sth = args[0];
+        console.writeLine("constructor");
+    },
+    writeSth: function { console.writeLine(this.sth); },
+    destructor: function { console.writeLine("destructor"); }
+};
+
+{
+    let m = Myclass(12);
+    m["zażółć"] = "gęślą";
+    //console.debug(m["zażółć"]);
+    //console.debug(m.getId());
+    m.writeSth();
+}
+
+let x = () => { console.writeLine(args[0]); };
+x(5);
+
+
+let p1 = Promise(function { console.writeLine(1); });
+let p2 = Promise(function { console.writeLine(2); });
+let p3 = Promise(function { console.writeLine(3); });
+let p4 = Promise(function { console.writeLine(4); });
+let p5 = Promise(function { console.writeLine(5); });
+
+console.writeLine("start");
+Object.condition = "one";
+Timeout(400).then(function { console.writeLine(400); Object.condition = "two"; });
+
+ConditionalPromise(() => console.writeLine(Object.condition);, () => "one" == Object.condition;);
+console.setInput("a b c d e", () =>  {
+    let a = console.readAsync().then((x) => console.writeLine(x););
+    let b = console.readAsync().then((x) => console.writeLine(x););
+    let c = console.readAsync().then((x) => console.writeLine(x););
+    let d = console.readAsync().then((x) => console.writeLine(x););
+    let e = console.readAsync().then((x) => console.writeLine(x););
+    await a;
+    await b;
+    await c;
+    await d;
+    await e;
+});
+
+Timeout(200).then(function { console.writeLine(200); });

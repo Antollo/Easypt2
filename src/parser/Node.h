@@ -30,7 +30,12 @@ public:
         return _token == node._token && _children == node._children;
     }
 
-    void token(int t) { _token = t; }
+    void token(int t)
+    {
+        if (_token != 0)
+            std::runtime_error("Token type already set");
+        _token = t;
+    }
     void text(const std::string &t);
 
     objectPtrImpl evaluate(stack &st) const;

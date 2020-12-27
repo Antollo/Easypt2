@@ -73,4 +73,9 @@ namespace Tcp
 void init(stack *st);
 };
 
+namespace Accessible
+{
+void init(stack *st);
+};
+
 #endif /* !LIBRARY_H_ */
