@@ -10,10 +10,14 @@ add_executable(testConversions testConversions.cpp)
 target_link_libraries(testConversions libeasypt)
 add_test(Conversions testConversions)
 
-add_executable(testBasic1 testBasic1.cpp)
-target_link_libraries(testBasic1 libeasypt)
-add_test(Basic1 testBasic1 -file testBasic1.ez)
+add_executable(testRunner testRunner.cpp)
+target_link_libraries(testRunner libeasypt)
 
-add_executable(testBasic2 testBasic2.cpp)
-target_link_libraries(testBasic2 libeasypt)
-add_test(Basic2 testBasic2 -file testBasic2.ez)
+set(inputs 1 2 3 4)
+foreach (input ${inputs})
+    add_test("e2eTest${input}" testRunner
+    -file "e2e/in/${input}.ez" -compare "e2e/out/${input}.out")
+endforeach()
+
+add_test(NAME "examples" COMMAND easypt -file "e2e/in/5.ez")
+set_tests_properties("examples" PROPERTIES PASS_REGULAR_EXPRESSION "ok")

@@ -12,7 +12,7 @@ from standard input stream.
 #### Example:
 
 ```js
-console.writeLine("Who is favourite writer?");
+console.writeLine("Who is your favourite writer?");
 let writer = console.readLine();
 console.writeLine("I like books written by ", writer, " too.");
 ```

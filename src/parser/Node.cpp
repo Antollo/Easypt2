@@ -94,9 +94,8 @@ void Node::addChild(Node &arg)
     {
     case FUNCTION:
     {
-        arg.names() = names();
+        arg.names() = std::move(names());
         names().clear();
-        // object::makeObject(Node)
         _value = object::makeObject(object::functionType(new Node(std::move(arg))));
         _value->setConst();
         break;
@@ -217,6 +216,10 @@ object::objectPtr Node::evaluate(stack &st) const
         else
             _children[2].evaluateVoid(st);
         return nullptr;
+    
+    case CONDITIONAL:
+        assert(_children.size() == 3);
+        return _children[0].evaluateBoolean(st) ? _children[1].evaluate(st) : _children[2].evaluate(st);
 
     case WHILE:
         assert(_children.size() == 2);
@@ -369,7 +372,7 @@ object::objectPtr Node::evaluate(stack &st) const
         object::objectPtr b;
         if (!numberAssignmentOptimization(a, b, st))
         {
-            *a = *b;
+            *a = b;
             a->setConst(false);
         }
         return a;
@@ -640,7 +643,7 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)["&&"_n])(a, {b}, &st);
+        return (*(*a)["||"_n])(a, {b}, &st);
     }
 
     case BITWISE_AND:
@@ -928,6 +931,11 @@ void Node::evaluateVoid(stack &st) const
             _children[2].evaluateVoid(st);
         return;
 
+    case CONDITIONAL:
+        assert(_children.size() == 3);
+        _children[0].evaluateBoolean(st) ? _children[1].evaluateVoid(st) : _children[2].evaluateVoid(st);
+        return;
+
     case WHILE:
         assert(_children.size() == 2);
         try
@@ -1084,7 +1092,7 @@ void Node::evaluateVoid(stack &st) const
         object::objectPtr b;
         if (!numberAssignmentOptimization(a, b, st))
         {
-            *a = *b;
+            *a = b;
             a->setConst(false);
         }
         return;
@@ -1660,6 +1668,11 @@ number Node::evaluateNumber(stack &st) const
     case NUMBER_LITERAL:
         assert(_value != nullptr);
         return _value->get<const number>();
+
+    case CONDITIONAL:
+        assert(_children.size() == 3);
+        return _children[0].evaluateBoolean(st) ? _children[1].evaluateNumber(st) : _children[2].evaluateNumber(st);
+
     }
     return evaluate(st)->getConverted<number>();
 }
@@ -1842,6 +1855,10 @@ bool Node::evaluateBoolean(stack &st) const
             return !a->getConverted<bool>();
         return (*(*a)["!"_n])(a, {}, &st)->getConverted<bool>();
     }
+
+    case CONDITIONAL:
+        assert(_children.size() == 3);
+        return _children[0].evaluateBoolean(st) ? _children[1].evaluateBoolean(st) : _children[2].evaluateBoolean(st);
     }
     return evaluate(st)->getConverted<bool>();
 }

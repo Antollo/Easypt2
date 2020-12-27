@@ -80,6 +80,8 @@ console @expectedOutput@
 console.newLine @description@
 "Writes the new line character or characters sequence
 (platform dependent) to standard output stream.";
+console.newLine @returns@
+"console";
 console.newLine @example@
 "console.newLine();";
 
@@ -167,7 +169,7 @@ console.readLine @description@
 "Reads string terminated by new line character 
 from standard input stream.";
 console.readLine @example@
-"console.writeLine(\"Who is favourite writer?\");
+"console.writeLine(\"Who is your favourite writer?\");
 let writer = console.readLine();
 console.writeLine(\"I like books written by \", writer, \" too.\");";
 
@@ -193,6 +195,21 @@ console.getOutput @example@
 let output = console.getOutput(f, \"abc\");
 console.write(output);";
 console.getOutput @expectedOutput@
+"abc";
+
+console.setInput @parameters@
+"/*String*/, /*Function*/, [...]";
+console.setInput @returns@
+"console";
+console.setInput @description@
+"Calls provided function (forwards arguments) and pass the 
+string as input to this function. Useful for testing.";
+console.setInput @example@
+"console.setInput(\"abc\", () => {
+    let input = console.read();
+    console.write(input);
+});";
+console.setInput @expectedOutput@
 "abc";
 
 Array @description@

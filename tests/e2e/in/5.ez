@@ -1,0 +1,5 @@
+let test;
+let output = console.getOutput(() => {
+    test = import("../../library/docs.ez").testAllExamples();
+});
+console.error(test ? "ok" : output);

@@ -1,0 +1,129 @@
+function () {};
+() => {};
+let text = "a";
+text = text = "b";
+console.writeLine(text, "c");
+let f = function (a, b) {
+    console.writeLine("function", a, b);
+};
+f(7,8);
+parse("console.writeLine(1000);")();
+{
+    let obj = Number();
+}
+console.writeLine("f");
+
+let arr = ["a", 7, 4.3, false];
+for (let i = 0; i < arr.length(); i++)
+{
+    console.writeLine(arr[i]);
+}
+
+
+let arr = Array();
+let i = 0;
+while(i < 1000) {
+    let x;
+    arr.insert(0, x);
+    i++;
+}
+console.writeLine(arr[999]);
+//console.writeLine("Zażółć gęślą jaźń.\n");
+
+
+let str = "Roses are ";
+let str2 = "red, Violets are blue.";
+str.append(str2);
+console.write(str);
+str = "Roses are ";
+str.append(str2, 17, 5);
+console.writeLine(" | ", str);
+
+let u = {a:7, b:8};
+console.writeLine(u.a);
+
+class Printer {
+    constructor: function {
+        console.writeLine("Printer constructor");
+    },
+    print: function {
+        console.writeLine("Printer");
+    },
+    destructor: function { 
+        console.writeLine("Printer destructor"); 
+    },
+    "await": () => "works";
+};
+
+class Myclass extends Printer {
+    constructor: function {
+        this.super();
+        this.sth = args[0];
+        console.writeLine("constructor");
+        this.print();
+    },
+    writeSth: function { console.writeLine(this.sth); },
+    write: function { console.writeLine("write"); },
+    destructor: function { console.writeLine("destructor" + this.sth); }
+};
+
+{
+    Printer().print();
+}
+
+{
+    let m <- Myclass(12);
+    m.writeSth();
+    m["sth"] = "_g";
+    console.writeLine(m["sth"]);
+    console.writeLine(m.sth);
+    m.writeSth();
+}
+
+let file = File();
+file.create("protocols.txt");
+file.remove();
+try {
+    file.open("protocols.txt");
+    console.writeLine("open");
+} catch {
+    console.writeLine("error");
+}
+
+let t = TcpClient();
+await t.connect("example.com", 80);
+await t.send("GET / HTTP/1.1\r\nHost: example.com\r\n\r\n");
+console.writeLine("send");
+console.writeLine((await t.receive()).split("\n")[16].length() > 0);
+
+let p <- Printer();
+console.writeLine(await p);
+
+class Point {
+    constructor: function(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+};
+
+class Vector {
+    constructor: function(a, b) {
+        this.a = a;
+        this.b = b;
+    },
+    squaredLength: function() {
+        return (this.a.x - this.b.x) * (this.a.x - this.b.x) + (this.a.y - this.b.y) * (this.a.y - this.b.y);
+    },
+    "<": function(v) {
+        return this.squaredLength() < v.squaredLength();
+    }
+};
+
+let m = Vector(Point(0, 0), Point(1, 2));
+let n = Vector(Point(1, 1), Point(17, 33));
+
+if (m < n) {
+    console.writeLine("ok");
+} else {
+    console.writeLine("not źle");
+}

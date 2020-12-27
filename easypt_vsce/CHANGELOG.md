@@ -1,5 +1,11 @@
 # Change Log
 
+### 3.0.0
+
+- Auto-completion added.
+- `Run source file` command added.
+- `Open repl in terminal` command added.
+
 ### 2.0.6
 
 - `json` keyword removed.
@@ -31,11 +37,11 @@
 
 ### 1.2.2
 
-- Let keyword added.
+- `let` keyword added.
 
 ### 1.2.1
 
-- Try catch snippet added.
+- `try ... catch` snippet added.
 
 ### 1.2.0
 

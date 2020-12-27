@@ -44,7 +44,9 @@ void runtime::init(stack *st)
     insertObject("true"_n, true)->setConst();
     insertObject("false"_n, false)->setConst();
 
-    insertObject("import"_n, import);
+    auto import = insertObject("import"_n, &Import::import);
+    import->addProperty("getImportPaths"_n, object::makeObject(&Import::getImportPaths));
+    
     insertObject("parse"_n, ez_parse);
     insertObject("execute"_n, execute);
     insertObject("getStack"_n, getStack);
@@ -52,7 +54,6 @@ void runtime::init(stack *st)
     object::objectPtr Function = insertObject("Function"_n, constructorCaller);
     (*Function)["classPrototype"_n] = object::functionPrototype;
 
-    operators::init(st);
     Object::init(st);
     Array::init(st);
     String::init(st);
@@ -64,11 +65,13 @@ void runtime::init(stack *st)
     Promise::init(st);
     Time::init(st);
     Tcp::init(st);
+    Accessible::init(st);
 }
 
 void runtime::fini(stack *st)
 {
     while(coroutine<object::objectPtr>::stepAll());
+    Import::fini();
     object::setGlobalStack(nullptr);
     st->clear();
 }

@@ -2,7 +2,7 @@ environment:
   APPVEYOR_YML_DISABLE_PS_LINUX: true
 version: 0.0.{build}
 image:
-    - Visual Studio 2017
+    - Visual Studio 2019
     - Ubuntu
 init:
     - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 70 --slave /usr/bin/g++ g++ /usr/bin/g++-8
@@ -16,12 +16,16 @@ init:
     - ps: Invoke-Expression "$env:TEMP\flex\bin\flex --version"
     - ps: Invoke-Expression "$env:TEMP\LLnextgen\LLnextgen\LLnextgen --version"
 before_build:
-    - cmake .
+    - sh: cmake .
+    - cmd: cmake -A x64 -B . -DPGO=GENPROFILE
 build_script:
-    - cmake --build . --config Release
+    - ps: cmake --build . --config Release
+    - ps: .\run_pgo.bat
+    - cmd: cmake -A x64 -B . -DPGO=USEPROFILE
+    - cmake --build . --config Release 
     - cpack
 test_script:
-    - ps: ctest --output-on-failure
+    - ps: ctest --output-on-failure --build-config Release
 artifacts:
     - path: 'packages\**\*.sh'
       name: linux_installer

@@ -51,33 +51,23 @@ searchResult.forEach(function {
     console.writeLine(args[0].position, " ", args[0].length);
 });
 
-let nwd = function {
-    let a = args[0];
-    let b = args[1];
-    while (a != b) {
-        if (a < b)
-            b <- b - a;
-        else
-            a <- a - b;
-    }
-    return a;
-};
-
 let arr = Array();
 let i = 0;
 while(i<1000) {
-    let x;
+    let x = 5;
     arr.insert(0, x);
     i++;
 }
-let time = Time.sinceEpoch.asFloatingPoint();
-let x = nwd(144, 204800000);
-// 1170 - old time
-// 920 - new time
-// 570 - with "<-" and "else"
-// 470 - with Node structure optimisation
-// 260 - with stack optimization
-//console.log(Time.sinceEpoch.asFloatingPoint() - time);
-//console.log(x);
 
-//import("../../library/docs.ez").testAllExamples();
+console.writeLine(arr[999]);
+
+
+let x;
+let acc <- Accessible();
+let i = 0;
+acc.get = () => {console.writeLine("hello"); return i++;};
+acc.set = (a) => {console.writeLine(a); return i;};
+x.a <- acc;
+console.writeLine(x.a);
+console.writeLine(x.a);
+x.a = 7;

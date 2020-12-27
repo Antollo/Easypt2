@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <cstddef>
 #include <array>
+#include <bitset>
 #include "objectPtrImpl.h"
 #include "name.h"
 #include "stack.h"
@@ -97,7 +98,7 @@ public:
     void operator delete(void *p);
 
     template <class T>
-    explicit object(T &&t) : _value(std::forward<T>(t)), _isConst(false)
+    explicit object(T &&t) : _value(std::forward<T>(t))
     {
         if constexpr (std::is_same_v<std::decay_t<T>, nativeFunctionType>)
             init<T>(t == constructorCaller);
@@ -139,7 +140,20 @@ public:
     object(object &&) = default;
     object &operator=(object &&) = default;
     object(const object &) = default;
-    object &operator=(const object &) = default;
+    object &operator=(const object &rhs) = default;
+
+    object &operator=(const objectPtr &rhs)
+    {
+        if (!isSettable())
+            return *this = *rhs;
+        objectPtr parent = read("_parent"_n);
+        if (!parent)
+            throw std::runtime_error("_parent not found");
+        objectPtr set = parent->read("set"_n);
+        if (!set)
+            throw std::runtime_error("set not found");
+        return *(*set)(parent, {rhs}, nullptr);
+    }
 
     template <class T>
     bool isOfType() const
@@ -162,7 +176,7 @@ public:
         }
         else
         {
-            if (_isConst)
+            if (isConst())
                 throw std::runtime_error("tried to modify constant value");
             return std::get<remove_cref_t<T>>(_value);
         }
@@ -244,8 +258,12 @@ public:
                           _value);
     }
 
-    void setConst(bool v = true) { _isConst = v; }
-    bool isConst() const { return _isConst; }
+    void setConst(bool v = true) { _flags[_const] = v; }
+    void setAccessible(bool v = true) { _flags[_accesable] = v; }
+    void setSettable(bool v = true) { _flags[_setttable] = v; }
+    bool isConst() const { return _flags[_const]; }
+    bool isAccessible() const { return _flags[_accesable]; }
+    bool isSettable() const { return _flags[_setttable]; }
     objectPtr &operator[](const name &n);
     objectPtr operator()(objectPtr thisObj, arrayType &&args, stack *st);
     bool hasOwnProperty(const name &n) const { return _properties.count(n) || (n == name::prototype && _prototype); }
@@ -275,13 +293,27 @@ public:
 
     static void setGlobalStack(stack *newGlobalStack) { globalStack = newGlobalStack; }
 
+    static objectPtr &checkGetter(objectPtr &ptr)
+    {
+        if (!ptr->isAccessible())
+            return ptr;
+        static objectPtr temp;
+        temp = (*(*ptr)["get"_n])(ptr, {}, nullptr);
+        temp->addProperty("_parent"_n, ptr);
+        temp->setSettable();
+        return temp;
+    }
+
 private:
     friend class objectPtrImpl;
     std::variant<nullptr_t, bool, number, std::string, arrayType, objectCoroutine, functionType, nativeFunctionType, std::shared_ptr<file>, std::shared_ptr<tcpClient>, std::shared_ptr<tcpServer>> _value;
     propertiesType _properties;
-    bool _isConst;
     objectPtr _prototype;
     std::shared_ptr<stack> _capturedStack;
+    std::bitset<3> _flags;
+    static constexpr int _const = 0;
+    static constexpr int _accesable = 1;
+    static constexpr int _setttable = 2;
 
     static stack *globalStack;
 

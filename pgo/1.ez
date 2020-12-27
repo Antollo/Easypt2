@@ -1,0 +1,37 @@
+function gcd1 {
+    let a = args[0];
+    let b = args[1];
+    while (a != b) {
+        if (a < b)
+            b <- b - a;
+        else
+            a <- a - b;
+    }
+    return a;
+};
+
+function gcd2 {
+    let a = args[0];
+    let b = args[1];
+    while (a != b) {
+        if (a < b)
+            b = b - a;
+        else
+            a = a - b;
+    }
+    return a;
+};
+
+let iterations = 4;
+
+for (let i = 0; i < iterations / 2; i++) {
+    console.writeLine(i);
+    gcd1(144, 1836311903);
+    gcd2(144, 1836311903);
+}
+
+for (let i = 0; i < iterations / 2; i++) {
+    console.writeLine(i + iterations / 2);
+    gcd1(1836311903, 144);
+    gcd2(1836311903, 144);
+}

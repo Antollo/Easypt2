@@ -3,6 +3,7 @@
 std::unordered_map<name::codeType, std::string> name::codeToNameMap;
 std::unordered_map<std::string, name::codeType> name::nameToCodeMap;
 const name name::empty(name::emptyCode);
+const name name::reserved(name::reservedCode);
 const name name::prototype(name::prototypeCode);
 const name name::args(name::argsCode);
 const name name::thisObj(name::thisObjCode);

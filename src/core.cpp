@@ -4,9 +4,17 @@
 #include "file.h"
 #include "treeParser.h"
 
-object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {
-    static std::unordered_map<std::string, object::objectPtr> imported;
+    object::arrayType arr;
+    arr.resize(importPaths.size());
+    for (size_t i = 0; i < importPaths.size(); i++)
+        arr[i] = object::makeObject(std::filesystem::absolute(importPaths[i]).string());
+    return object::makeObject(arr);
+}
+
+object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+{
     argsConvertibleGuard<std::nullptr_t>(args);
     std::string fileNameString;
     std::filesystem::path fileName;
@@ -20,13 +28,16 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
         if (imported.count(fileName.stem().string()))
             return imported[fileName.stem().string()];
 
-        std::filesystem::path executablePath = getExecutablePath().parent_path();
+        for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++)
+        {
+            if (std::filesystem::exists(*it / fileName))
+            {
+                fileNameString = (*it / fileName).string();
+                break;
+            }
+        }
 
-        if (std::filesystem::exists(fileName))
-            fileNameString = fileName.string();
-        else if (std::filesystem::exists(executablePath / fileName))
-            fileNameString = (executablePath / fileName).string();
-        else
+        if (fileNameString.empty())
             throw std::runtime_error("file " + fileName.string() + " not found");
     }
     else if (args[0]->isOfType<std::shared_ptr<file>>())
@@ -47,9 +58,26 @@ object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, st
     object::objectPtr result;
     {
         stack s(st);
-        auto module = s.insert("module"_n, object::makeEmptyObject());
-        module->addProperty("name"_n, object::makeObject(fileNameString));
-        result = (*sourceFunction)(sourceFunction, std::move(args), &s);
+        auto oldDir = std::filesystem::current_path();
+        auto dir = std::filesystem::absolute(std::filesystem::path(fileNameString)).parent_path();
+        try
+        {
+            std::filesystem::current_path(dir);
+            importPaths.push_back(dir);
+            auto module = s.insert("module"_n, object::makeEmptyObject());
+            module->addProperty("name"_n, object::makeObject(std::filesystem::path(fileNameString).stem().string()));
+            module->addProperty("filename"_n, object::makeObject(std::filesystem::path(fileNameString).filename().string()));
+            module->addProperty("path"_n, object::makeObject(dir.string()));
+            result = (*sourceFunction)(sourceFunction, std::move(args), &s);
+            std::filesystem::current_path(oldDir);
+            importPaths.pop_back();
+        }
+        catch(...)
+        {
+            std::filesystem::current_path(oldDir);
+            importPaths.pop_back();
+            throw;
+        }
     }
     imported.insert(std::make_pair(fileName.stem().string(), result));
     return result;
@@ -90,16 +118,6 @@ object::objectPtr execute(object::objectPtr thisObj, object::arrayType &&args, s
     }
     return thisObj;
 }
-
-/*object::objectPtr repl(object::objectPtr thisObj, object::arrayType &&args, stack *st)
-{
-    console::log("repl");
-    useStdio stdio;
-    treeParser::file = "repl";
-    object::functionType root = object::makeFunction();
-    treeParser::parseStream(std::cin, root);
-    return object::makeObject(root);
-}*/
 
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st)
 {

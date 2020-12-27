@@ -53,9 +53,9 @@ let f3 = function { return f2; };
 
 console.writeLine(f3()("function 3"));
 
-import("testBasic1secondFile");
+import("e2e/in/files/secondFile");
 
-let testBasic1secondFile = import("testBasic1secondFile");
+let testBasic1secondFile = import("e2e/in/files/secondFile");
 console.writeLine(testBasic1secondFile);
 
 let mul = function {
@@ -108,10 +108,9 @@ while(i<arr.length())
 console.newLine();
 console.writeLine(arr.subarray(1,3)[2]);
 let f = File();
-f.open("testBasic1.txt");
+f.open("files/file.txt");
 let t = f.readTo("b");
 f.close();
-i = 0;
 console.writeLine(t[0]+t[1]);
 console.writeLine(t.getByteAt(0));
 console.writeLine(t.getByteAt(1));
