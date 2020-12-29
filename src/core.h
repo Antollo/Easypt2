@@ -8,10 +8,21 @@ class Import
 public:
     static object::objectPtr import(object::objectPtr thisObj, object::arrayType &&args, stack *st);
     static object::objectPtr getImportPaths(object::objectPtr thisObj, object::arrayType &&args, stack *st);
-    static void fini() { imported.clear(); }
+    static void init(objectPtrImpl modulesPtr)
+    {
+        modules = modulesPtr;
+        imported = &modules->_properties;
+    }
+    static void fini()
+    { 
+        imported->clear();
+        imported = nullptr;
+        modules = nullptr;
+    }
 
 private:
-    static inline std::unordered_map<std::string, object::objectPtr> imported;
+    static inline object::propertiesType *imported = nullptr;
+    static inline object::objectPtr modules = nullptr;
     static inline std::vector<std::filesystem::path> importPaths = {
         getExecutablePath().parent_path().parent_path(),
         getExecutablePath().parent_path(),

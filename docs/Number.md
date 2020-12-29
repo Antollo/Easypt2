@@ -24,6 +24,8 @@ console.write(1 + 2 * 3);
 #### Members:
 
 - `prototype`
+- [`toFloatingPoint`](Number.classPrototype.toFloatingPoint.md)
+- [`toInteger`](Number.classPrototype.toInteger.md)
 
 
 ### Properties:

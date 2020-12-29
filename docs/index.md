@@ -11,21 +11,21 @@ See the [statements reference](statements.md).
 ## Built-in objects functions and classes
 
 - [`module`](module.md)
-- [`Class`](Class.md)
 - [`Array`](Array.md)
 - [`Boolean`](Boolean.md)
-- [`Number`](Number.md)
+- [`Class`](Class.md)
 - [`File`](File.md)
+- [`Function`](Function.md)
+- [`Number`](Number.md)
 - [`Object`](Object.md)
+- [`String`](String.md)
 - [`Time`](Time.md)
+- [`argc`](argc.md)
+- [`argv`](argv.md)
+- [`console`](console.md)
+- [`execute`](execute.md)
 - [`import`](import.md)
 - [`parse`](parse.md)
-- [`execute`](execute.md)
-- [`Function`](Function.md)
-- [`String`](String.md)
-- [`console`](console.md)
-- [`argv`](argv.md)
-- [`argc`](argc.md)
 
 
 ## Tutorial

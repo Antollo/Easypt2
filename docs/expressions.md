@@ -231,8 +231,12 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 
 ## Other operators
 
+- #### `a ? b : c` Conditional (ternary) operator 
+  If `a` is true then value of conditional expression
+  is `b`, otherwise it's `c`.
+
 - #### `a instanceOf b` "Instance of" operator.
-  Operators check if `b` is an instance of `a`
+  Checks if `b` is an instance of `a`
   (if `a` has `b.classPrototype` in its prototype chain).
 
 - #### `delete a` Delete operator.

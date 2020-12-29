@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `position /*Number*/, length /*Number*/`
+#### Parameters: `position /*Number*/, [length = array.length() /*Number*/]`
 
 #### Return value: `/*Array*/`
 

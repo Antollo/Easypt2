@@ -58,10 +58,11 @@ void String::init(stack *st)
         {
             argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
             srcPos = static_cast<int>(args[2]->getConverted<number>());
+            srcLength = srcLength - srcPos;
             if (args.size() > 3)
             {
                 argsConvertibleGuard<nullptr_t, nullptr_t, number, number>(args);
-                srcLength = static_cast<int>(args[3]->getConverted<number>());
+                srcLength = std::min(srcLength, static_cast<int>(args[3]->getConverted<number>()));
             }
         }
         assert<std::greater_equal>(destPos, 0);
@@ -83,10 +84,11 @@ void String::init(stack *st)
         {
             argsConvertibleGuard<nullptr_t, number>(args);
             srcPos = static_cast<int>(args[1]->getConverted<number>());
+            srcLength = srcLength - srcPos;
             if (args.size() > 2)
             {
                 argsConvertibleGuard<nullptr_t, number, number>(args);
-                srcLength = static_cast<int>(args[2]->getConverted<number>());
+                srcLength = std::min(srcLength, static_cast<int>(args[2]->getConverted<number>()));
             }
         }
         assert<std::greater_equal>(srcPos, 0);
@@ -97,10 +99,15 @@ void String::init(stack *st)
     });
 
     addFunctionL(object::stringPrototype, "substring"_n, {
-        argsConvertibleGuard<number, number>(args);
+        argsConvertibleGuard<number>(args);
         const std::string &me = thisObj->get<const std::string>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        int length = static_cast<int>(args[1]->getConverted<number>());
+        int length = me.size() - pos;
+        if (args.size() > 1)
+        {
+            argsConvertibleGuard<nullptr_t, number>(args);
+            length = std::min(length, static_cast<int>(args[1]->getConverted<number>()));
+        }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());
@@ -108,10 +115,15 @@ void String::init(stack *st)
     });
 
     addFunctionL(object::stringPrototype, "erase"_n, {
-        argsConvertibleGuard<number, number>(args);
+        argsConvertibleGuard<number>(args);
         std::string &me = thisObj->get<std::string>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        int length = static_cast<int>(args[1]->getConverted<number>());
+        int length = me.size() - pos;
+        if (args.size() > 1)
+        {
+            argsConvertibleGuard<nullptr_t, number>(args);
+            length = std::min(length, static_cast<int>(args[1]->getConverted<number>()));
+        }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());

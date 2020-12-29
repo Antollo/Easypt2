@@ -1,3 +1,5 @@
+let sort = import("algorithm").sort;
+
 function returns {
     args[0].addProperty("returns", args[1]);
 };
@@ -128,7 +130,7 @@ function mdCodeLink (name, link) {
 
 function mdListProperties (object, name) {
     let list = "";
-    object.getOwnPropertyNames().forEach(function {
+    sort(object.getOwnPropertyNames()).forEach(function {
         if (args[0].search("returns|parameters|description|example|expectedOutput").length() == 0) {
             if (Object.classPrototype.readOperator.call(object, args[0]).hasOwnProperty("description"))
                 list.append("- " + mdCodeLink(args[0], name + "." + args[0]));
@@ -186,8 +188,9 @@ function recursiveDoc {
     return false;
 };
 
-function makeDocs {
+function makeDocs(path) {
     let file <- File();
+    prefix = args.length() > 0 ? path : "docs/";
     file.create(prefix + "index.md");
     file.writeLine("# Easypt reference\n");
     file.writeLine("## Language\n");
@@ -199,7 +202,7 @@ function makeDocs {
     file.writeLine("- " + mdCodeLink("module", "module"));
 
     let stack <- getStack();
-    let names <- stack.getOwnPropertyNames();
+    let names <- sort(stack.getOwnPropertyNames());
     for (let i = 0; i < names.length(); i++)
         if (names[i] != "prototype")
         {

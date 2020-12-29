@@ -23,23 +23,23 @@ if (1+3 != 4) {
 
 #### Members:
 
-- [`writeLine`](File.classPrototype.writeLine.md)
-- [`readBytes`](File.classPrototype.readBytes.md)
-- `constructor`
-- [`open`](File.classPrototype.open.md)
-- [`read`](File.classPrototype.read.md)
-- [`readLine`](File.classPrototype.readLine.md)
-- [`readTo`](File.classPrototype.readTo.md)
-- [`write`](File.classPrototype.write.md)
-- [`create`](File.classPrototype.create.md)
-- [`remove`](File.classPrototype.remove.md)
 - [`close`](File.classPrototype.close.md)
-- [`size`](File.classPrototype.size.md)
-- [`setReadPosition`](File.classPrototype.setReadPosition.md)
-- [`setWritePosition`](File.classPrototype.setWritePosition.md)
+- `constructor`
+- [`create`](File.classPrototype.create.md)
 - [`getReadPosition`](File.classPrototype.getReadPosition.md)
 - [`getWritePosition`](File.classPrototype.getWritePosition.md)
+- [`open`](File.classPrototype.open.md)
 - `prototype`
+- [`read`](File.classPrototype.read.md)
+- [`readBytes`](File.classPrototype.readBytes.md)
+- [`readLine`](File.classPrototype.readLine.md)
+- [`readTo`](File.classPrototype.readTo.md)
+- [`remove`](File.classPrototype.remove.md)
+- [`setReadPosition`](File.classPrototype.setReadPosition.md)
+- [`setWritePosition`](File.classPrototype.setWritePosition.md)
+- [`size`](File.classPrototype.size.md)
+- [`write`](File.classPrototype.write.md)
+- [`writeLine`](File.classPrototype.writeLine.md)
 
 
 ### Properties:

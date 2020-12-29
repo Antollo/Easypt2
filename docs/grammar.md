@@ -102,6 +102,7 @@ break           : BREAK
 \)              : PARENTHESES_CLOSE
 \[              : BRACKET_OPEN
 \]              : BRACKET_CLOSE
+\?              : CONDITIONAL
 ```
 
 ## Grammar
@@ -239,6 +240,8 @@ expression :
         |
             rightAssociativeOperator
             expression
+        |
+            CONDITIONAL expression JSON_ASSIGNMENT expression
         |
             PARENTHESES_OPEN expressionList PARENTHESES_CLOSE
         |

@@ -9,7 +9,7 @@ object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::arra
     object::arrayType arr;
     arr.resize(importPaths.size());
     for (size_t i = 0; i < importPaths.size(); i++)
-        arr[i] = object::makeObject(std::filesystem::absolute(importPaths[i]).string());
+        arr[arr.size() - i - 1] = object::makeObject(std::filesystem::absolute(importPaths[i]).string());
     return object::makeObject(arr);
 }
 
@@ -25,8 +25,12 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&
         if (fileName.extension() != ".ez"s)
             fileName += ".ez"s;
 
-        if (imported.count(fileName.stem().string()))
-            return imported[fileName.stem().string()];
+        if (imported != nullptr) 
+        {
+            auto it = imported->find(name(fileName.stem().string()));
+            if  (it != imported->end() && it->second->hasOwnProperty("exports"_n))
+                    return (*it->second)["exports"_n];
+        }
 
         for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++)
         {
@@ -68,10 +72,13 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&
             module->addProperty("name"_n, object::makeObject(std::filesystem::path(fileNameString).stem().string()));
             module->addProperty("filename"_n, object::makeObject(std::filesystem::path(fileNameString).filename().string()));
             module->addProperty("path"_n, object::makeObject(dir.string()));
+            if (imported != nullptr)
+                imported->insert_or_assign(name(fileName.stem().string()), module);
             result = (*sourceFunction)(sourceFunction, std::move(args), &s);
+            (*module)["exports"_n] = result;
             std::filesystem::current_path(oldDir);
             importPaths.pop_back();
-        }
+        }   
         catch(...)
         {
             std::filesystem::current_path(oldDir);
@@ -79,7 +86,6 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&
             throw;
         }
     }
-    imported.insert(std::make_pair(fileName.stem().string(), result));
     return result;
 }
 

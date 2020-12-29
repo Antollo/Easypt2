@@ -23,18 +23,19 @@ if (1+3 != 4) {
 
 ### Properties:
 
-- [`write`](console.write.md)
+- [`controlSequence`](console.controlSequence.md)
 - [`debug`](console.debug.md)
-- [`log`](console.log.md)
-- [`warn`](console.warn.md)
 - [`error`](console.error.md)
-- [`writeLine`](console.writeLine.md)
+- [`getOutput`](console.getOutput.md)
+- [`log`](console.log.md)
 - [`newLine`](console.newLine.md)
+- `prototype`
 - [`read`](console.read.md)
 - `readAsync`
 - [`readLine`](console.readLine.md)
-- [`controlSequence`](console.controlSequence.md)
-- [`getOutput`](console.getOutput.md)
-- `prototype`
+- [`setInput`](console.setInput.md)
+- [`warn`](console.warn.md)
+- [`write`](console.write.md)
+- [`writeLine`](console.writeLine.md)
 
 

@@ -130,9 +130,16 @@ number::operator bool() const
     return std::visit([](auto &&t) -> bool { return t; }, v);
 }
 
-number number::toInteger()
+number number::toInteger() const
 {
     return static_cast<int>(*this);
+}
+
+number number::toFloatingPoint() const
+{
+    number n;
+    n.v = static_cast<double>(*this);
+    return n;
 }
 
 std::ostream &operator<<(std::ostream &s, const number &x)

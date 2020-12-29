@@ -8,31 +8,47 @@
 
 ### Description:
 
-Imports source code from another *.ez file (source parsed, and called, 
-return value is returned as import return value). First and only parameter 
-is filename (file is searched in current working directory and then in 
-interpreter directory) or opened `File` object.
+Imports source code (module) from another *.ez file (source code is parsed and 
+executed, return value is returned as import return value). First and only 
+parameter is filename or opened `File` object. Files are searched in directories 
+listed in `import.getImportPaths()`. Imported modules are cached in `modules`.
 
 #### Example:
 
 ```js
 let file = File();
-file.create("module.ez");
-file.write("let x = 7; let y = 3; return x*y + y;");
+file.create("maths.ez");
+file.write("return { multiply: (a, b) => a * b; };");
 file.close();
-let result = import("module.ez");
+let importedModule = import("maths.ez");
+/* A new cache entry has been inserted into the modules:
+{
+    "maths": {
+        "name": "maths",
+        "filename": "maths.ez",
+        "path": "C:\Easypt\library",
+        "exports": {
+            "multiply": <function>
+        }
+    },
+    ...
+}*/
 file.remove();
-console.write(result);
+console.write(importedModule.multiply(4, 6), " ");
+console.write(modules.maths.name, " ");
+console.write(modules.maths.filename, " ");
+console.write(modules.maths.exports.multiply instanceOf Function);
 ```
 
 ##### Expected output:
 
 ```
-24
+24 maths maths.ez true
 ```
 
 ### Properties:
 
+- `getImportPaths`
 - `prototype`
 
 
