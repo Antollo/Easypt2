@@ -66,6 +66,9 @@ void runtime::init(stack *st)
     Time::init(st);
     Tcp::init(st);
     Accessible::init(st);
+
+    auto modules = st->insert("modules"_n, object::makeEmptyObject());
+    Import::init(modules);
 }
 
 void runtime::fini(stack *st)

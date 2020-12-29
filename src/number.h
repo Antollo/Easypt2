@@ -11,6 +11,7 @@ class number
 {
 
 public:
+    number() = default;
     number(const int &n);
     number(const double &n);
     number(const unsigned int &n);
@@ -51,7 +52,8 @@ public:
     number &operator++();
     number &operator--();
 
-    number toInteger();
+    number toInteger() const;
+    number toFloatingPoint() const;
 
     explicit operator double() const;
     explicit operator int() const;

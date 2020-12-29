@@ -19,19 +19,34 @@ import @parameters@
 import @returns@
 "/*Object*/";
 import @description@
-"Imports source code from another *.ez file (source parsed, and called, 
-return value is returned as import return value). First and only parameter 
-is filename (file is searched in current working directory and then in 
-interpreter directory) or opened `File` object.";
+"Imports source code (module) from another *.ez file (source code is parsed and 
+executed, return value is returned as import return value). First and only 
+parameter is filename or opened `File` object. Files are searched in directories 
+listed in `import.getImportPaths()`. Imported modules are cached in `modules`.";
 import @example@
 "let file = File();
-file.create(\"module.ez\");
-file.write(\"let x = 7; let y = 3; return x*y + y;\");
+file.create(\"maths.ez\");
+file.write(\"return { multiply: (a, b) => a * b; };\");
 file.close();
-let result = import(\"module.ez\");
+let importedModule = import(\"maths.ez\");
+/* A new cache entry has been inserted into the modules:
+{
+    \"maths\": {
+        \"name\": \"maths\",
+        \"filename\": \"maths.ez\",
+        \"path\": \"C:\\Easypt\\library\",
+        \"exports\": {
+            \"multiply\": <function>
+        }
+    },
+    ...
+}*/
 file.remove();
-console.write(result);";
-import @expectedOutput@ "24";
+console.write(importedModule.multiply(4, 6), \" \");
+console.write(modules.maths.name, \" \");
+console.write(modules.maths.filename, \" \");
+console.write(modules.maths.exports.multiply instanceOf Function);";
+import @expectedOutput@ "24 maths maths.ez true";
 
 parse @parameters@
 "code /*String*/";
@@ -269,7 +284,7 @@ Array.classPrototype.insertFrom @expectedOutput@
 "3456";
 
 Array.classPrototype.erase @parameters@
-"position /*Number*/, length /*Number*/";
+"position /*Number*/, [length = array.length() /*Number*/]";
 Array.classPrototype.erase @description@
 "Erases elements from range [position, position + length).";
 Array.classPrototype.erase @example@
@@ -280,7 +295,7 @@ Array.classPrototype.erase @expectedOutput@
 "13";
 
 Array.classPrototype.subarray @parameters@
-"position /*Number*/, length /*Number*/";
+"position /*Number*/, [length = array.length() /*Number*/]";
 Array.classPrototype.subarray @returns@
 "/*Array*/";
 Array.classPrototype.subarray @description@
@@ -447,7 +462,7 @@ String.classPrototype.insertFrom @expectedOutput@
 "xbcyz";
 
 String.classPrototype.erase @parameters@
-"position /*Number*/, length /*Number*/";
+"position /*Number*/, [length = string.length() /*Number*/]";
 String.classPrototype.erase @description@
 "Erases bytes from range [position, position + length).";
 String.classPrototype.erase @example@
@@ -458,7 +473,7 @@ String.classPrototype.erase @expectedOutput@
 "abfg";
 
 String.classPrototype.substring @parameters@
-"position /*Number*/, length /*Number*/";
+"position /*Number*/, [length = string.length() /*Number*/]";
 String.classPrototype.substring @returns@
 "/*String*/";
 String.classPrototype.substring @description@
@@ -562,7 +577,7 @@ String.classPrototype.indexOf @expectedOutput@
 "6 23 -1";
 
 String.classPrototype.append @parameters@
-"str /*String*/, [position /*Number*/, length /*Number*/]";
+"str /*String*/, [position = 0 /*Number*/, length = string.length() /*Number*/]";
 String.classPrototype.append @description@
 "Appends str to this string (or optionally 
 substring starting from given position 
@@ -594,6 +609,26 @@ Number @example@
 "console.write(1 + 2 * 3);";
 Number @expectedOutput@
 "7";
+
+Number.classPrototype.toInteger @returns@
+"/*Number*/";
+Number.classPrototype.toInteger @description@
+"Converts number to at least 4 bytes integer representation.";
+Number.classPrototype.toInteger @example@
+"console.write(3.14.toInteger());";
+Number.classPrototype.toInteger @expectedOutput@
+"3";
+
+Number.classPrototype.toFloatingPoint @returns@
+"/*Number*/";
+Number.classPrototype.toFloatingPoint @description@
+"Converts number to at least 4 bytes integer representation. 
+Warning: after making a copy of this number it might convert 
+to integer representation again.";
+Number.classPrototype.toFloatingPoint @example@
+"console.write(3.toFloatingPoint());";
+Number.classPrototype.toFloatingPoint @expectedOutput@
+"3.000000";
 
 Function @description@
 "Represents function.";

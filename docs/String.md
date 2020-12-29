@@ -22,20 +22,20 @@ console.write("a".getByteAt(0));
 
 #### Members:
 
-- [`getByteAt`](String.classPrototype.getByteAt.md)
-- `constructor`
-- [`readOperator`](String.classPrototype.readOperator.md)
-- [`length`](String.classPrototype.length.md)
-- [`setByteAt`](String.classPrototype.setByteAt.md)
-- [`substring`](String.classPrototype.substring.md)
-- [`insertFrom`](String.classPrototype.insertFrom.md)
 - [`append`](String.classPrototype.append.md)
+- `constructor`
 - [`erase`](String.classPrototype.erase.md)
-- [`split`](String.classPrototype.split.md)
+- [`getByteAt`](String.classPrototype.getByteAt.md)
 - [`indexOf`](String.classPrototype.indexOf.md)
+- [`insertFrom`](String.classPrototype.insertFrom.md)
+- [`length`](String.classPrototype.length.md)
+- `prototype`
+- [`readOperator`](String.classPrototype.readOperator.md)
 - [`search`](String.classPrototype.search.md)
 - [`searchAll`](String.classPrototype.searchAll.md)
-- `prototype`
+- [`setByteAt`](String.classPrototype.setByteAt.md)
+- [`split`](String.classPrototype.split.md)
+- [`substring`](String.classPrototype.substring.md)
 
 
 ### Properties:

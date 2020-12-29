@@ -26,19 +26,19 @@ arr.forEach(function {
 
 - `constructor`
 - [`erase`](Array.classPrototype.erase.md)
-- [`readOperator`](Array.classPrototype.readOperator.md)
-- [`length`](Array.classPrototype.length.md)
+- [`forEach`](Array.classPrototype.forEach.md)
 - [`insert`](Array.classPrototype.insert.md)
 - [`insertFrom`](Array.classPrototype.insertFrom.md)
-- [`subarray`](Array.classPrototype.subarray.md)
-- [`forEach`](Array.classPrototype.forEach.md)
+- [`length`](Array.classPrototype.length.md)
 - `prototype`
+- [`readOperator`](Array.classPrototype.readOperator.md)
+- [`subarray`](Array.classPrototype.subarray.md)
 
 
 ### Properties:
 
-- [`readOperator`](Array.readOperator.md)
 - `classPrototype`
 - `prototype`
+- [`readOperator`](Array.readOperator.md)
 
 

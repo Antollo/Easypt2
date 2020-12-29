@@ -16,9 +16,13 @@ An expression optionally followed with a comma.
 
 ### `for` loop
 
+`for (`_expression_`;` _expression_`;` _expression_`)` _statement_
+
 Consists of three expressions between parenthesis spliced with semicolons followed with a statement. Executes the first expression and then while the value of the second expression is true executes the third expression and the statement.
 
 ### `while` loop
+
+`while (`_expression_`)` _statement_
 
 Consists of condition between parenthesis followed with a statement. While the condition is true executes the statement.
 
@@ -26,9 +30,13 @@ Consists of condition between parenthesis followed with a statement. While the c
 
 ### `if` ... `else` statement
 
+`if (`_expression_`)` _statement_
+
+`if (`_expression_`)` _statement_ `else` _statement_
+
 If the condition is true, then executes the statement.
 
-### `try` ... `catch`
+### `try` ... `catch` statement
 
 `try` _statement_ `catch` _statement_
 

@@ -28,13 +28,13 @@ else
 
 #### Members:
 
-- [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
-- [`removeProperty`](Object.classPrototype.removeProperty.md)
 - [`addProperty`](Object.classPrototype.addProperty.md)
-- [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
-- [`readOperator`](Object.classPrototype.readOperator.md)
 - [`getId`](Object.classPrototype.getId.md)
+- [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
+- [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
 - `prototype`
+- [`readOperator`](Object.classPrototype.readOperator.md)
+- [`removeProperty`](Object.classPrototype.removeProperty.md)
 
 
 ### Properties:

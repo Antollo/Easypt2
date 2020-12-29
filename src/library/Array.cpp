@@ -49,10 +49,11 @@ void Array::init(stack *st)
         {
             argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
             srcPos = static_cast<int>(args[2]->getConverted<number>());
+            srcLength = srcLength - srcPos;
             if (args.size() > 3)
             {
                 argsConvertibleGuard<nullptr_t, nullptr_t, number, number>(args);
-                srcLength = static_cast<int>(args[3]->getConverted<number>());
+                srcLength = std::min(srcLength, static_cast<int>(args[3]->getConverted<number>()));
             }
         }
         assert<std::greater_equal>(destPos, 0);
@@ -65,10 +66,15 @@ void Array::init(stack *st)
     });
 
     addFunctionL(object::arrayPrototype, "subarray"_n, {
-        argsConvertibleGuard<number, number>(args);
+        argsConvertibleGuard<number>(args);
         const object::arrayType &me = thisObj->get<const object::arrayType>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        int length = static_cast<int>(args[1]->getConverted<number>());
+        int length = me.size() - pos;
+        if (args.size() > 1)
+        {
+            argsConvertibleGuard<nullptr_t, number>(args);
+            length = std::min(length, static_cast<int>(args[1]->getConverted<number>()));
+        }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());
@@ -76,10 +82,15 @@ void Array::init(stack *st)
     });
 
     addFunctionL(object::arrayPrototype, "erase"_n, {
-        argsConvertibleGuard<number, number>(args);
+        argsConvertibleGuard<number>(args);
         object::arrayType &me = thisObj->get<object::arrayType>();
         int pos = static_cast<int>(args[0]->getConverted<number>());
-        int length = static_cast<int>(args[1]->getConverted<number>());
+        int length = me.size() - pos;
+        if (args.size() > 1)
+        {
+            argsConvertibleGuard<nullptr_t, number>(args);
+            length = std::min(length, static_cast<int>(args[1]->getConverted<number>()));
+        }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
         assert<std::less_equal>(pos + length, me.size());

@@ -306,6 +306,7 @@ public:
 
 private:
     friend class objectPtrImpl;
+    friend class Import;
     std::variant<nullptr_t, bool, number, std::string, arrayType, objectCoroutine, functionType, nativeFunctionType, std::shared_ptr<file>, std::shared_ptr<tcpClient>, std::shared_ptr<tcpServer>> _value;
     propertiesType _properties;
     objectPtr _prototype;

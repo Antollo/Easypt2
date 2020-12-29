@@ -2,6 +2,8 @@
 
 #### Instance of: [`Function`](Function.md)
 
+#### Return value: `console`
+
 ### Description:
 
 Writes the new line character or characters sequence
