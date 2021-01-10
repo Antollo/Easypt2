@@ -99,7 +99,6 @@ void Tcp::init(stack *st)
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([tcpClientPrototype, thisObj]() {
             auto t = thisObj->get<std::shared_ptr<tcpServer>>();
-
             std::shared_ptr<tcpClient> c;
             auto f = std::async(std::launch::async, [t, &c]() {
                 c = t->listen();

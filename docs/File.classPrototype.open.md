@@ -8,7 +8,9 @@
 
 ### Description:
 
-Opens file specified by the path.
+Opens file specified by the path. If 
+the file object was already associated 
+with existing file close it first.
 
 #### Example:
 

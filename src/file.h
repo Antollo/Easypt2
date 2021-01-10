@@ -1,46 +1,89 @@
 #ifndef FILE_H_
 #define FILE_H_
 
+#include <cctype>
+#include <cstdio>
+#include <cstring>
 #include <string>
-#include <fstream>
-#include "osDependent.h"
+#include <filesystem>
+
+
+class stack;
+
+namespace ChildProcess {
+    void init(stack *st);
+};
+
 class file
 {
 public:
-    file();
-    file(const std::string &path);
-    void open(const std::string &path);
+    file() = default;
+
+    file(const file &) = delete;
+    file(file &&rhs)
+    {
+        f = rhs.f;
+        lastOperation = rhs.lastOperation;
+        path = rhs.path;
+        rhs.f = nullptr;
+        rhs.lastOperation = lastOperationType::openOrClose;
+        rhs.path.clear();
+    }
+
+    file &operator=(const file &) = delete;
+    file &operator=(file &&rhs)
+    {
+        if (isOpen())
+            close();
+        f = rhs.f;
+        lastOperation = rhs.lastOperation;
+        path = rhs.path;
+        rhs.f = nullptr;
+        rhs.lastOperation = lastOperationType::openOrClose;
+        rhs.path.clear();
+        return *this;
+    }
+
+    file(const std::string &path) : file() { open(path); }
+    file(FILE *f) : file() { open(f); }
+
+    void open(const std::string &path, const char * = "r+");
+    void open(FILE *f);
     void create(const std::string &path);
     void remove();
     std::string read();
-    std::string readLine();
     std::string readTo(char delim);
-    std::string readBytes(const int &count);
+    std::string readLine() { return readTo('\n'); }
+    std::string readBytes(size_t count);
     void write(const std::string &str);
     void writeLine(const std::string &str);
     void newLine();
-    int getReadPosition();
-    void setReadPosition(const int &n);
-    int getWritePosition();
-    void setWritePosition(const int &n);
-    int size();
+    size_t getReadPosition();
+    void setReadPosition(size_t n);
+    size_t getWritePosition();
+    void setWritePosition(size_t n);
     void clear();
     void close();
-    inline bool isOpen() { return _f.is_open(); }
-    inline std::filesystem::path getPath() { return _path; }
+    inline bool isOpen() { return f != nullptr; }
+    std::filesystem::path getPath() { return path; }
+    size_t size();
+    void flush();
 
 private:
-    std::fstream _f;
-    std::filesystem::path _path;
+    std::FILE *f = nullptr;
+    std::filesystem::path path;
     enum class lastOperationType
     {
         read,
         write,
         openOrClose
     };
-    lastOperationType lastOperation;
-    void readGuard();
-    void writeGuard();
+    lastOperationType lastOperation = lastOperationType::openOrClose;
+    void readGuard(const std::string &op);
+    void writeGuard(const std::string &op);
+    void errorGuard(const std::string &op);
+
+    friend void ChildProcess::init(stack *st);
 };
 
 #endif /* !FILE_H_ */

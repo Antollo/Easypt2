@@ -6,6 +6,7 @@
 
 ### Description:
 
+Input operation. 
 Reads word terminated by whitespace from file.
 
 #### Example:

@@ -12,11 +12,11 @@ let a;
 let b;
 a.good = true;
 
-if(a.good) {
+if (a.good) {
     console.writeLine("a is good");
 }
 
-if(!b.good) {
+if (!b.good) {
     console.writeLine("b is not good");
 }
 
@@ -53,7 +53,7 @@ searchResult.forEach(function {
 
 let arr = Array();
 let i = 0;
-while(i<1000) {
+while (i<1000) {
     let x = 5;
     arr.insert(0, x);
     i++;

@@ -48,7 +48,8 @@ console.write(modules.maths.exports.multiply instanceOf Function);
 
 ### Properties:
 
-- `getImportPaths`
+- `classPrototype`
+- [`getImportPaths`](import.getImportPaths.md)
 - `prototype`
 
 

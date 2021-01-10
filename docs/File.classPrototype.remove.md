@@ -6,7 +6,9 @@
 
 ### Description:
 
-Deletes the file.
+Deletes the recently associated file. 
+If the file object was associated with 
+file close it first.
 
 #### Example:
 

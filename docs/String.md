@@ -2,6 +2,8 @@
 
 #### Instance of: [`Class`](Class.md)
 
+#### Inherits from: [`Object`](Object.md)
+
 ### Description:
 
 Represents text as a sequence of characters (UTF-8 code units).

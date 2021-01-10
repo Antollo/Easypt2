@@ -15,6 +15,7 @@
 #include "Node.h"
 #include "coroutine.h"
 #include "file.h"
+#include "childProcess.h"
 #include "allocator.h"
 
 template <class T>
@@ -44,10 +45,11 @@ public:
         using Array = std::vector<objectPtr, allocator<objectPtr>>;
         using Promise = std::shared_ptr<coroutine<objectPtr>>;
         using Function = std::shared_ptr<Node>;
-        using NativeFunctio = objectPtr (*)(objectPtr, arrayType &&, stack *);
+        using NativeFunction = objectPtr (*)(objectPtr, arrayType &&, stack *);
         using File = std::shared_ptr<file>;
         using TcpClient = std::shared_ptr<tcpClient>;
         using TcpServer = std::shared_ptr<tcpServer>;
+        using ChildProcess = std::shared_ptr<childProcess>;
     };
 
     enum class typeIndex
@@ -146,9 +148,9 @@ public:
     {
         if (!isSettable())
             return *this = *rhs;
-        objectPtr parent = read("_parent"_n);
+        objectPtr parent = read("__parent"_n);
         if (!parent)
-            throw std::runtime_error("_parent not found");
+            throw std::runtime_error("__parent not found");
         objectPtr set = parent->read("set"_n);
         if (!set)
             throw std::runtime_error("set not found");
@@ -299,7 +301,7 @@ public:
             return ptr;
         static objectPtr temp;
         temp = (*(*ptr)["get"_n])(ptr, {}, nullptr);
-        temp->addProperty("_parent"_n, ptr);
+        temp->addProperty("__parent"_n, ptr);
         temp->setSettable();
         return temp;
     }
@@ -307,7 +309,7 @@ public:
 private:
     friend class objectPtrImpl;
     friend class Import;
-    std::variant<nullptr_t, bool, number, std::string, arrayType, objectCoroutine, functionType, nativeFunctionType, std::shared_ptr<file>, std::shared_ptr<tcpClient>, std::shared_ptr<tcpServer>> _value;
+    std::variant<nullptr_t, bool, number, std::string, arrayType, objectCoroutine, functionType, nativeFunctionType, std::shared_ptr<file>, std::shared_ptr<tcpClient>, std::shared_ptr<tcpServer>, std::shared_ptr<childProcess>> _value;
     propertiesType _properties;
     objectPtr _prototype;
     std::shared_ptr<stack> _capturedStack;

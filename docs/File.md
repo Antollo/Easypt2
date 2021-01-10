@@ -2,6 +2,8 @@
 
 #### Instance of: [`Class`](Class.md)
 
+#### Inherits from: [`Object`](Object.md)
+
 ### Description:
 
 File class provides file input and output operations.
@@ -26,20 +28,27 @@ if (1+3 != 4) {
 - [`close`](File.classPrototype.close.md)
 - `constructor`
 - [`create`](File.classPrototype.create.md)
+- [`flush`](File.classPrototype.flush.md)
 - [`getReadPosition`](File.classPrototype.getReadPosition.md)
 - [`getWritePosition`](File.classPrototype.getWritePosition.md)
 - [`open`](File.classPrototype.open.md)
 - `prototype`
 - [`read`](File.classPrototype.read.md)
+- [`readAsync`](File.classPrototype.readAsync.md)
 - [`readBytes`](File.classPrototype.readBytes.md)
+- [`readBytesAsync`](File.classPrototype.readBytesAsync.md)
 - [`readLine`](File.classPrototype.readLine.md)
+- [`readLineAsync`](File.classPrototype.readLineAsync.md)
 - [`readTo`](File.classPrototype.readTo.md)
+- [`readToAsync`](File.classPrototype.readToAsync.md)
 - [`remove`](File.classPrototype.remove.md)
 - [`setReadPosition`](File.classPrototype.setReadPosition.md)
 - [`setWritePosition`](File.classPrototype.setWritePosition.md)
 - [`size`](File.classPrototype.size.md)
 - [`write`](File.classPrototype.write.md)
+- [`writeAsync`](File.classPrototype.writeAsync.md)
 - [`writeLine`](File.classPrototype.writeLine.md)
+- [`writeLineAsync`](File.classPrototype.writeLineAsync.md)
 
 
 ### Properties:

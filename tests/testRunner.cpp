@@ -1,3 +1,4 @@
+#include <fstream>
 #include "utils.h"
 #include "core.h"
 #include "console.h"

@@ -6,9 +6,7 @@
 
 ### Description:
 
-Closes the file, makes sure all
-input/output operations are
-saved to disk.
+Performs flush and closes the associated file.
 
 #### Example:
 
@@ -16,8 +14,8 @@ saved to disk.
 let file = File();
 file.create("abc.txt");
 file.write("abbacda");
-file.close();
 console.write(file.size());
+file.close();
 ```
 
 ##### Expected output:

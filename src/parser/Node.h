@@ -14,7 +14,7 @@
 class Node
 {
 public:
-    Node(int line, std::string file) : _token(0), _line(line), _fileIndex(getFileIndex(file)), _optimizations(static_cast<uint8_t>(optimizations::notInitialized))
+    Node(int line, std::string file) : _token(0), _line(line), _fileIndex(getFileIndex(file)), _optimizations(stackOptimizations::notInitialized)
     {
     }
     Node(const Node &node) = delete;
@@ -71,20 +71,20 @@ public:
     }
     bool shouldHaveStack() const
     {
-        switch (static_cast<Node::optimizations>(_optimizations))
+        switch (_optimizations._stack)
         {
-        case optimizations::notInitialized:
+        case stackOptimizations::notInitialized:
         {
             for (const auto &child : _children)
                 if (child._shouldHaveStack())
                 {
-                    _optimizations = static_cast<uint_fast8_t>(optimizations::hasStack);
+                    _optimizations = stackOptimizations::hasStack;
                     return true;
                 }
-            _optimizations = static_cast<uint_fast8_t>(optimizations::hasNoStack);
+            _optimizations = stackOptimizations::hasNoStack;
             return false;
         }
-        case optimizations::hasNoStack:
+        case stackOptimizations::hasNoStack:
             return false;
         default:
             return true;
@@ -99,13 +99,30 @@ private:
     };
 
     int _token, _line, _fileIndex;
-    mutable int_fast8_t _optimizations;
-    enum class optimizations
+    enum class stackOptimizations : int_fast8_t
     {
         notInitialized = 0,
         hasStack,
         hasNoStack
     };
+    union optimizations
+    {
+        int_fast8_t _number;
+        stackOptimizations _stack;
+        optimizations(const int_fast8_t &n) : _number(n) {}
+        optimizations(const stackOptimizations &n) : _stack(n) {}
+        optimizations &operator=(const int_fast8_t &rhs)
+        {
+            _number = rhs;
+            return *this;
+        }
+        optimizations &operator=(const stackOptimizations &rhs)
+        {
+            _stack = rhs;
+            return *this;
+        }
+    };
+    mutable optimizations _optimizations;
     name _text;
     std::vector<Node> _children;
     std::vector<name> _names;

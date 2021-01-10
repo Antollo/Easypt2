@@ -14,8 +14,8 @@ Returns the size of file in bytes.
 let file = File();
 file.create("abc.txt");
 file.write("abbacda");
-file.close();
 console.write(file.size());
+file.close();
 ```
 
 ##### Expected output:

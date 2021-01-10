@@ -5,157 +5,201 @@
 #include "common.h"
 #include "file.h"
 
-file::file()
+void file::open(const std::string &_path, const char *mode)
 {
+    if (isOpen())
+        close();
+    f = std::fopen(_path.c_str(), mode);
+    assert(isOpen(), std::string("open: file not open ") + std::strerror(errno));
+    path = std::filesystem::absolute(_path);
     lastOperation = lastOperationType::openOrClose;
 }
-file::file(const std::string &path) : file()
+
+void file::open(FILE *_f)
 {
-    open(path);
-}
-void file::open(const std::string &path)
-{
-    _f.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary);
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    _path = path;
-}
-void file::create(const std::string &path)
-{
-    _f.open(path, std::ios_base::in | std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    _path = path;
-}
-void file::remove()
-{
-    if (_f.is_open())
+    if (isOpen())
         close();
-    if (std::remove(_path.string().c_str()) != 0)
-    {
-        throw std::runtime_error(std::strerror(errno));
-    }
+    f = _f;
+    assert(isOpen(), "open: file not open");
+    path.clear();
+    lastOperation = lastOperationType::openOrClose;
 }
-int file::getReadPosition()
+
+void file::create(const std::string &_path)
 {
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    return _f.tellg();
+    open(_path, "w+");
 }
-void file::setReadPosition(const int &n)
-{
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    _f.seekg(n);
-}
-int file::getWritePosition()
-{
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    return _f.tellp();
-}
-void file::setWritePosition(const int &n)
-{
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    _f.seekp(n);
-}
-void file::clear()
-{
-    _f.close();
-    create(_path.string());
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-}
+
 void file::close()
 {
-    _f.close();
+    assert(isOpen(), "close: file not open");
+    std::fclose(f);
+    f = nullptr;
     lastOperation = lastOperationType::openOrClose;
 }
-void file::newLine()
+
+void file::remove()
 {
-    _f << '\n';
-    writeGuard();
+    assert(std::filesystem::exists(path), "remove: file \"" + path.string() + "\" does not exist");
+    auto p = path;
+    if (isOpen())
+        close();
+    path.clear();
+    assert(std::remove(p.string().c_str()) == 0, std::string("remove: ") + std::strerror(errno));
 }
+
 std::string file::read()
 {
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
+    readGuard("read");
 
-    std::string temp;
-    _f >> temp;
+    char c;
+    while (std::isspace(c = std::getc(f)))
+        ;
+    std::ungetc(c, f);
 
-    readGuard();
-    return temp;
+    std::string result;
+    result.reserve(16);
+    while (!std::isspace(c = std::getc(f)) && c != EOF)
+        result.push_back(c);
+    std::ungetc(c, f);
+
+    while (std::isspace(c = std::getc(f)) && c != '\n')
+        ;
+    std::ungetc(c, f);
+
+    errorGuard("read");
+    return result;
 }
-std::string file::readLine()
-{
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    std::string temp;
-    std::getline(_f >> std::ws, temp);
 
-    readGuard();
-    return temp;
-}
 std::string file::readTo(char delim)
 {
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    std::string temp;
-    std::getline(_f >> std::ws, temp, delim);
-    
-    readGuard();
-    return temp;
+    readGuard("readTo");
+
+    char c;
+    while ((c = std::getc(f)) == delim)
+        ;
+    std::ungetc(c, f);
+
+    std::string result;
+    result.reserve(32);
+    while ((c = std::getc(f)) != delim && c != EOF)
+        result.push_back(c);
+    errorGuard("readTo");
+    return result;
 }
-std::string file::readBytes(const int& count)
+
+std::string file::readBytes(size_t count)
 {
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    std::string temp(count, ' ');
-    _f.read(temp.data(), count);
-    temp.resize(_f.gcount());
-    
-    readGuard();
-    return temp;
+    readGuard("readBytes");
+
+    std::string result(count + 1, 0);
+    size_t pos = 0;
+    while (pos < count && std::fgets(&result[pos], count - pos + 1, f))
+        pos += std::strlen(&result[pos]);
+    result.resize(pos);
+
+    errorGuard("readBytes");
+    return result;
 }
+
 void file::write(const std::string &str)
 {
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    _f<<str;
-
-    writeGuard();
+    writeGuard("write");
+    std::fputs(str.c_str(), f);
+    errorGuard("write");
 }
+
 void file::writeLine(const std::string &str)
 {
-    assert(_f.is_open(), "file not opened");
-    assert(_f.good(), "file not good");
-    _f<<str<<'\n';
-    
-    writeGuard();
+    writeGuard("writeLine");
+    std::fputs(str.c_str(), f);
+    std::putc('\n', f);
+    errorGuard("writeLine");
 }
-void file::readGuard()
+
+void file::newLine()
 {
-    if (lastOperation == lastOperationType::write)
+    writeGuard("newLine");
+    std::putc('\n', f);
+    errorGuard("newLine");
+}
+
+size_t file::getReadPosition()
+{
+    readGuard("getReadPosition");
+    return std::ftell(f);
+}
+
+void file::setReadPosition(size_t n)
+{
+    readGuard("setReadPosition");
+    std::fseek(f, n, SEEK_SET);
+    errorGuard("setReadPosition");
+}
+
+size_t file::getWritePosition()
+{
+    writeGuard("getWritePosition");
+    return std::ftell(f);
+}
+
+void file::setWritePosition(size_t n)
+{
+    writeGuard("setWritePosition");
+    std::fseek(f, n, SEEK_SET);
+    errorGuard("setWritePosition");
+}
+
+void file::clear()
+{
+    assert(isOpen(), "clear: file not open");
+    f = std::freopen(nullptr, "w+", f);
+    assert(isOpen(), "clear: failed to reopen");
+}
+
+void file::readGuard(const std::string &op)
+{
+    assert(isOpen(), op + ": file not open");
+    if (lastOperation != lastOperationType::read)
     {
-        _f.flush();
-        _f.sync();
-        _f.seekp(0);
+        std::fflush(f);
+        std::fseek(f, 0, SEEK_SET);
         lastOperation = lastOperationType::read;
     }
 }
-void file::writeGuard()
+
+void file::writeGuard(const std::string &op)
 {
-    if (lastOperation == lastOperationType::read)
+    assert(isOpen(), op + ": file not open");
+    if (lastOperation != lastOperationType::write)
     {
-        _f.flush();
-        _f.sync();
-        _f.seekg(0);
+        std::fflush(f);
+        std::fseek(f, 0, SEEK_SET);
         lastOperation = lastOperationType::write;
     }
 }
-int file::size()
+
+size_t file::size()
 {
-    return std::filesystem::file_size(_path);
+    assert(isOpen(), "size: file not open");
+    size_t pos = std::ftell(f);
+    fseek(f, 0, SEEK_END);
+    size_t result = ftell(f);
+    fseek(f, pos, SEEK_SET);
+    return result;
+}
+
+void file::flush()
+{
+    assert(isOpen(), "flush: file not open");
+    std::fflush(f);
+}
+
+void file::errorGuard(const std::string &op)
+{
+    if (std::ferror(f))
+    {
+        std::clearerr(f);
+        assert(false, op + ": " + std::strerror(errno));
+    }
 }

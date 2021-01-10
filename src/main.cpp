@@ -49,7 +49,21 @@ int main(int argc, char **argv)
             else if (isFlag(argv[i], "doc") && i != argc - 1)
             {
                 auto help = (*(*import)(import, {object::makeObject("../library/docs.ez"s)}, &globalStack))["help"_n];
+                std::mutex m;
+                std::condition_variable cv;
+                bool done = false;
+                auto abort = std::async(std::launch::async, [&m, &cv, &done]() {
+                    std::unique_lock<std::mutex> lk(m);
+                    cv.wait_for(lk, std::chrono::milliseconds(500), [&done]() { return done; });
+                    if (!done)
+                        std::abort();
+                });
                 (*help)(help, {(*execute)(execute, {object::makeObject("return " + std::string(argv[++i]) + ";")}, &globalStack)}, &globalStack);
+                {
+                    std::unique_lock<std::mutex> lk(m);
+                    done = true;
+                }
+                cv.notify_one();
             }
             else if (isFlag(argv[i], "version"))
             {

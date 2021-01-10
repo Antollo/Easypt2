@@ -66,6 +66,7 @@ void runtime::init(stack *st)
     Time::init(st);
     Tcp::init(st);
     Accessible::init(st);
+    ChildProcess::init(st);
 
     auto modules = st->insert("modules"_n, object::makeEmptyObject());
     Import::init(modules);
@@ -73,7 +74,7 @@ void runtime::init(stack *st)
 
 void runtime::fini(stack *st)
 {
-    while(coroutine<object::objectPtr>::stepAll());
+    while (coroutine<object::objectPtr>::stepAll());
     Import::fini();
     object::setGlobalStack(nullptr);
     st->clear();

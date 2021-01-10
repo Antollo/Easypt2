@@ -31,11 +31,15 @@ if (1+3 != 4) {
 - [`newLine`](console.newLine.md)
 - `prototype`
 - [`read`](console.read.md)
-- `readAsync`
+- [`readAsync`](console.readAsync.md)
 - [`readLine`](console.readLine.md)
+- [`readLineAsync`](console.readLineAsync.md)
 - [`setInput`](console.setInput.md)
+- `stackTrace`
 - [`warn`](console.warn.md)
 - [`write`](console.write.md)
+- [`writeAsync`](console.writeAsync.md)
 - [`writeLine`](console.writeLine.md)
+- [`writeLineAsync`](console.writeLineAsync.md)
 
 

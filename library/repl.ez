@@ -1,7 +1,7 @@
 let input;
 let src <- String();
 while (true)
-    if (input = console.write("> ").readLine())
+    if (input = await console.write("> ").readLineAsync())
         src.append(input);
     else
         try

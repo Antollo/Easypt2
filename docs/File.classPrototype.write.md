@@ -8,6 +8,7 @@
 
 ### Description:
 
+Output operation. 
 Writes arguments to file.
 
 #### Example:
