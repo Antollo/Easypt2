@@ -67,7 +67,7 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
         stack localStack(st);
         if (_capturedStack != nullptr)
         {
-            auto referenceToFather = localStack.insert("_stack"_n, makeEmptyObject());
+            auto referenceToFather = localStack.insert("__stack"_n, makeEmptyObject());
             referenceToFather->captureStack(_capturedStack);
         }
         const functionType &node = get<const functionType>();

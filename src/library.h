@@ -3,7 +3,6 @@
 
 #pragma warning(disable : 4100)
 
-//#include "statement.h"
 #include "Node.h"
 #include "nobject.h"
 #include "runtime.h"
@@ -78,4 +77,8 @@ namespace Accessible
 void init(stack *st);
 };
 
+namespace ChildProcess
+{
+void init(stack *st);
+};
 #endif /* !LIBRARY_H_ */

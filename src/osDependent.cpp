@@ -7,7 +7,7 @@ std::filesystem::path getExecutablePath()
     static std::string ret;
     if (!ret.empty())
         return ret;
-#if defined(_WIN32)
+#ifdef _WIN32
     char result[MAX_PATH];
     ret = std::string(result, GetModuleFileNameA(NULL, result, MAX_PATH));
 #elif defined(__linux__)
@@ -20,7 +20,7 @@ std::filesystem::path getExecutablePath()
     return ret;
 }
 
-#if defined(_WIN32)
+#ifdef _WIN32
 void translateSEH(unsigned int u, EXCEPTION_POINTERS *)
 {
     std::string name = [&u]() {
@@ -75,7 +75,7 @@ void translateSEH(unsigned int u, EXCEPTION_POINTERS *)
     throw os_error("Win32 exception " + name);
 }
 
-std::string utf8_encode(const std::wstring &wstr)
+std::string utf8Encode(const std::wstring &wstr)
 {
     if (wstr.empty())
         return std::string();
@@ -85,7 +85,7 @@ std::string utf8_encode(const std::wstring &wstr)
     return strTo;
 }
 
-std::wstring utf8_decode(const std::string &str)
+std::wstring utf8Decode(const std::string &str)
 {
     if (str.empty())
         return std::wstring();
@@ -93,6 +93,19 @@ std::wstring utf8_decode(const std::string &str)
     std::wstring wstrTo(size_needed, 0);
     MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
     return wstrTo;
+}
+
+
+const bool isAttyInput()
+{
+    static const bool attyInput = _isatty(_fileno(stdin));
+    return attyInput;
+}
+
+const bool isAttyOutput()
+{
+    static const bool attyOutput = _isatty(_fileno(stdout));
+    return attyOutput;
 }
 
 /*BOOL WINAPI consoleHandler(DWORD signal) {
@@ -112,17 +125,20 @@ static void sigaction_segv(int signal, siginfo_t *si, void *arg)
 
 void initialize()
 {
-    //std::ios_base::sync_with_stdio(false);
     initializeThread();
-#if defined(_WIN32)
-    setlocale(LC_ALL, ".65001");
-    _setmode(_fileno(stdout), _O_WTEXT);
-    _setmode(_fileno(stdin), _O_WTEXT);
-    std::wcout << std::boolalpha;
+#ifdef _WIN32
+    setlocale(LC_ALL, ".UTF8");
 
-    //SetConsoleCtrlHandler(consoleHandler, TRUE);
+    if (isAttyInput())
+        _setmode(_fileno(stdin), _O_WTEXT);
+    else
+        _setmode(_fileno(stdin), _O_BINARY);
 
-    //Colors in console
+    if (isAttyOutput())
+        _setmode(_fileno(stdout), _O_WTEXT);
+    else
+        _setmode(_fileno(stdout), _O_BINARY);
+
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hOut == INVALID_HANDLE_VALUE)
         return;
@@ -132,14 +148,13 @@ void initialize()
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     if (!SetConsoleMode(hOut, dwMode))
         return;
-#else
-    std::cout << std::boolalpha;
 #endif
+    console::write(std::boolalpha);
 }
 
 void initializeThread()
 {
-#if defined(_WIN32)
+#ifdef _WIN32
 
     //Handle structured exceptions
     _set_se_translator(translateSEH);
@@ -162,10 +177,9 @@ void initializeThread()
 
 std::unordered_map<int, libraryType> dynamicLibrary::libraries;
 
-
 int dynamicLibrary::loadLibrary(const std::string &fileName)
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     libraryType library = LoadLibraryA((fileName + ".dll").c_str());
     if (!library)
     {
@@ -195,7 +209,7 @@ void *dynamicLibrary::getFunction(int i, const std::string &functionName)
 {
     if (libraries.count(i))
         throw std::runtime_error("library does not exist");
-#if defined(_WIN32)
+#ifdef _WIN32
     void *function = reinterpret_cast<void *>(GetProcAddress(libraries[i], functionName.c_str()));
     if (!function)
         throw std::runtime_error("function " + functionName + " not found");
@@ -213,7 +227,7 @@ void *dynamicLibrary::getFunction(int i, const std::string &functionName)
 void dynamicLibrary::unloadLibraries()
 {
     for (const auto &library : libraries)
-#if defined(_WIN32)
+#ifdef _WIN32
         FreeLibrary(library.second);
 #elif defined(__linux__)
         dlclose(library.second);

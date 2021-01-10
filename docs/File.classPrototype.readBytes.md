@@ -8,7 +8,8 @@
 
 ### Description:
 
-Reads string of given length
+Input operation. 
+Reads string of given length (in bytes)
 from file.
 
 #### Example:

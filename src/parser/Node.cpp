@@ -108,7 +108,7 @@ void Node::addChild(Node &arg)
 
 bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr &b, stack &st) const
 {
-    if (_optimizations >= 20)
+    if (_optimizations._number >= 20)
     {
         try
         {
@@ -148,9 +148,9 @@ bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr 
     }
     b = _children[1].evaluate(st);
     if (a->isOfType<number>() && b->isOfType<number>())
-        _optimizations = _optimizations < 100 ? _optimizations + 1 : 100;
+        _optimizations = _optimizations._number < 100 ? _optimizations._number + 1 : 100;
     else
-        _optimizations = _optimizations > 0 ? _optimizations - 1 : 0;
+        _optimizations = _optimizations._number > 0 ? _optimizations._number - 1 : 0;
 
     return false;
 }

@@ -15,7 +15,7 @@ the delimeter in the original string.
 
 ```js
 let arr = "abcd abcde abcdef bcdefg".split("cd");
-for(let i = 0; i<arr.length(); i++)
+for (let i = 0; i<arr.length(); i++)
     console.write(arr[i], ", ");
 ```
 

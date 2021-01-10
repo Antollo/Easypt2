@@ -8,7 +8,8 @@
 
 ### Description:
 
-Reads string terminated by give character
+Input operation. 
+Reads string terminated by given character
 from file.
 
 #### Example:

@@ -19,7 +19,7 @@ namespace filesystem = std::experimental::filesystem;
 #include <filesystem>
 #endif
 
-#if defined(_WIN32)
+#ifdef _WIN32
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #define _CRT_SECURE_NO_WARNINGS
@@ -40,16 +40,15 @@ using libraryType = HMODULE;
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
 #elif defined(__linux__)
+#include <cstring>
+#include <csignal>
 #include <cstdio>
-#include <sys/types.h>
 #include <unistd.h>
 #include <linux/limits.h>
 #include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 using libraryType = void *;
-
-#include <cstdio>
-#include <cstring>
-#include <csignal>
 #else
 #pragma message("OS not fully supported")
 using libraryType = bool;
@@ -69,27 +68,11 @@ private:
     static std::unordered_map<int, libraryType> libraries;
 };
 
-#if defined(_WIN32)
-std::string utf8_encode(const std::wstring &wstr);
-std::wstring utf8_decode(const std::string &str);
-class useStdio
-{
-public:
-    useStdio()
-    {
-        _setmode(_fileno(stdout), _O_TEXT);
-        _setmode(_fileno(stdin), _O_TEXT);
-    }
-    ~useStdio()
-    {
-        _setmode(_fileno(stdout), _O_WTEXT);
-        _setmode(_fileno(stdin), _O_WTEXT);
-    }
-};
-#else
-class useStdio
-{
-};
+#ifdef _WIN32
+std::string utf8Encode(const std::wstring &wstr);
+std::wstring utf8Decode(const std::string &str);
+const bool isAttyInput();
+const bool isAttyOutput();
 #endif
 
 #endif // OSDEPENDENT_H

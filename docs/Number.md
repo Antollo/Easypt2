@@ -2,6 +2,8 @@
 
 #### Instance of: [`Class`](Class.md)
 
+#### Inherits from: [`Object`](Object.md)
+
 ### Description:
 
 Represents number represented as at least 4 bytes

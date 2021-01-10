@@ -8,8 +8,9 @@
 
 ### Description:
 
-Writes arguments appended with the new line character or 
-characters sequence (platform dependent) to file.
+Output operation. 
+Writes arguments appended with the new line 
+character to file.
 
 #### Example:
 

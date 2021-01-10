@@ -6,8 +6,13 @@
 
 ### Description:
 
+Output operation. 
 Sets write position of file
-(counted from begining in bytes).
+(counted from begining in bytes). 
+All input operations set the write 
+position to 0, and consistently all 
+output operations set the read 
+position to 0.
 
 #### Example:
 
@@ -26,7 +31,7 @@ console.write(file.getWritePosition());
 ##### Expected output:
 
 ```
-abba 5 5
+abba 5 0
 ```
 
 ### Properties:

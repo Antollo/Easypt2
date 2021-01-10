@@ -94,11 +94,16 @@ public:
         for (auto i = coroutines.begin(); i != coroutines.end();)
         {
             j = i++;
-            if (!(*j)->running())
-                coroutines.erase(j);
-            else
-                (*j)->step();
+            if (!(*j)->ready || (*j)->ready())
+            {
+                if (!(*j)->running())
+                    coroutines.erase(j);
+                else
+                    (*j)->step();
+            }
         }
+
+        std::this_thread::yield();
 
         //console::debug("Back in main: ", GetCurrentFiber());
         //console::warn("End");
@@ -111,16 +116,24 @@ public:
     template <class T>
     static T coAwait(std::future<T> &&f)
     {
-        while (true)
-        {
-            if (f.valid() && f.wait_for(std::chrono::milliseconds::zero()) == std::future_status::ready)
-                return f.get();
-            else
-                coYield();
-        }
+        if (f.valid() && f.wait_for(std::chrono::milliseconds::zero()) == std::future_status::ready)
+            return f.get();
+        if (currentCoroutine)
+            currentCoroutine->ready = [&f]() {
+                return f.valid() && f.wait_for(std::chrono::milliseconds::zero()) == std::future_status::ready;
+            };
+        coYield();
+        while (!f.valid() || f.wait_for(std::chrono::milliseconds::zero()) != std::future_status::ready)
+            coYield();
+        if (currentCoroutine)
+            currentCoroutine->ready = nullptr;
+        return f.get();
     }
 
 protected:
+    static inline coroutineBase *currentCoroutine = nullptr;
+    std::function<bool()> ready;
+
     static std::list<std::shared_ptr<coroutineBase>> coroutines;
     static contextType mainContext;
     // "yield" of main context
@@ -169,7 +182,9 @@ public:
     void step() override
     {
         coYield = [this]() { _yield(); };
+        currentCoroutine = this;
         swapContext(mainContext, currentContext);
+        currentCoroutine = nullptr;
         coYield = _coYieldMain;
     }
 

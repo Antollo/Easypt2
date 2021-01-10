@@ -22,7 +22,7 @@ for (let i = 0; i < arr.length(); i++)
 
 let arr = Array();
 let i = 0;
-while(i < 1000) {
+while (i < 1000) {
     let x;
     arr.insert(0, x);
     i++;

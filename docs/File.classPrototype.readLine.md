@@ -6,6 +6,7 @@
 
 ### Description:
 
+Input operation. 
 Reads string terminated by new line character 
 from file.
 

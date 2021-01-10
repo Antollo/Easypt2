@@ -9,7 +9,9 @@
 ### Description:
 
 Creates (or open and remove contents) 
-file in the specified path.
+file in the specified path. If the 
+file object was already associated 
+with existing file close it first.
 
 #### Example:
 

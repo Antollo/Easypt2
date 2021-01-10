@@ -18,6 +18,13 @@ output stream.
 console.writeLine("seven: ", 7);
 ```
 
+##### Expected output:
+
+```
+seven: 7
+
+```
+
 ### Properties:
 
 - `prototype`

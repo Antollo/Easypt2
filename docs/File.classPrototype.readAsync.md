@@ -1,0 +1,31 @@
+## Name: `File.classPrototype.readAsync`
+
+#### Instance of: [`Function`](Function.md)
+
+#### Return value: `/*Promise*/`
+
+### Description:
+
+Input operation. 
+Reads word terminated by whitespace from file.
+
+#### Example:
+
+```js
+let file = File();
+file.create("protocols.txt");
+file.writeLine("http").write(80);
+file.setReadPosition(0);
+
+let name = await file.readLineAsync();
+let port = await file.readAsync();
+file.close();
+
+console.write(name, " ", port);
+```
+
+### Properties:
+
+- `prototype`
+
+

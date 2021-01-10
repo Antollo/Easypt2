@@ -6,6 +6,14 @@
 #include <sstream>
 #include "osDependent.h"
 
+#ifdef _WIN32
+#define CIO(x) x##C
+#define WIO(x) x##W
+#define IO(x) x
+#else
+#define CIO(x) x
+#endif
+
 using namespace std::string_literals;
 
 class console
@@ -38,46 +46,43 @@ public:
     static void stackTrace();
 
     template <class T>
-    static inline void controlSequence(const T& code)
+    static inline void controlSequence(const T &code)
     {
         write("\033["s + code);
     }
 
-#if defined(_WIN32)
+#ifdef _WIN32
     template <class T, class... Ts>
-    static void read(T &t, Ts &... args)
+    static void WIO(read)(T &t, Ts &... args)
     {
         lastFormattedInputFunction = true;
         if constexpr (std::is_same_v<T, std::string>)
         {
             std::wstring temp;
             std::wcin >> temp;
-            //std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), std::wcin.peek());
-            t = utf8_encode(temp);
+            t = utf8Encode(temp);
         }
         else
-        {
             std::wcin >> t;
-            //std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), std::wcin.peek());
-        }
+
         if constexpr (sizeof...(args))
             read(args...);
     }
 
     template <class T, class... Ts>
-    static void readLine(T &t, Ts &... args)
+    static void WIO(readLine)(T &t, Ts &... args)
     {
         if constexpr (std::is_same_v<T, std::string>)
         {
             std::wstring temp;
             std::getline(lastFormattedInputFunction ? std::wcin >> std::ws : std::wcin, temp);
-            t = utf8_encode(temp);
+            t = utf8Encode(temp);
         }
         else
         {
             std::wstring temp;
             std::getline(lastFormattedInputFunction ? std::wcin >> std::ws : std::wcin, temp);
-            t = static_cast<T>(utf8_encode(temp));
+            t = static_cast<T>(utf8Encode(temp));
         }
         lastFormattedInputFunction = false;
         if constexpr (sizeof...(args))
@@ -85,10 +90,10 @@ public:
     }
 
     template <class T, class... Ts>
-    static void write(const T &t, const Ts &... args)
+    static void WIO(write)(const T &t, const Ts &... args)
     {
         if constexpr (std::is_same_v<T, std::string>)
-            std::wcout << utf8_decode(t);
+            std::wcout << utf8Decode(t);
         else
             std::wcout << t;
         if constexpr (sizeof...(args))
@@ -96,10 +101,10 @@ public:
     }
 
     template <class T, class... Ts>
-    static void writeLine(const T &t, const Ts &... args)
+    static void WIO(writeLine)(const T &t, const Ts &... args)
     {
         if constexpr (std::is_same_v<T, std::string>)
-            std::wcout << utf8_decode(t);
+            std::wcout << utf8Decode(t);
         else
             std::wcout << t;
         if constexpr (sizeof...(args))
@@ -107,16 +112,16 @@ public:
         std::wcout << std::endl;
     }
 
-    static inline void newLine()
+    static inline void WIO(newLine)()
     {
         std::wcout << std::endl;
     }
 
     template <class T, class... Ts>
-    static void writeLineError(const T &t, const Ts &... args)
+    static void WIO(writeLineError)(const T &t, const Ts &... args)
     {
         if constexpr (std::is_same_v<T, std::string>)
-            std::wcerr << utf8_decode(t);
+            std::wcerr << utf8Decode(t);
         else
             std::wcerr << t;
         if constexpr (sizeof...(args))
@@ -126,25 +131,28 @@ public:
     }
 
     template <class CB>
-    static void setInput(const std::string &str, CB cb)
+    static void WIO(setInput)(const std::string &str, CB &&cb)
     {
-        std::wistringstream st(utf8_decode(str));
+        std::wistringstream st(utf8Decode(str));
         std::wstreambuf *buf = std::wcin.rdbuf();
+        bool temp = lastFormattedInputFunction;
         std::wcin.rdbuf(st.rdbuf());
         try
         {
             cb();
             std::wcin.rdbuf(buf);
+            lastFormattedInputFunction = temp;
         }
-        catch(...)
+        catch (...)
         {
             std::wcin.rdbuf(buf);
+            lastFormattedInputFunction = temp;
             throw;
         }
     }
 
     template <class CB>
-    static std::string getOutput(CB cb)
+    static std::string WIO(getOutput)(CB &&cb)
     {
         std::wostringstream st;
         std::wstreambuf *buf = std::wcout.rdbuf();
@@ -154,27 +162,27 @@ public:
             cb();
             std::wcout.rdbuf(buf);
         }
-        catch(...)
+        catch (...)
         {
             std::wcout.rdbuf(buf);
             throw;
         }
-        return utf8_encode(st.str());
+        return utf8Encode(st.str());
     }
 
-#else
+#endif
+
     template <class T, class... Ts>
-    static void read(T &t, Ts &... args)
+    static void CIO(read)(T &t, Ts &... args)
     {
         lastFormattedInputFunction = true;
         std::cin >> t;
-        //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if constexpr (sizeof...(args))
             read(args...);
     }
 
     template <class T, class... Ts>
-    static void readLine(T &t, Ts &... args)
+    static void CIO(readLine)(T &t, Ts &... args)
     {
         std::string temp;
         std::getline(lastFormattedInputFunction ? std::cin >> std::ws : std::cin, temp);
@@ -185,7 +193,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void write(const T &t, const Ts &... args)
+    static void CIO(write)(const T &t, const Ts &... args)
     {
         std::cout << t;
         if constexpr (sizeof...(args))
@@ -193,7 +201,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void writeLine(const T &t, const Ts &... args)
+    static void CIO(writeLine)(const T &t, const Ts &... args)
     {
         std::cout << t;
         if constexpr (sizeof...(args))
@@ -201,13 +209,13 @@ public:
         std::cout << std::endl;
     }
 
-    static inline void newLine()
+    static inline void CIO(newLine)()
     {
         std::cout << std::endl;
     }
 
     template <class T, class... Ts>
-    static void writeLineError(const T &t, const Ts &... args)
+    static void CIO(writeLineError)(const T &t, const Ts &... args)
     {
         std::cerr << t;
         if constexpr (sizeof...(args))
@@ -217,26 +225,28 @@ public:
     }
 
     template <class CB>
-    static void setInput(const std::string &str, CB cb)
+    static void CIO(setInput)(const std::string &str, CB &&cb)
     {
         std::istringstream st(str);
         std::streambuf *buf = std::cin.rdbuf();
         std::cin.rdbuf(st.rdbuf());
+        bool temp = lastFormattedInputFunction;
         try
         {
             cb();
             std::cin.rdbuf(buf);
+            lastFormattedInputFunction = temp;
         }
-        catch(...)
+        catch (...)
         {
             std::cin.rdbuf(buf);
+            lastFormattedInputFunction = temp;
             throw;
         }
-        
     }
 
     template <class CB>
-    static std::string getOutput(CB cb)
+    static std::string CIO(getOutput)(CB &&cb)
     {
         std::ostringstream st;
         std::streambuf *buf = std::cout.rdbuf();
@@ -246,12 +256,84 @@ public:
             cb();
             std::cout.rdbuf(buf);
         }
-        catch(...)
+        catch (...)
         {
             std::cout.rdbuf(buf);
             throw;
         }
         return st.str();
+    }
+
+#ifdef _WIN32
+    template <class... Ts>
+    static inline void IO(read)(Ts &&... args)
+    {
+        if (isAttyInput())
+            WIO(read)
+        (std::forward<Ts>(args)...);
+        else CIO(read)(std::forward<Ts>(args)...);
+    }
+
+    template <class... Ts>
+    static inline void IO(readLine)(Ts &&... args)
+    {
+        if (isAttyInput())
+            WIO(readLine)
+        (std::forward<Ts>(args)...);
+        else CIO(readLine)(std::forward<Ts>(args)...);
+    }
+
+    template <class... Ts>
+    static inline void IO(write)(Ts &&... args)
+    {
+        if (isAttyOutput())
+            WIO(write)
+        (std::forward<Ts>(args)...);
+        else CIO(write)(std::forward<Ts>(args)...);
+    }
+
+    template <class... Ts>
+    static inline void IO(writeLine)(Ts &&... args)
+    {
+        if (isAttyOutput())
+            WIO(writeLine)
+        (std::forward<Ts>(args)...);
+        else CIO(writeLine)(std::forward<Ts>(args)...);
+    }
+
+    static inline void IO(newLine)()
+    {
+        if (isAttyOutput())
+            WIO(newLine)
+        ();
+        else CIO(newLine)();
+    }
+
+    template <class... Ts>
+    static inline void IO(writeLineError)(Ts &&... args)
+    {
+        if (isAttyOutput())
+            WIO(writeLineError)
+        (std::forward<Ts>(args)...);
+        else CIO(writeLineError)(std::forward<Ts>(args)...);
+    }
+
+    template <class CB>
+    static inline void IO(setInput)(const std::string &str, CB &&cb)
+    {
+        if (isAttyInput())
+            WIO(setInput)
+        (str, std::forward<CB>(cb));
+        else CIO(setInput)(str, std::forward<CB>(cb));
+    }
+
+    template <class CB>
+    static inline std::string IO(getOutput)(CB &&cb)
+    {
+        if (isAttyOutput())
+            return WIO(getOutput)(std::forward<CB>(cb));
+        else
+            return CIO(getOutput)(std::forward<CB>(cb));
     }
 
 #endif

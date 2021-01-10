@@ -2,7 +2,7 @@ function parseHttpMessage(msg) {
     let obj;
     let headersArray;
     let idx <- msg.indexOf("\r\n\r\n");
-    if(idx != -1)
+    if (idx != -1)
     {
         headersArray <- msg.substring(0, idx).split("\r\n");
         obj.body <-  msg.substring(idx + 4, msg.length() - idx - 4);
@@ -11,7 +11,7 @@ function parseHttpMessage(msg) {
         headersArray <- msg.split("\r\n");
 
     let msgLineArray <- headersArray[0].split(" ");
-    if(msgLineArray[0].indexOf("HTTP") == 0) {
+    if (msgLineArray[0].indexOf("HTTP") == 0) {
         obj.httpVersion <- msgLineArray[0];
         obj.statusCode <- msgLineArray[1];
         obj.reasonPhrase <- msgLineArray[2];
@@ -42,11 +42,13 @@ class HttpServer {
             let client = await this.tcpServer.listen();
             Promise(() => {
                 try {
-                    let obj <- parseHttpMessage(await client.receive());
-                    if(obj.body)
-                        while(obj.body.length() < obj.headers["Content-Length"])
+                    let msg <- await client.receive();
+                    if (msg.length() == 0)
+                        return -1;
+                    let obj <- parseHttpMessage(msg);
+                    if (obj.body)
+                        while (obj.body.length() < obj.headers["Content-Length"])
                             obj.body.append(await client.receive());
-                    //console.log(obj);
 
                     await client.send("HTTP/1.0 200 OK\r\n\r\nHello");
                     await client.close();
@@ -64,11 +66,11 @@ class HttpServer {
 
 function request(method, requestUri, headers, body, port, httpVersion)
 {
-    if(args.length() < 6)
+    if (args.length() < 6)
         let httpVersion <- "HTTP/1.1";
-    if(args.length() < 5)
+    if (args.length() < 5)
         let port <- 80;
-    if(args.length() < 4)
+    if (args.length() < 4)
         let body <- "";
 
     let r = method;
@@ -84,8 +86,8 @@ function request(method, requestUri, headers, body, port, httpVersion)
     await server.connect(headers["Host"], port);
     await server.send(r);
     let obj <- parseHttpMessage(await server.receive());
-    if(obj.body)
-        while(obj.body.length() < obj.headers["Content-Length"])
+    if (obj.body)
+        while (obj.body.length() < obj.headers["Content-Length"])
             obj.body.append(await server.receive());
     return obj;
 };

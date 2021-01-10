@@ -48,6 +48,20 @@ console.write(modules.maths.filename, \" \");
 console.write(modules.maths.exports.multiply instanceOf Function);";
 import @expectedOutput@ "24 maths maths.ez true";
 
+import.getImportPaths @returns@
+"/*Array*/";
+import.getImportPaths @description@
+"Returns list of directories in which `import`
+searches for files.";
+import.getImportPaths @example@
+"let importPaths = import.getImportPaths();
+let l = importPaths.length();
+let interpreterExecutableParentPath = importPaths[l - 1];
+let interpreterExecutablePath = importPaths[l - 2];
+let currentPathFromInterpreterLaunch = importPaths[l - 3];
+console.write(interpreterExecutablePath.indexOf(interpreterExecutableParentPath));";
+import.getImportPaths @expectedOutput@ "0";
+
 parse @parameters@
 "code /*String*/";
 parse @returns@
@@ -110,6 +124,16 @@ console.write @example@
 "console.write(\"seven: \", 7);";
 console.write @expectedOutput@ "seven: 7";
 
+console.writeAsync @parameters@
+"/*any number of convertible to String parameters*/";
+console.writeAsync @returns@
+"/*Promise*/";
+console.writeAsync @description@
+"Writes arguments to standard output stream.";
+console.writeAsync @example@
+"await console.writeAsync(\"seven: \", 7);";
+console.writeAsync @expectedOutput@ "seven: 7";
+
 console.writeLine @parameters@
 "/*any number of convertible to String parameters*/";
 console.writeLine @returns@
@@ -120,6 +144,19 @@ characters sequence (platform dependent) to standard
 output stream.";
 console.writeLine @example@
 "console.writeLine(\"seven: \", 7);";
+console.writeLine @expectedOutput@ "seven: 7\n";
+
+console.writeLineAsync @parameters@
+"/*any number of convertible to String parameters*/";
+console.writeLineAsync @returns@
+"/*Promise*/";
+console.writeLineAsync @description@
+"Writes arguments appended with the new line character or 
+characters sequence (platform dependent) to standard 
+output stream.";
+console.writeLineAsync @example@
+"await console.writeLineAsync(\"seven: \", 7);";
+console.writeLineAsync @expectedOutput@ "seven: 7\n";
 
 console.debug @parameters@
 "/*any number of convertible to String parameters*/";
@@ -178,6 +215,15 @@ console.read @example@
 let name = console.read();
 console.writeLine(\"Welcome \", name);";
 
+console.readAsync @returns@
+"/*String*/";
+console.readAsync @description@
+"Reads word terminated by whitespace from standard input stream.";
+console.readAsync @example@
+"console.writeLine(\"What is your name?\");
+let name = await console.readAsync();
+console.writeLine(\"Welcome \", name);";
+
 console.readLine @returns@
 "/*String*/";
 console.readLine @description@
@@ -186,6 +232,16 @@ from standard input stream.";
 console.readLine @example@
 "console.writeLine(\"Who is your favourite writer?\");
 let writer = console.readLine();
+console.writeLine(\"I like books written by \", writer, \" too.\");";
+
+console.readLineAsync @returns@
+"/*String*/";
+console.readLineAsync @description@
+"Reads string terminated by new line character 
+from standard input stream.";
+console.readLineAsync @example@
+"console.writeLine(\"Who is your favourite writer?\");
+let writer = await console.readLineAsync();
 console.writeLine(\"I like books written by \", writer, \" too.\");";
 
 console.controlSequence @parameters@
@@ -554,7 +610,7 @@ String.classPrototype.split @description@
 the delimeter in the original string.";
 String.classPrototype.split @example@
 "let arr = \"abcd abcde abcdef bcdefg\".split(\"cd\");
-for(let i = 0; i<arr.length(); i++)
+for (let i = 0; i<arr.length(); i++)
     console.write(arr[i], \", \");";
 String.classPrototype.split @expectedOutput@
 "ab,  ab, e ab, ef b, efg, ";
@@ -731,7 +787,8 @@ File.classPrototype.write @parameters@
 File.classPrototype.write @returns@
 "/*File*/";
 File.classPrototype.write @description@
-"Writes arguments to file.";
+"Output operation. 
+Writes arguments to file.";
 File.classPrototype.write @example@
 "let file = File();
 file.create(\"protocols.txt\");
@@ -746,13 +803,36 @@ console.write(name, \" \", port);";
 File.classPrototype.write @expectedOutput@
 "http 80";
 
+File.classPrototype.writeAsync @parameters@
+"/*any number of convertible to String parameters*/";
+File.classPrototype.writeAsync @returns@
+"/*Promise*/";
+File.classPrototype.writeAsync @description@
+"Output operation. 
+Writes arguments to file.";
+File.classPrototype.writeAsync @example@
+"let file = File();
+file.create(\"protocols.txt\");
+await file.writeLineAsync(\"http\");
+await file.writeAsync(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.writeAsync @expectedOutput@
+"http 80";
+
 File.classPrototype.writeLine @parameters@
 "/*any number of convertible to String parameters*/";
 File.classPrototype.writeLine @returns@
 "/*File*/";
 File.classPrototype.writeLine @description@
-"Writes arguments appended with the new line character or 
-characters sequence (platform dependent) to file.";
+"Output operation. 
+Writes arguments appended with the new line 
+character to file.";
 File.classPrototype.writeLine @example@
 "let file = File();
 file.create(\"protocols.txt\");
@@ -767,10 +847,34 @@ console.write(name, \" \", port);";
 File.classPrototype.writeLine @expectedOutput@
 "http 80";
 
+File.classPrototype.writeLineAsync @parameters@
+"/*any number of convertible to String parameters*/";
+File.classPrototype.writeLineAsync @returns@
+"/*Promise*/";
+File.classPrototype.writeLineAsync @description@
+"Output operation. 
+Writes arguments appended with the new line 
+character to file.";
+File.classPrototype.writeLineAsync @example@
+"let file = File();
+file.create(\"protocols.txt\");
+await file.writeLineAsync(\"http\");
+await file.writeAsync(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.writeLineAsync @expectedOutput@
+"http 80";
+
 File.classPrototype.read @returns@
 "/*String*/";
 File.classPrototype.read @description@
-"Reads word terminated by whitespace from file.";
+"Input operation. 
+Reads word terminated by whitespace from file.";
 File.classPrototype.read @example@
 "let file = File();
 file.create(\"protocols.txt\");
@@ -785,10 +889,30 @@ console.write(name, \" \", port);";
 File.classPrototype.read @expectedOutput@
 "http 80";
 
+File.classPrototype.readAsync @returns@
+"/*Promise*/";
+File.classPrototype.readAsync @description@
+"Input operation. 
+Reads word terminated by whitespace from file.";
+File.classPrototype.readAsync @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = await file.readLineAsync();
+let port = await file.readAsync();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.read @expectedOutput@
+"http 80";
+
 File.classPrototype.readLine @returns@
 "/*String*/";
 File.classPrototype.readLine @description@
-"Reads string terminated by new line character 
+"Input operation. 
+Reads string terminated by new line character 
 from file.";
 File.classPrototype.readLine @example@
 "let file = File();
@@ -804,13 +928,35 @@ console.write(name, \" \", port);";
 File.classPrototype.readLine @expectedOutput@
 "http 80";
 
+File.classPrototype.readLineAsync @returns@
+"/*Promise*/";
+File.classPrototype.readLineAsync @description@
+"Input operation. 
+Reads string terminated by new line character 
+from file.";
+File.classPrototype.readLineAsync @example@
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = await file.readLineAsync();
+let port = await file.readAsync();
+file.close();
+
+console.write(name, \" \", port);";
+File.classPrototype.readLineAsync @expectedOutput@
+"http 80";
+
 
 File.classPrototype.open @parameters@
 "path /*String*/";
 File.classPrototype.open @returns@
 "/*File*/";
 File.classPrototype.open @description@
-"Opens file specified by the path.";
+"Opens file specified by the path. If 
+the file object was already associated 
+with existing file close it first.";
 File.classPrototype.open @example@
 "let file = File();
 file.create(\"protocols.txt\");
@@ -830,7 +976,9 @@ File.classPrototype.create @returns@
 "/*File*/";
 File.classPrototype.create @description@
 "Creates (or open and remove contents) 
-file in the specified path.";
+file in the specified path. If the 
+file object was already associated 
+with existing file close it first.";
 File.classPrototype.create @example@
 "let file = File();
 file.create(\"protocols.txt\");
@@ -846,7 +994,9 @@ File.classPrototype.create @expectedOutput@
 File.classPrototype.remove @returns@
 "/*File*/";
 File.classPrototype.remove @description@
-"Deletes the file.";
+"Deletes the recently associated file. 
+If the file object was associated with 
+file close it first.";
 File.classPrototype.remove @example@
 "let file = File();
 file.create(\"protocols.txt\");
@@ -865,7 +1015,8 @@ File.classPrototype.readTo @parameters@
 File.classPrototype.readTo @returns@
 "/*String*/";
 File.classPrototype.readTo @description@
-"Reads string terminated by give character
+"Input operation. 
+Reads string terminated by given character
 from file.";
 File.classPrototype.readTo @example@
 "let file = File();
@@ -876,12 +1027,30 @@ console.write(file.readTo(\"c\"));";
 File.classPrototype.readTo @expectedOutput@
 "abba";
 
+File.classPrototype.readToAsync @parameters@
+"/*String*/";
+File.classPrototype.readToAsync @returns@
+"/*Promise*/";
+File.classPrototype.readToAsync @description@
+"Input operation. 
+Reads string terminated by given character
+from file.";
+File.classPrototype.readToAsync @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+file.setReadPosition(0);
+console.write(await file.readToAsync(\"c\"));";
+File.classPrototype.readToAsync @expectedOutput@
+"abba";
+
 File.classPrototype.readBytes @parameters@
 "/*Number*/";
 File.classPrototype.readBytes @returns@
 "/*String*/";
 File.classPrototype.readBytes @description@
-"Reads string of given length
+"Input operation. 
+Reads string of given length (in bytes)
 from file.";
 File.classPrototype.readBytes @example@
 "let file = File();
@@ -892,20 +1061,51 @@ console.write(file.readBytes(4));";
 File.classPrototype.readBytes @expectedOutput@
 "abba";
 
+File.classPrototype.readBytesAsync @parameters@
+"/*Number*/";
+File.classPrototype.readBytesAsync @returns@
+"/*Promise*/";
+File.classPrototype.readBytesAsync @description@
+"Input operation. 
+Reads string of given length (in bytes)
+from file.";
+File.classPrototype.readBytesAsync @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+file.setReadPosition(0);
+console.write(await file.readBytesAsync(4));";
+File.classPrototype.readBytesAsync @expectedOutput@
+"abba";
+
 File.classPrototype.close @returns@
 "/*File*/";
 File.classPrototype.close @description@
-"Closes the file, makes sure all
-input/output operations are
-saved to disk.";
+"Performs flush and closes the associated file.";
 File.classPrototype.close @example@
 "let file = File();
 file.create(\"abc.txt\");
 file.write(\"abbacda\");
-file.close();
-console.write(file.size());";
+console.write(file.size());
+file.close();";
 File.classPrototype.close @expectedOutput@
 "7";
+
+File.classPrototype.flush @returns@
+"/*File*/";
+File.classPrototype.flush @description@
+"Makes sure all output operations are
+saved to the underlaying storage.";
+File.classPrototype.flush @example@
+"let file = File();
+file.create(\"abc.txt\");
+file.write(\"abbacda\");
+console.write(file.read());
+file.flush();
+// File contents are now saved o disk
+file.close();";
+File.classPrototype.flush @expectedOutput@
+"abbacda";
 
 File.classPrototype.size @returns@
 "/*Number*/";
@@ -915,17 +1115,21 @@ File.classPrototype.size @example@
 "let file = File();
 file.create(\"abc.txt\");
 file.write(\"abbacda\");
-file.close();
-console.write(file.size());";
+console.write(file.size());
+file.close();";
 File.classPrototype.size @expectedOutput@
 "7";
-
 
 File.classPrototype.getReadPosition @returns@
 "/*Number*/";
 File.classPrototype.getReadPosition @description@
-"Returns read position of file
-(counted from begining in bytes).";
+"Input operation. 
+Returns read position of file
+(counted from begining in bytes). 
+All input operations set the write 
+position to 0, and consistently all 
+output operations set the read 
+position to 0.";
 File.classPrototype.getReadPosition @example@
 "let file = File();
 file.create(\"ab.txt\");
@@ -937,13 +1141,18 @@ console.write(file.readBytes(4), \" \");
 console.write(file.getReadPosition(), \" \");
 console.write(file.getWritePosition());";
 File.classPrototype.getReadPosition @expectedOutput@
-"abba 5 5";
+"abba 5 0";
 
 File.classPrototype.getWritePosition @returns@
 "/*Number*/";
 File.classPrototype.getWritePosition @description@
-"Returns write position of file
-(counted from begining in bytes).";
+"Output operation. 
+Returns write position of file
+(counted from begining in bytes). 
+All input operations set the write 
+position to 0, and consistently all 
+output operations set the read 
+position to 0.";
 File.classPrototype.getWritePosition @example@
 "let file = File();
 file.create(\"ab.txt\");
@@ -955,13 +1164,18 @@ console.write(file.readBytes(4), \" \");
 console.write(file.getReadPosition(), \" \");
 console.write(file.getWritePosition());";
 File.classPrototype.getWritePosition @expectedOutput@
-"abba 5 5";
+"abba 5 0";
 
 File.classPrototype.setReadPosition @parameters@
 "/*Number*/";
 File.classPrototype.setReadPosition @description@
-"Sets read position of file
-(counted from begining in bytes).";
+"Input operation. 
+Sets read position of file
+(counted from begining in bytes). 
+All input operations set the write 
+position to 0, and consistently all 
+output operations set the read 
+position to 0.";
 File.classPrototype.setReadPosition @example@
 "let file = File();
 file.create(\"ab.txt\");
@@ -973,13 +1187,18 @@ console.write(file.readBytes(4), \" \");
 console.write(file.getReadPosition(), \" \");
 console.write(file.getWritePosition());";
 File.classPrototype.setReadPosition @expectedOutput@
-"abba 5 5";
+"abba 5 0";
 
 File.classPrototype.setWritePosition @parameters@
 "/*Number*/";
 File.classPrototype.setWritePosition @description@
-"Sets write position of file
-(counted from begining in bytes).";
+"Output operation. 
+Sets write position of file
+(counted from begining in bytes). 
+All input operations set the write 
+position to 0, and consistently all 
+output operations set the read 
+position to 0.";
 File.classPrototype.setWritePosition @example@
 "let file = File();
 file.create(\"ab.txt\");
@@ -991,12 +1210,129 @@ console.write(file.readBytes(4), \" \");
 console.write(file.getReadPosition(), \" \");
 console.write(file.getWritePosition());";
 File.classPrototype.setWritePosition @expectedOutput@
-"abba 5 5";
+"abba 5 0";
 
-/* TODO:
-Promise
-    tick
-    then
-    await
-ConditionalPromise
-Timeout*/
+Promise @description@
+"Represents an operation that that executes 
+asynchronously and its resulting value or error that 
+raised during its execution.";
+Promise @example@
+"Timeout(20).then(() => console.write(20, \" \"););
+await Timeout(30);
+console.write(30, \" \");";
+Promise @expectedOutput@
+"20 30 ";
+
+Promise.classPrototype["await"] @returns@
+"/*Object*/";
+Promise.classPrototype["await"] @description@
+"Suspends the current context of execution until 
+asynchronous operation associated with promise 
+completes. Returns value returned by that 
+operation. `await` doesn't block, the control swaps 
+to another task.";
+Promise.classPrototype["await"] @example@
+"let condition = false;
+let promise = Promise(() => {
+    while (!condition)
+        Promise.tick();
+    console.write(\"c is now true\");
+});
+Timeout(10).then(() => condition = true;);
+
+// We can't use promise.await()
+// directly because there is await
+// operator. However it is possible
+// to use promise[\"await\"]()
+
+await promise;";
+Promise.classPrototype["await"] @expectedOutput@
+"c is now true";
+
+Promise.classPrototype.then @parameters@
+"/*Function*/";
+Promise.classPrototype.then @returns@
+"/*Promise*/";
+Promise.classPrototype.then @description@
+"When asynchronous operation associated with 
+this promise completes its resulting value is
+passed to callback supplied with then method.
+Represents value returned by that callback.";
+Promise.classPrototype.then @example@
+"let promise = Timeout(10)
+    .then(() => 7;)
+    .then((x) => x + 3;)
+    .then((x) => x / 2;)
+    .then((x) => console.write(x););
+await promise;";
+Promise.classPrototype.then @expectedOutput@
+"5";
+
+Promise.tick @description@
+"Suspends the current context of execution
+and pass control to another context.";
+Promise.tick @example@
+"let syn = false;
+Timeout(10).then(() => {
+    console.write(1);
+    syn = true;
+});
+let b = Timeout(10).then(() => {
+    while(!syn)
+        Promise.tick();
+    console.write(2);
+});
+await b;";
+Promise.tick @expectedOutput@
+"12";
+
+//ConditionalPromise @parameters@
+//"callback /*Function*/, condition /*Function*/"
+//ConditionalPromise @description@
+//"Represents an operation that that is asynchronously 
+//sampling the value of condition and when it's true 
+//executes callback.";
+//ConditionalPromise @example@
+//"let condition = false;
+//let promise = ConditionalPromise(
+//    () => console.write(\"c is now true\");, 
+//    () => condition;);
+//Timeout(10).then(() => condition = true;);
+//await promise;";
+//ConditionalPromise @expectedOutput@
+//"c is now true";
+
+Timeout @parameters@
+"milliseconds /*Number*/";
+Timeout @description@
+"Asynchronously waits for the given amount 
+of time (in milliseconds). Completes after 
+finishing waiting.";
+Timeout @example@
+"// Wait for 10 ms
+Timeout(1).then(() => console.write(1););
+console.write(0);
+await Timeout(23);
+console.write(23);";
+Timeout @expectedOutput@
+"0123";
+
+/* TODO: 
+- ChildProcess
+- Accessible
+- TcpClient
+- TcpServer
+*/
+
+/*
+T @parameters@
+"";
+T @returns@
+"";
+T @description@
+"";
+T @example@
+"";
+T @expectedOutput@
+"";
+*/

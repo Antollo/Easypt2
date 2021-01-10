@@ -156,7 +156,7 @@ void String::init(stack *st)
         if (args.size() >= 2)
             pos = static_cast<int>(args[1]->getConverted<number>());
         assert<std::greater_equal>(pos, 0);
-        assert<std::less>(pos, me.size());
+        assert<std::less_equal>(pos, me.size());
         return object::makeObject(static_cast<number>(me.find(key, pos)));
     });
 

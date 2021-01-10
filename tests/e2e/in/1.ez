@@ -80,9 +80,9 @@ console.writeLine(u.prototype.hasOwnProperty("xx"));
 
 
 let fib = function {
-    if(args[0] == 0)
+    if (args[0] == 0)
         return 0;
-    if(args[0] == 1)
+    if (args[0] == 1)
         return 1;
     return fib(args[0] - 1) + fib(args[0] - 2);
 };
@@ -100,7 +100,7 @@ arr.insertFrom(1,Array[5,6,7],0,3);
 arr = arr.erase(0,1);
 
 let i = 0;
-while(i<arr.length())
+while (i<arr.length())
 {
     console.write(arr[i]);
     i++;

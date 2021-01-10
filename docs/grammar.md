@@ -51,6 +51,10 @@ break           : BREAK
 {identifier}    : IDENTIFIER;
 ```
 
+Identifiers starting with double underscores are 
+reserved for internal interpreter implementation 
+and should not be used.
+
 ### Literals
 
 ```

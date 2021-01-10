@@ -2,6 +2,8 @@
 
 #### Instance of: [`Class`](Class.md)
 
+#### Inherits from: [`Function`](Function.md)
+
 ### Description:
 
 Takes part in class creation.
