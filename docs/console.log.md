@@ -20,6 +20,5 @@ console.log("value of a : ", a);
 
 ### Properties:
 
-- `prototype`
 
 

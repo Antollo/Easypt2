@@ -24,6 +24,5 @@ bbc
 
 ### Properties:
 
-- `prototype`
 
 

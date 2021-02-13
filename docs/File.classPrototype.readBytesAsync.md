@@ -30,6 +30,5 @@ abba
 
 ### Properties:
 
-- `prototype`
 
 

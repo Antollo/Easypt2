@@ -16,7 +16,6 @@ console.writeLine(Time.sinceEpoch.asInteger());
 
 ### Properties:
 
-- `prototype`
 - [`sinceEpoch`](Time.sinceEpoch.md)
 
 

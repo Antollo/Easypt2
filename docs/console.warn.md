@@ -21,6 +21,5 @@ if (a != 7)
 
 ### Properties:
 
-- `prototype`
 
 

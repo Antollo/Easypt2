@@ -31,6 +31,5 @@ await b;
 
 ### Properties:
 
-- `prototype`
 
 

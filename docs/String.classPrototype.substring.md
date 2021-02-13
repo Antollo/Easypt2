@@ -24,6 +24,5 @@ bc
 
 ### Properties:
 
-- `prototype`
 
 

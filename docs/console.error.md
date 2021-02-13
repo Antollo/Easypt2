@@ -23,6 +23,5 @@ try {
 
 ### Properties:
 
-- `prototype`
 
 

@@ -28,6 +28,5 @@ console.write(interpreterExecutablePath.indexOf(interpreterExecutableParentPath)
 
 ### Properties:
 
-- `prototype`
 
 

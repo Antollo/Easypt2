@@ -25,6 +25,5 @@ xbcyz
 
 ### Properties:
 
-- `prototype`
 
 

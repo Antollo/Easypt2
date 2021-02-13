@@ -18,6 +18,5 @@ console.writeLine(Time.sinceEpoch.asInteger());
 
 - [`asFloatingPoint`](Time.sinceEpoch.asFloatingPoint.md)
 - [`asInteger`](Time.sinceEpoch.asInteger.md)
-- `prototype`
 
 

@@ -54,12 +54,15 @@ baseConstructor baseDestructor | baseConstructor constructor method baseDestruct
 #### Members:
 
 - `constructor`
-- `prototype`
+
+
+#### Inherited members:
+
+- [`call`](Function.classPrototype.call.md)
 
 
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 
 

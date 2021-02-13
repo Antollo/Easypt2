@@ -24,6 +24,5 @@ console.write(arr[0], arr[1]);
 
 ### Properties:
 
-- `prototype`
 
 

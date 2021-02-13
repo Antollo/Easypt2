@@ -23,6 +23,5 @@ console.write(arr.length());
 
 ### Properties:
 
-- `prototype`
 
 

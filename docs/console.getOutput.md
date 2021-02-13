@@ -29,6 +29,5 @@ abc
 
 ### Properties:
 
-- `prototype`
 
 

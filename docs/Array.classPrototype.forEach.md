@@ -26,6 +26,5 @@ arr.forEach(function {
 
 ### Properties:
 
-- `prototype`
 
 

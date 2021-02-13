@@ -33,6 +33,5 @@ error
 
 ### Properties:
 
-- `prototype`
 
 

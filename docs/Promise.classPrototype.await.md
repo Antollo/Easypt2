@@ -39,6 +39,5 @@ c is now true
 
 ### Properties:
 
-- `prototype`
 
 

@@ -15,6 +15,5 @@ console.writeLine(Time.sinceEpoch.asFloatingPoint());
 
 ### Properties:
 
-- `prototype`
 
 

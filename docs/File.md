@@ -32,7 +32,6 @@ if (1+3 != 4) {
 - [`getReadPosition`](File.classPrototype.getReadPosition.md)
 - [`getWritePosition`](File.classPrototype.getWritePosition.md)
 - [`open`](File.classPrototype.open.md)
-- `prototype`
 - [`read`](File.classPrototype.read.md)
 - [`readAsync`](File.classPrototype.readAsync.md)
 - [`readBytes`](File.classPrototype.readBytes.md)
@@ -51,9 +50,18 @@ if (1+3 != 4) {
 - [`writeLineAsync`](File.classPrototype.writeLineAsync.md)
 
 
+#### Inherited members:
+
+- [`addProperty`](Object.classPrototype.addProperty.md)
+- [`getId`](Object.classPrototype.getId.md)
+- [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
+- [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
+- [`readOperator`](Object.classPrototype.readOperator.md)
+- [`removeProperty`](Object.classPrototype.removeProperty.md)
+
+
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 
 

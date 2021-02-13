@@ -22,6 +22,5 @@ console.write("abc".length());
 
 ### Properties:
 
-- `prototype`
 
 

@@ -30,6 +30,5 @@ Roses are red, Violets are blue. | Roses are blue.
 
 ### Properties:
 
-- `prototype`
 
 

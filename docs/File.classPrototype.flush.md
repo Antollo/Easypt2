@@ -29,6 +29,5 @@ abbacda
 
 ### Properties:
 
-- `prototype`
 
 

@@ -50,6 +50,5 @@ console.write(modules.maths.exports.multiply instanceOf Function);
 
 - `classPrototype`
 - [`getImportPaths`](import.getImportPaths.md)
-- `prototype`
 
 

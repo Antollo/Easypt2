@@ -24,6 +24,5 @@ console.write("abcde".getByteAt(0));
 
 ### Properties:
 
-- `prototype`
 
 

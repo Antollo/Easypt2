@@ -24,6 +24,5 @@ Dirty Harry
 
 ### Properties:
 
-- `prototype`
 
 

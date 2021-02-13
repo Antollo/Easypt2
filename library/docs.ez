@@ -57,7 +57,7 @@ function findObjectClassNameByClassPrototype {
 function listProperties {
     let list = "";
     sort(args[0].getOwnPropertyNames()).forEach(function {
-        if (args[0].search("returns|parameters|description|example|expectedOutput").length() == 0) {
+        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0) {
             list.append(args[0]);
             list.append("\n");
         }
@@ -72,6 +72,8 @@ function help {
         printPair("Name:", findObjectName(args[0]));
     if (findObjectClassName(args[0]).length() != 0)
         printPair("Instance of:", findObjectClassName(args[0]));
+    if (args[0] instanceOf Class)
+        printPair("Inherits from: ", findObjectClassNameByClassPrototype(args[0].classPrototype.prototype));
     if (args[0].hasOwnProperty("parameters"))
         printPair("Parameters:", args[0].parameters);
     if (args[0].hasOwnProperty("returns"))
@@ -82,8 +84,10 @@ function help {
         printPair("Example:", args[0].example);
     if (args[0].hasOwnProperty("expectedOutput"))
         printPair("Expected output:", args[0].expectedOutput);
-    if (args[0] instanceOf Class)
+    if (args[0] instanceOf Class) {
         printPair("Members:", listProperties(args[0].classPrototype));
+        printPair("Inherited members:", listProperties(args[0].classPrototype.prototype));
+    }
     printPair("Properties:", listProperties(args[0]));
 };
 
@@ -141,7 +145,7 @@ function mdCodeLink (name, link) {
 function mdListProperties (object, name) {
     let list = "";
     sort(object.getOwnPropertyNames()).forEach(function {
-        if (args[0].search("returns|parameters|description|example|expectedOutput").length() == 0) {
+        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0) {
             if (Object.classPrototype.readOperator.call(object, args[0]).hasOwnProperty("description"))
                 list.append("- " + mdCodeLink(args[0], name + "." + args[0]));
             else
@@ -158,8 +162,9 @@ function doc {
     file.writeLine("## Name: `", args[1], "`\n");
     let className = findObjectClassName(args[0]);
     file.writeLine("#### Instance of: ", mdCodeLink(className, className), "\n");
-    if (className == "Class") {
-        let baseClassName = findObjectClassNameByClassPrototype(args[0].classPrototype.prototype);
+    let baseClassName;
+    if (args[0] instanceOf Class) {
+        baseClassName = findObjectClassNameByClassPrototype(args[0].classPrototype.prototype);
         file.writeLine("#### Inherits from: ", mdCodeLink(baseClassName, baseClassName), "\n");
     }
     if (args[0].hasOwnProperty("parameters"))
@@ -172,8 +177,10 @@ function doc {
         file.writeLine("#### Example:\n\n```js\n", args[0].example, "\n```\n");
     if (args[0].hasOwnProperty("expectedOutput"))
         file.writeLine("##### Expected output:\n\n```\n", args[0].expectedOutput, "\n```\n");
-    if (args[0] instanceOf Class)
+    if (args[0] instanceOf Class) {
         file.writeLine("#### Members:\n\n", mdListProperties(args[0].classPrototype, args[1] + ".classPrototype"), "\n");
+        file.writeLine("#### Inherited members:\n\n", mdListProperties(args[0].classPrototype.prototype, baseClassName + ".classPrototype"), "\n");
+    }
     file.writeLine("### Properties:\n\n", mdListProperties(args[0], args[1]), "\n");
     file.close();
 };

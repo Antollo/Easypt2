@@ -19,6 +19,5 @@ console.writeLine(Object().getId());
 
 ### Properties:
 
-- `prototype`
 
 

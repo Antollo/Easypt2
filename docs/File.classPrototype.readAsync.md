@@ -26,6 +26,5 @@ console.write(name, " ", port);
 
 ### Properties:
 
-- `prototype`
 
 

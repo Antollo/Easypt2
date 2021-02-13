@@ -22,6 +22,5 @@ console.write(3.14.toInteger());
 
 ### Properties:
 
-- `prototype`
 
 
