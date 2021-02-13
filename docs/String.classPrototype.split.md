@@ -27,6 +27,5 @@ ab,  ab, e ab, ef b, efg,
 
 ### Properties:
 
-- `prototype`
 
 

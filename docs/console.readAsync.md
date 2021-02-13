@@ -18,6 +18,5 @@ console.writeLine("Welcome ", name);
 
 ### Properties:
 
-- `prototype`
 
 

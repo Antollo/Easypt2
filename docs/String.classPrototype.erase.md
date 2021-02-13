@@ -24,6 +24,5 @@ abfg
 
 ### Properties:
 
-- `prototype`
 
 

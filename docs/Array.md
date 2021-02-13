@@ -32,15 +32,23 @@ arr.forEach(function {
 - [`insert`](Array.classPrototype.insert.md)
 - [`insertFrom`](Array.classPrototype.insertFrom.md)
 - [`length`](Array.classPrototype.length.md)
-- `prototype`
 - [`readOperator`](Array.classPrototype.readOperator.md)
 - [`subarray`](Array.classPrototype.subarray.md)
+
+
+#### Inherited members:
+
+- [`addProperty`](Object.classPrototype.addProperty.md)
+- [`getId`](Object.classPrototype.getId.md)
+- [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
+- [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
+- [`readOperator`](Object.classPrototype.readOperator.md)
+- [`removeProperty`](Object.classPrototype.removeProperty.md)
 
 
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 - [`readOperator`](Array.readOperator.md)
 
 

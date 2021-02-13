@@ -31,7 +31,6 @@ console.write("a".getByteAt(0));
 - [`indexOf`](String.classPrototype.indexOf.md)
 - [`insertFrom`](String.classPrototype.insertFrom.md)
 - [`length`](String.classPrototype.length.md)
-- `prototype`
 - [`readOperator`](String.classPrototype.readOperator.md)
 - [`search`](String.classPrototype.search.md)
 - [`searchAll`](String.classPrototype.searchAll.md)
@@ -40,9 +39,18 @@ console.write("a".getByteAt(0));
 - [`substring`](String.classPrototype.substring.md)
 
 
+#### Inherited members:
+
+- [`addProperty`](Object.classPrototype.addProperty.md)
+- [`getId`](Object.classPrototype.getId.md)
+- [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
+- [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
+- [`readOperator`](Object.classPrototype.readOperator.md)
+- [`removeProperty`](Object.classPrototype.removeProperty.md)
+
+
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 
 

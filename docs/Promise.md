@@ -28,14 +28,22 @@ console.write(30, " ");
 
 - [`await`](Promise.classPrototype.await.md)
 - `constructor`
-- `prototype`
 - [`then`](Promise.classPrototype.then.md)
+
+
+#### Inherited members:
+
+- [`addProperty`](Object.classPrototype.addProperty.md)
+- [`getId`](Object.classPrototype.getId.md)
+- [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
+- [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
+- [`readOperator`](Object.classPrototype.readOperator.md)
+- [`removeProperty`](Object.classPrototype.removeProperty.md)
 
 
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 - [`tick`](Promise.tick.md)
 
 

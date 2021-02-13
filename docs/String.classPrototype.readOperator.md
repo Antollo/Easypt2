@@ -24,6 +24,5 @@ a
 
 ### Properties:
 
-- `prototype`
 
 

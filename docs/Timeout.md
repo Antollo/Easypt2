@@ -31,12 +31,17 @@ console.write(23);
 #### Members:
 
 - `constructor`
-- `prototype`
+
+
+#### Inherited members:
+
+- [`await`](Promise.classPrototype.await.md)
+- `constructor`
+- [`then`](Promise.classPrototype.then.md)
 
 
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 
 

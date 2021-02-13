@@ -26,6 +26,5 @@ true false
 
 ### Properties:
 
-- `prototype`
 
 

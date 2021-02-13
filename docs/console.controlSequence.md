@@ -17,6 +17,5 @@ console.controlSequence("7m").write("special").controlSequence("0m");
 
 ### Properties:
 
-- `prototype`
 
 

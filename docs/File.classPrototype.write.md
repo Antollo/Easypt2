@@ -34,6 +34,5 @@ http 80
 
 ### Properties:
 
-- `prototype`
 
 

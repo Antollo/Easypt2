@@ -24,6 +24,5 @@ Harry
 
 ### Properties:
 
-- `prototype`
 
 

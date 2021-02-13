@@ -31,6 +31,5 @@ console.write(result);
 ### Properties:
 
 - `classPrototype`
-- `prototype`
 
 

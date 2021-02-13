@@ -25,6 +25,5 @@ console.write(obj["number"], " ", obj.secondNumber);
 
 ### Properties:
 
-- `prototype`
 
 

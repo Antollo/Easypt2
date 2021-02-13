@@ -23,13 +23,13 @@ if (1+3 != 4) {
 
 ### Properties:
 
+- `classPrototype`
 - [`controlSequence`](console.controlSequence.md)
 - [`debug`](console.debug.md)
 - [`error`](console.error.md)
 - [`getOutput`](console.getOutput.md)
 - [`log`](console.log.md)
 - [`newLine`](console.newLine.md)
-- `prototype`
 - [`read`](console.read.md)
 - [`readAsync`](console.readAsync.md)
 - [`readLine`](console.readLine.md)

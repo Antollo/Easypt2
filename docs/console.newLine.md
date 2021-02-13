@@ -17,6 +17,5 @@ console.newLine();
 
 ### Properties:
 
-- `prototype`
 
 

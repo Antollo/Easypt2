@@ -25,6 +25,5 @@ console.write(obj.first, " ", obj.second);
 
 ### Properties:
 
-- `prototype`
 
 

@@ -27,6 +27,5 @@ seven: 7
 
 ### Properties:
 
-- `prototype`
 
 

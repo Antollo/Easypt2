@@ -32,6 +32,5 @@ await promise;
 
 ### Properties:
 
-- `prototype`
 
 

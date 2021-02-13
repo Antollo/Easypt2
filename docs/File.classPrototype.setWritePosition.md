@@ -36,6 +36,5 @@ abba 5 0
 
 ### Properties:
 
-- `prototype`
 
 

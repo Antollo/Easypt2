@@ -26,6 +26,5 @@ console.write(subarr[0]);
 
 ### Properties:
 
-- `prototype`
 
 

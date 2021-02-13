@@ -28,6 +28,5 @@ abc
 
 ### Properties:
 
-- `prototype`
 
 

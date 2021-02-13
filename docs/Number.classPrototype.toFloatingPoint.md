@@ -24,6 +24,5 @@ console.write(3.toFloatingPoint());
 
 ### Properties:
 
-- `prototype`
 
 

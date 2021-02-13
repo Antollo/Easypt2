@@ -24,6 +24,5 @@ obj.getOwnPropertyNames().forEach(function {
 
 ### Properties:
 
-- `prototype`
 
 

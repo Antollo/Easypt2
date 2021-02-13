@@ -26,6 +26,5 @@ file.close();
 
 ### Properties:
 
-- `prototype`
 
 

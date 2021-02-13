@@ -17,6 +17,5 @@ for (let i = 0; i < argc; i++)
 
 ### Properties:
 
-- `prototype`
 
 

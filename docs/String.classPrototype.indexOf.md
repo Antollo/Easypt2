@@ -30,6 +30,5 @@ console.write(a, " ", b, " ", c);
 
 ### Properties:
 
-- `prototype`
 
 
