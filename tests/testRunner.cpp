@@ -21,7 +21,7 @@ int main(int argc, char **argv)
             runtime::init(&globalStack);
 
             auto st = &globalStack;
-            auto import = globalStack["import"_n];
+            auto import = globalStack[n::import];
 
             for (int i = 0; i < argc; i++)
             {

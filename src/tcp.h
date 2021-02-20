@@ -17,7 +17,7 @@
 #pragma comment(lib, "Mswsock.lib")
 #pragma comment(lib, "AdvApi32.lib")
 
-#define lastError WSAGetLastError() 
+#define lastError WSAGetLastError()
 
 #else
 
@@ -25,7 +25,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#define lastError errno 
+#define lastError errno
 #define SOCKET int
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
@@ -81,7 +81,7 @@ public:
         if (code != 0)
             throw std::runtime_error("getaddrinfo failed with error: " + std::to_string(code));
 
-        for (ptr = result; ptr != NULL; ptr = ptr->ai_next)
+        for (ptr = result; ptr != nullptr; ptr = ptr->ai_next)
         {
 
             clientSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
@@ -110,39 +110,44 @@ public:
 
     void send(const std::string &message)
     {
-        code = ::send(clientSocket, message.c_str(), message.size(), 0);
-        if (code == SOCKET_ERROR)
+        size_t length = 0;
+        size_t totalLength = 0;
+        while (totalLength != message.size())
         {
-            code = lastError;
-            closesocket(clientSocket);
-            throw std::runtime_error("send failed with error: " + std::to_string(code));
+            code = length = ::send(clientSocket, message.c_str() + totalLength, message.size() - totalLength, 0);
+            if (code == SOCKET_ERROR)
+            {
+                code = lastError;
+                closesocket(clientSocket);
+                throw std::runtime_error("send failed with error: " + std::to_string(code));
+            }
+            else
+                totalLength += length;
         }
-
-        //console::log("Bytes Sent: ", code);
     }
 
     std::string receive()
     {
-        std::string buf(8192, 0);
-        code = recv(clientSocket, buf.data(), buf.size(), 0);
+        std::string message(8192, 0);
+        code = recv(clientSocket, message.data(), message.size(), 0);
         if (code >= 0)
         {
             //console::log("Bytes received: ", code);
-            buf.resize(code);
+            message.resize(code);
         }
         else
             throw std::runtime_error("recv failed with error: " + std::to_string(code));
-        return buf;
+        return message;
     }
 
-    void receive(std::string& buf)
+    void receive(std::string &message)
     {
-        buf.resize(8192, 0);
-        code = recv(clientSocket, buf.data(), buf.size(), 0);
+        message.resize(8192, 0);
+        code = recv(clientSocket, message.data(), message.size(), 0);
         if (code >= 0)
         {
             //console::log("Bytes received: ", code);
-            buf.resize(code);
+            message.resize(code);
         }
         else
             throw std::runtime_error("recv failed with error: " + std::to_string(code));
@@ -156,10 +161,10 @@ public:
             code = lastError;
             closesocket(clientSocket);
         }
-        std::string buf(4096, 0);
+        std::string temp(4096, 0);
         do
         {
-            code = recv(clientSocket, buf.data(), buf.size(), 0);
+            code = recv(clientSocket, temp.data(), temp.size(), 0);
         } while (code > 0);
         clientSocket = INVALID_SOCKET;
     }

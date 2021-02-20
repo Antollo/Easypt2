@@ -35,7 +35,7 @@ private:
     void moveToMap()
     {
         storage.insert(immediateStorage.begin(), immediateStorage.end());
-        storage.erase(name::empty);
+        storage.erase(n::empty);
         immediateIndex = immediateStorage.size();
     }
     stack *previous;

@@ -27,8 +27,8 @@ void treeParser::parseString(const std::string &str, Node &node)
         file = "\"" + str.substr(0, 8) + "...\"";
     else
         file = "\"" + str + "\"";
-    std::stringstream StringStream(str, std::stringstream::in);
-    parseStream(StringStream, node);
+    std::stringstream stringStream(str, std::stringstream::in);
+    parseStream(stringStream, node);
 }
 void treeParser::parseStream(std::istream &_stream, Node &node)
 {
@@ -44,6 +44,7 @@ void treeParser::parseStream(std::istream &_stream, Node &node)
     stream = nullptr;
     if (exceptionToThrow)
         throw std::runtime_error(exception);
+    node.optimize();
 }
 
 void treeParser::read(char *buffer, int *bytesRead, int maxBytesToRead)

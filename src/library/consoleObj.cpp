@@ -106,13 +106,13 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "getOutput"_n, {
         argsGuard<std::nullptr_t>(args);
         return object::makeObject(console::getOutput([&args, &st]() {
-            (*args[0])(args[0], object::arrayType(args.begin() + 1, args.end()), st);
+            (*args[0])(args[0], object::type::Array(args.begin() + 1, args.end()), st);
         }));
     });
     addFunctionL(consoleObj, "setInput"_n, {
         argsGuard<std::string, std::nullptr_t>(args);
         console::setInput(args[0]->getConverted<std::string>(), [&args, &st]() {
-            (*args[1])(args[1], object::arrayType(args.begin() + 2, args.end()), st);
+            (*args[1])(args[1], object::type::Array(args.begin() + 2, args.end()), st);
         });
         return thisObj;
     });

@@ -98,6 +98,8 @@
         "**/*.vcproj": true
     },
     "cSpell.words": [
+        "INSTANCEOF",
+        "STACKLESS",
         "sregex"
     ],
     "files.eol": "\n"

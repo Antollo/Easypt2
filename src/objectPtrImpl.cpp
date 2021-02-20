@@ -80,9 +80,9 @@ objectPtrImpl::~objectPtrImpl()
         {
             if (_obj != nullptr)
             {
-                auto obj = _obj->read(name::prototype);
-                if (obj) obj = obj->read("destructor"_n);
-                if (object::globalStack != nullptr && obj != nullptr && (!_obj->isOfType<object::nativeFunctionType>() || _obj->get<object::nativeFunctionType>() != constructorCaller))
+                auto obj = _obj->read(n::prototype);
+                if (obj) obj = obj->read(n::destructor);
+                if (object::globalStack != nullptr && obj != nullptr && (!_obj->isOfType<object::type::NativeFunction>() || _obj->get<object::type::NativeFunction>() != constructorCaller))
                 {
                     (*_refCount)++;
                     try
@@ -106,7 +106,7 @@ objectPtrImpl::~objectPtrImpl()
                     catch (...)
                     {
                         console::stackTrace();
-                        console::error("Unknown error in destructor");
+                        console::error("unknown error in destructor");
                     }
                     (*_refCount)--;
                     if (*_refCount == 0)

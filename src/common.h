@@ -13,14 +13,14 @@ template <class... Args>
 bool all(Args... args) { return (... && args); }
 
 template <class... Args, std::size_t... Is>
-void argsGuardHelper(const object::arrayType &arr, std::index_sequence<Is...>)
+void argsGuardHelper(const object::type::Array &arr, std::index_sequence<Is...>)
 {
 	if (!all((std::is_same_v<nullptr_t, Args> || arr[Is]->isOfType<Args>())...))
 		throw std::runtime_error("wrong type of argument");
 }
 
 template <class... Args>
-void argsGuard(const object::arrayType &arr)
+void argsGuard(const object::type::Array &arr)
 {
 	if (arr.size() < sizeof...(Args))
 		throw std::runtime_error("wrong number of arguments");
@@ -28,14 +28,14 @@ void argsGuard(const object::arrayType &arr)
 }
 
 template <class... Args, std::size_t... Is>
-void argsConvertibleGuardHelper(const object::arrayType &arr, std::index_sequence<Is...>)
+void argsConvertibleGuardHelper(const object::type::Array &arr, std::index_sequence<Is...>)
 {
 	if (!all((std::is_same_v<nullptr_t, Args> || arr[Is]->isConvertible<Args>())...))
 		throw std::runtime_error("wrong type of argument");
 }
 
 template <class... Args>
-void argsConvertibleGuard(const object::arrayType &arr)
+void argsConvertibleGuard(const object::type::Array &arr)
 {
 	if (arr.size() < sizeof...(Args))
 		throw std::runtime_error("wrong number of arguments");

@@ -34,7 +34,7 @@ void object::reuse(object *ptr)
 
 object::objectPtr &object::operator[](const name &n)
 {
-    if (n == name::prototype)
+    if (n == n::prototype)
         return _prototype;
     {
         auto it = _properties.find(n);
@@ -50,32 +50,32 @@ object::objectPtr &object::operator[](const name &n)
     return (_properties[n] = makeEmptyObject());
 }
 
-object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack *st)
+object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stack *st)
 {
     if (st == nullptr)
         st = globalStack;
-    if (isOfType<nativeFunctionType>())
+    if (isOfType<type::NativeFunction>())
     {
         if (thisObj)
-            return get<nativeFunctionType>()(thisObj, std::move(args), st);
+            return get<type::NativeFunction>()(thisObj, std::move(args), st);
         throw std::runtime_error("invalid this");
     }
-    if (isOfType<functionType>())
+    else if (isOfType<type::Function>())
     {
         if (_capturedStack != nullptr)
             st = _capturedStack.get();
         stack localStack(st);
         if (_capturedStack != nullptr)
         {
-            auto referenceToFather = localStack.insert("__stack"_n, makeEmptyObject());
+            auto referenceToFather = localStack.insert(n::__stack, makeEmptyObject());
             referenceToFather->captureStack(_capturedStack);
         }
-        const functionType &node = get<const functionType>();
+        const type::Function &node = get<const type::Function>();
         for (size_t i = 0; i < node->names().size() && i < args.size(); i++)
             localStack.insert(node->names()[i], args[i]);
-        localStack.insert(name::args, makeObject(std::move(args)));
+        localStack.insert(n::args, makeObject(std::move(args)));
         if (thisObj)
-            localStack.insert(name::thisObj, thisObj);
+            localStack.insert(n::thisObj, thisObj);
         try
         {
             auto evalRet = node->evaluate(localStack);
@@ -86,15 +86,17 @@ object::objectPtr object::operator()(objectPtr thisObj, arrayType &&args, stack 
         {
             return ret;
         }
-        //WARNING: this can be unsafe
-        return thisObj;
+        if (thisObj)
+            return thisObj;
+        else
+            return makeEmptyObject();
     }
     throw std::runtime_error("object is not a function");
 }
 
-object::arrayType object::getOwnPropertyNames() const
+object::type::Array object::getOwnPropertyNames() const
 {
-    arrayType res;
+    type::Array res;
     res.reserve(_properties.size());
     for (const auto &property : _properties)
         res.push_back(makeObject(static_cast<std::string>(property.first)));
@@ -106,7 +108,7 @@ object::arrayType object::getOwnPropertyNames() const
 object::objectPtr &object::read(const name &n)
 {
     static object::objectPtr notFound(nullptr);
-    if (n == name::prototype)
+    if (n == n::prototype)
         return _prototype;
     {
         auto it = _properties.find(n);
@@ -135,7 +137,7 @@ void object::toJson(std::string &str, const int indentation) const
             str += "\"" + value + "\"";
         else if constexpr (std::is_same_v<A, number>)
             str += static_cast<std::string>(value);
-        else if constexpr (std::is_same_v<A, arrayType>)
+        else if constexpr (std::is_same_v<A, type::Array>)
         {
             str += "[";
             for (int i = 0; i < value.size(); i++)
@@ -148,9 +150,9 @@ void object::toJson(std::string &str, const int indentation) const
         }
         else if constexpr (std::is_same_v<A, bool>)
             str += value ? "true"s : "false"s;
-        else if constexpr (std::is_same_v<A, objectCoroutine>)
+        else if constexpr (std::is_same_v<A, type::Promise>)
             str += "<promise>";
-        else if constexpr (std::is_same_v<A, functionType> || std::is_same_v<A, nativeFunctionType>)
+        else if constexpr (std::is_same_v<A, type::Function> || std::is_same_v<A, type::NativeFunction>)
             str += "<function>";
         else if constexpr (std::is_same_v<A, std::shared_ptr<file>>)
             str += "<file>";

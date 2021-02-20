@@ -72,6 +72,9 @@ public:
         if (n <= d)
             return static_cast<T *>(memoryD.allocate());
 
+        if (n <= e)
+            return static_cast<T *>(memoryE.allocate());
+
         return static_cast<T *>(std::malloc(n * sizeof(T)));
     }
 
@@ -85,6 +88,8 @@ public:
             memoryC.deallocate(ptr);
         else if (n <= d)
             memoryD.deallocate(ptr);
+        else if (n <= e)
+            memoryE.deallocate(ptr);
         else
             std::free(ptr);
     }
@@ -94,10 +99,12 @@ private:
     constexpr static int b = 4;
     constexpr static int c = 8;
     constexpr static int d = 16;
+    constexpr static int e = 32;
     static allocatorBuffer<a * sizeof(T)> memoryA;
     static allocatorBuffer<b * sizeof(T)> memoryB;
     static allocatorBuffer<c * sizeof(T)> memoryC;
     static allocatorBuffer<d * sizeof(T)> memoryD;
+    static allocatorBuffer<e * sizeof(T)> memoryE;
 };
 
 template <class T>
@@ -111,5 +118,8 @@ allocatorBuffer<allocator<T>::c * sizeof(T)> allocator<T>::memoryC;
 
 template <class T>
 allocatorBuffer<allocator<T>::d * sizeof(T)> allocator<T>::memoryD;
+
+template <class T>
+allocatorBuffer<allocator<T>::e * sizeof(T)> allocator<T>::memoryE;
 
 #endif /* !ALLOCATOR_H_ */
