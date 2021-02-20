@@ -20,19 +20,19 @@ int main(int argc, char **argv)
         runtime::init(&globalStack);
 
         auto st = &globalStack;
-        insertObject("argv"_n, object::arrayType());
-        insertObject("argc"_n, 0_n);
+        insertObject(n::argv, object::type::Array());
+        insertObject(n::argc, 0_n);
 
-        globalStack["argv"_n]->get<object::arrayType>().resize(argc);
-        globalStack["argc"_n]->get<number>() = argc;
+        globalStack[n::argv]->get<object::type::Array>().resize(argc);
+        globalStack[n::argc]->get<number>() = argc;
 
         for (int i = 0; i < argc; i++)
-            globalStack["argv"_n]->get<object::arrayType>()[i] = object::makeObject(std::string(argv[i]));
+            globalStack[n::argv]->get<object::type::Array>()[i] = object::makeObject(std::string(argv[i]));
 
         for (int i = 0; i < argc; i++)
         {
-            auto import = globalStack["import"_n];
-            auto execute = globalStack["execute"_n];
+            auto import = globalStack[n::import];
+            auto execute = globalStack[n::execute];
 
             if (isFlag(argv[i], "file") && i != argc - 1)
             {
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
             }
             else if (isFlag(argv[i], "doc") && i != argc - 1)
             {
-                auto help = (*(*import)(import, {object::makeObject("../library/docs.ez"s)}, &globalStack))["help"_n];
+                auto help = (*(*import)(import, {object::makeObject("../library/docs.ez"s)}, &globalStack))[n::help];
                 std::mutex m;
                 std::condition_variable cv;
                 bool done = false;

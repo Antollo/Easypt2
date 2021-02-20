@@ -6,9 +6,9 @@ void File::init(stack *st)
     object::objectPtr File = insertObject("File"_n, constructorCaller);
     object::objectPtr filePrototype = object::makeEmptyObject();
 
-    (*File)["classPrototype"_n] = filePrototype;
+    (*File)[n::classPrototype] = filePrototype;
 
-    addFunctionL(filePrototype, "constructor"_n, {
+    addFunctionL(filePrototype, n::constructor, {
         thisObj->setType<std::shared_ptr<file>>();
         thisObj->get<std::shared_ptr<file>>() = std::make_shared<file>();
 

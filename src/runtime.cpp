@@ -17,22 +17,22 @@ void runtime::init(stack *st)
     object::classPrototype = object::makeEmptyObject();
 
     object::arrayPrototype = object::makeEmptyObject();
-    (*object::arrayPrototype)[name::prototype] = object::objectPrototype;
+    (*object::arrayPrototype)[n::prototype] = object::objectPrototype;
 
     object::stringPrototype = object::makeEmptyObject();
-    (*object::stringPrototype)[name::prototype] = object::objectPrototype;
+    (*object::stringPrototype)[n::prototype] = object::objectPrototype;
 
     object::numberPrototype = object::makeEmptyObject();
-    (*object::numberPrototype)[name::prototype] = object::objectPrototype;
+    (*object::numberPrototype)[n::prototype] = object::objectPrototype;
 
     object::booleanPrototype = object::makeEmptyObject();
-    (*object::booleanPrototype)[name::prototype] = object::objectPrototype;
+    (*object::booleanPrototype)[n::prototype] = object::objectPrototype;
 
     object::functionPrototype = object::makeEmptyObject();
-    (*object::functionPrototype)[name::prototype] = object::objectPrototype;
+    (*object::functionPrototype)[n::prototype] = object::objectPrototype;
 
     object::promisePrototype = object::makeEmptyObject();
-    (*object::promisePrototype)[name::prototype] = object::objectPrototype;
+    (*object::promisePrototype)[n::prototype] = object::objectPrototype;
 
     addFunctionL(object::functionPrototype, "call"_n, {
         argsConvertibleGuard<nullptr_t>(args);
@@ -41,18 +41,18 @@ void runtime::init(stack *st)
         return (*thisObj)(thisArg, std::move(args), st);
     });
 
+    object::objectPtr Function = insertObject("Function"_n, constructorCaller);
+    (*Function)[n::classPrototype] = object::functionPrototype;
+
     insertObject("true"_n, true)->setConst();
     insertObject("false"_n, false)->setConst();
 
-    auto import = insertObject("import"_n, &Import::import);
+    auto import = insertObject(n::import, &Import::import);
     import->addProperty("getImportPaths"_n, object::makeObject(&Import::getImportPaths));
-    
-    insertObject("parse"_n, ez_parse);
-    insertObject("execute"_n, execute);
-    insertObject("getStack"_n, getStack);
 
-    object::objectPtr Function = insertObject("Function"_n, constructorCaller);
-    (*Function)["classPrototype"_n] = object::functionPrototype;
+    insertObject("parse"_n, ez_parse);
+    insertObject(n::execute, execute);
+    insertObject("getStack"_n, getStack);
 
     Object::init(st);
     Array::init(st);
@@ -74,7 +74,8 @@ void runtime::init(stack *st)
 
 void runtime::fini(stack *st)
 {
-    while (coroutine<object::objectPtr>::stepAll());
+    while (coroutine<object::objectPtr>::stepAll())
+        ;
     Import::fini();
     object::setGlobalStack(nullptr);
     st->clear();

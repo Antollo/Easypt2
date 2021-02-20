@@ -4,17 +4,16 @@
 #include <cassert>
 #include <exception>
 
-std::vector<std::string> Node::stackTrace;
-
 std::string Node::parseString(const std::string &source)
 {
     std::string ret;
     size_t length = source.size() - 1;
+    ret.reserve(length);
     for (size_t i = 1; i < length; i++)
     {
         if (source[i] != '\\')
             ret.push_back(source[i]);
-        else
+        else if (i + 1 < length)
             switch (source[++i])
             {
             case '"':
@@ -56,11 +55,14 @@ std::string Node::parseString(const std::string &source)
             case '7':
             case '8':
             case '9':
+                if (i + 2 > length)
+                    throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
                 ret.push_back((source[i] - '0') * 100 + (source[i + 1] - '0') * 10 + (source[i + 2] - '0'));
-                // TODO throw if too short
                 i += 2;
                 break;
             }
+        else
+            throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
     }
     return ret;
 }
@@ -71,7 +73,7 @@ void Node::text(const std::string &t)
     {
     case NUMBER_LITERAL:
         if (t.find('.') == std::string::npos)
-            _value = object::makeObject(static_cast<number>(std::stoi(t)));
+            _value = object::makeObject(static_cast<number>(std::stoi(t, 0, 0)));
         else
             _value = object::makeObject(static_cast<number>(std::stod(t)));
         _value->setConst();
@@ -96,19 +98,21 @@ void Node::addChild(Node &arg)
     {
         arg.names() = std::move(names());
         names().clear();
-        _value = object::makeObject(object::functionType(new Node(std::move(arg))));
+        Node *node = new Node(std::move(arg));
+        node->optimize();
+        _value = object::makeObject(object::type::Function(node));
         _value->setConst();
         break;
     }
     default:
-        _children.emplace_back(std::move(arg));
+        _children.push_back(std::move(arg));
         break;
     }
 }
 
 bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr &b, stack &st) const
 {
-    if (_optimizations._number >= 20)
+    if (_optimizations >= 50)
     {
         try
         {
@@ -148,59 +152,59 @@ bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr 
     }
     b = _children[1].evaluate(st);
     if (a->isOfType<number>() && b->isOfType<number>())
-        _optimizations = _optimizations._number < 100 ? _optimizations._number + 1 : 100;
+        _optimizations = _optimizations < 100 ? _optimizations + 1 : 100;
     else
-        _optimizations = _optimizations._number > 0 ? _optimizations._number - 1 : 0;
+        _optimizations = _optimizations > 0 ? _optimizations - 1 : 0;
 
     return false;
 }
 
 object::objectPtr Node::evaluate(stack &st) const
 {
+
     switch (_token)
     {
     case COMPOUND_STATEMENT:
     {
         size_t i = 0;
-        if (!shouldHaveStack())
+        stack localStack(&st);
+        try
         {
-            try
-            {
-                for (; i < _children.size(); i++)
-                    _children[i].evaluateVoid(st);
-            }
-            catch (objectException &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            catch (std::exception &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            return nullptr;
+            for (; i < _children.size(); i++)
+                _children[i].evaluateVoid(localStack);
         }
-        else
+        catch (objectException &e)
         {
-            stack localStack(&st);
-            try
-            {
-                for (; i < _children.size(); i++)
-                    _children[i].evaluateVoid(localStack);
-            }
-            catch (objectException &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            catch (std::exception &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            return nullptr;
+            _children[i].exception();
+            throw e;
         }
+        catch (std::exception &e)
+        {
+            _children[i].exception();
+            throw e;
+        }
+        return nullptr;
+    }
+
+    case COMPOUND_STATEMENT_STACKLESS:
+    {
+        size_t i = 0;
+        try
+        {
+            for (; i < _children.size(); i++)
+                _children[i].evaluateVoid(st);
+        }
+        catch (objectException &e)
+        {
+            _children[i].exception();
+            throw e;
+        }
+        catch (std::exception &e)
+        {
+            _children[i].exception();
+            throw e;
+        }
+        return nullptr;
     }
 
     case IF:
@@ -216,7 +220,7 @@ object::objectPtr Node::evaluate(stack &st) const
         else
             _children[2].evaluateVoid(st);
         return nullptr;
-    
+
     case CONDITIONAL:
         assert(_children.size() == 3);
         return _children[0].evaluateBoolean(st) ? _children[1].evaluate(st) : _children[2].evaluate(st);
@@ -225,15 +229,37 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 2);
         try
         {
-            if (_children[1]._token == COMPOUND_STATEMENT && !_children[1].shouldHaveStack())
-            {
-                while (_children[0].evaluateBoolean(st))
-                    for (auto &child : _children[1]._children)
-                        child.evaluateVoid(st);
-            }
-            else
-                while (_children[0].evaluateBoolean(st))
-                    _children[1].evaluateVoid(st);
+            while (_children[0].evaluateBoolean(st))
+                _children[1].evaluateVoid(st);
+        }
+        catch (const breakType &e)
+        {
+        }
+        return nullptr;
+
+    case WHILE_COMPOUND_STATEMENT:
+    {
+        assert(_children.size() == 2);
+        stack localStack(&st);
+        try
+        {
+            while (_children[0].evaluateBoolean(st))
+                for (auto &child : _children[1]._children)
+                    child.evaluateVoid(localStack);
+        }
+        catch (const breakType &e)
+        {
+        }
+        return nullptr;
+    }
+
+    case WHILE_COMPOUND_STATEMENT_STACKLESS:
+        assert(_children.size() == 2);
+        try
+        {
+            while (_children[0].evaluateBoolean(st))
+                for (auto &child : _children[1]._children)
+                    child.evaluateVoid(st);
         }
         catch (const breakType &e)
         {
@@ -256,6 +282,43 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         return nullptr;
 
+    case FOR_COMPOUND_STATEMENT:
+    {
+        assert(_children.size() == 4);
+        stack localStack(&st);
+        _children[0].evaluateVoid(st);
+        try
+        {
+            while (_children[1].evaluateBoolean(st))
+            {
+                for (auto &child : _children[3]._children)
+                    child.evaluateVoid(localStack);
+                _children[2].evaluateVoid(st);
+            }
+        }
+        catch (const breakType &e)
+        {
+        }
+        return nullptr;
+    }
+
+    case FOR_COMPOUND_STATEMENT_STACKLESS:
+        assert(_children.size() == 4);
+        _children[0].evaluateVoid(st);
+        try
+        {
+            while (_children[1].evaluateBoolean(st))
+            {
+                for (auto &child : _children[3]._children)
+                    child.evaluateVoid(st);
+                _children[2].evaluateVoid(st);
+            }
+        }
+        catch (const breakType &e)
+        {
+        }
+        return nullptr;
+
     case STATEMENT:
         assert(_children.size() == 1);
         return _children[0].evaluate(st);
@@ -264,7 +327,7 @@ object::objectPtr Node::evaluate(stack &st) const
     {
         assert(_children.size() >= 1);
         auto a = _children[0].evaluate(st);
-        object::arrayType args(_children.size() - 1);
+        object::type::Array args(_children.size() - 1);
         for (size_t i = 1; i < _children.size(); i++)
             args[i - 1] = _children[i].evaluate(st);
 
@@ -287,15 +350,14 @@ object::objectPtr Node::evaluate(stack &st) const
     case READ_OPERATOR:
     {
         assert(_children.size() >= 1);
-        static name readOperator = "readOperator"_n;
         auto a = _children[0].evaluate(st);
-        object::arrayType args(_children.size() - 1);
+        object::type::Array args(_children.size() - 1);
         for (size_t i = 1; i < _children.size(); i++)
             args[i - 1] = _children[i].evaluate(st);
 
         try
         {
-            return (*(*a)[readOperator])(a, std::move(args), &st);
+            return (*(*a)[n::readOperator])(a, std::move(args), &st);
         }
         catch (objectException &e)
         {
@@ -315,7 +377,7 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children[1]._token == IDENTIFIER);
         auto a = _children[0].evaluate(st);
         auto b = (*a)[_children[1]._text];
-        object::arrayType args(_children.size() - 2);
+        object::type::Array args(_children.size() - 2);
         for (size_t i = 2; i < _children.size(); i++)
             args[i - 2] = _children[i].evaluate(st);
 
@@ -339,13 +401,13 @@ object::objectPtr Node::evaluate(stack &st) const
     {
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
-        auto b = (*a)["await"_n];
+        auto b = (*a)[n::await_];
         return (*b)(a, {}, &st);
     }
 
     case ARRAY_LITERAL:
     {
-        object::arrayType arr(_children.size());
+        object::type::Array arr(_children.size());
         for (size_t i = 0; i < _children.size(); i++)
             arr[i] = _children[i].evaluate(st);
         return object::makeObject(arr);
@@ -378,36 +440,34 @@ object::objectPtr Node::evaluate(stack &st) const
         return a;
     }
 
-    case INIT_ASSIGNMENT:
+    case INIT_ASSIGNMENT_LET:
         assert(_children.size() == 2);
-        if (_children[0]._token == LET)
-        {
-            return st.insert(_children[0]._text, _children[1].evaluate(st));
-        }
-        else if (_children[0]._token == IDENTIFIER)
-        {
-            assert(!_children[0]._text.isEmpty());
-            auto &a = st[_children[0]._text];
-            if (a->isConst())
-                throw std::runtime_error("tried to modify constant value");
-            object::objectPtr b;
-            if (!numberAssignmentOptimization(a, b, st))
-                a = b;
-            return a;
-        }
-        else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
-        {
-            assert(_children[0]._children.size() == 2);
-            auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
-            if (a->isConst())
-                throw std::runtime_error("tried to modify constant value");
-            object::objectPtr b;
-            if (!numberAssignmentOptimization(a, b, st))
-                a = b;
-            return a;
-        }
-        throw std::runtime_error("left side of init_assignment is not identifier or dot operator");
-        break;
+        return st.insert(_children[0]._text, _children[1].evaluate(st));
+
+    case INIT_ASSIGNMENT_IDENTIFIER:
+    {
+        assert(_children.size() == 2);
+        assert(!_children[0]._text.isEmpty());
+        auto &a = st[_children[0]._text];
+        if (a->isConst())
+            throw std::runtime_error("tried to modify constant value");
+        object::objectPtr b;
+        if (!numberAssignmentOptimization(a, b, st))
+            a = b;
+        return a;
+    }
+
+    case INIT_ASSIGNMENT_DOT:
+    {
+        assert(_children[0]._children.size() == 2);
+        auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
+        if (a->isConst())
+            throw std::runtime_error("tried to modify constant value");
+        object::objectPtr b;
+        if (!numberAssignmentOptimization(a, b, st))
+            a = b;
+        return a;
+    }
 
     case JSON_ASSIGNMENT:
     {
@@ -466,12 +526,12 @@ object::objectPtr Node::evaluate(stack &st) const
         auto obj = object::makeEmptyObject();
         localJsonStack.copyToObject(obj);
 
-        auto Class = st["Class"_n];
+        auto Class = st[n::Class];
         if (!_children.empty() && _children.back()._token == IDENTIFIER)
         {
-            auto &prototype = (*obj)[name::prototype];
-            prototype = (*_children.back().evaluate(st))["classPrototype"_n];
-            (*prototype)["super"_n] = (*prototype)["constructor"_n];
+            auto &prototype = (*obj)[n::prototype];
+            prototype = (*_children.back().evaluate(st))[n::classPrototype];
+            (*prototype)[n::super] = (*prototype)[n::constructor];
         }
         obj = (*Class)(Class, {obj}, &st);
         st.insert(_text, obj);
@@ -500,14 +560,14 @@ object::objectPtr Node::evaluate(stack &st) const
         {
             stackTrace.clear();
             stack localStack(&st);
-            localStack.insert("exception"_n, e.getPtr());
+            localStack.insert(n::exception, e.getPtr());
             _children[1].evaluateVoid(localStack);
         }
         catch (std::exception &e)
         {
             stackTrace.clear();
             stack localStack(&st);
-            localStack.insert("exception"_n, object::makeObject((std::string)e.what()));
+            localStack.insert(n::exception, object::makeObject((std::string)e.what()));
             _children[1].evaluateVoid(localStack);
         }
         return nullptr;
@@ -527,7 +587,7 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 2);
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
-        return object::makeObject(a->hasOwnProperty(name::prototype) && b->hasOwnProperty("classPrototype"_n) && (*a)[name::prototype].get() == (*b)["classPrototype"_n].get());
+        return object::makeObject(a->hasOwnProperty(n::prototype) && b->hasOwnProperty(n::classPrototype) && (*a)[n::prototype].get() == (*b)[n::classPrototype].get());
     }
 
     case ADDITION:
@@ -539,15 +599,15 @@ object::objectPtr Node::evaluate(stack &st) const
             return object::makeObject(static_cast<number>(a->get<const number>() + b->getConverted<number>()));
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<std::string>(a->get<const std::string>() + b->getConverted<std::string>()));
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
         {
             // TODO: in place
-            object::arrayType arr = a->get<const object::arrayType>();
-            object::arrayType toAdd = b->getConverted<object::arrayType>();
+            object::type::Array arr = a->get<const object::type::Array>();
+            object::type::Array toAdd = b->getConverted<object::type::Array>();
             arr.insert(arr.end(), toAdd.begin(), toAdd.end());
             return object::makeObject(arr);
         }
-        return (*(*a)["+"_n])(a, {b}, &st);
+        return (*(*a)[n::addition])(a, {b}, &st);
     }
 
     case MULTIPLICATION:
@@ -567,17 +627,17 @@ object::objectPtr Node::evaluate(stack &st) const
                 res += str;
             return object::makeObject(res);
         }
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<number>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<number>())
         {
-            const object::arrayType &arr = a->get<const object::arrayType>();
+            const object::type::Array &arr = a->get<const object::type::Array>();
             int i = static_cast<int>(b->getConverted<number>());
-            object::arrayType res;
+            object::type::Array res;
             res.reserve(arr.size() * i);
             while (i--)
                 res.insert(res.begin(), arr.begin(), arr.end());
             return object::makeObject(res);
         }
-        return (*(*a)["*"_n])(a, {b}, &st);
+        return (*(*a)[n::multiplication])(a, {b}, &st);
     }
 
     case SUBTRACTION:
@@ -587,7 +647,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(a->get<const number>() - b->getConverted<number>()));
-        return (*(*a)["-"_n])(a, {b}, &st);
+        return (*(*a)[n::subtraction])(a, {b}, &st);
     }
 
     case DIVISION:
@@ -597,7 +657,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(a->get<const number>() / b->getConverted<number>()));
-        return (*(*a)["/"_n])(a, {b}, &st);
+        return (*(*a)[n::division])(a, {b}, &st);
     }
 
     case MODULUS:
@@ -607,7 +667,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(a->get<const number>() % b->getConverted<number>()));
-        return (*(*a)["%"_n])(a, {b}, &st);
+        return (*(*a)[n::modulus])(a, {b}, &st);
     }
 
     case AND:
@@ -625,7 +685,7 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)["&&"_n])(a, {b}, &st);
+        return (*(*a)[n::and])(a, {b}, &st);
     }
 
     case OR:
@@ -643,7 +703,7 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)["||"_n])(a, {b}, &st);
+        return (*(*a)[n::or])(a, {b}, &st);
     }
 
     case BITWISE_AND:
@@ -653,7 +713,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) & static_cast<int>(b->getConverted<number>())));
-        return (*(*a)["&"_n])(a, {b}, &st);
+        return (*(*a)[n::bitwiseAnd])(a, {b}, &st);
     }
 
     case BITWISE_OR:
@@ -663,7 +723,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) | static_cast<int>(b->getConverted<number>())));
-        return (*(*a)["|"_n])(a, {b}, &st);
+        return (*(*a)[n::bitwiseOr])(a, {b}, &st);
     }
 
     case SHIFT_LEFT:
@@ -673,7 +733,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) << static_cast<int>(b->getConverted<number>())));
-        return (*(*a)["<<"_n])(a, {b}, &st);
+        return (*(*a)[n::shiftLeft])(a, {b}, &st);
     }
 
     case SHIFT_RIGHT:
@@ -683,7 +743,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) >> static_cast<int>(b->getConverted<number>())));
-        return (*(*a)[">>"_n])(a, {b}, &st);
+        return (*(*a)[n::shiftRight])(a, {b}, &st);
     }
 
     case EQUAL:
@@ -697,13 +757,13 @@ object::objectPtr Node::evaluate(stack &st) const
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<bool>(a->get<const std::string>() == b->getConverted<std::string>()));
 
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() == b->getConverted<object::arrayType>()));
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() == b->getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>()));
 
-        return (*(*a)["=="_n])(a, {b}, &st);
+        return (*(*a)[n::equal])(a, {b}, &st);
     }
 
     case NOT_EQUAL:
@@ -717,13 +777,13 @@ object::objectPtr Node::evaluate(stack &st) const
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<bool>(a->get<const std::string>() != b->getConverted<std::string>()));
 
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() != b->getConverted<object::arrayType>()));
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() != b->getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() != b->getConverted<bool>()));
 
-        return (*(*a)["!="_n])(a, {b}, &st);
+        return (*(*a)[n::lessEqual])(a, {b}, &st);
     }
 
     case LESS:
@@ -737,13 +797,13 @@ object::objectPtr Node::evaluate(stack &st) const
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<bool>(a->get<const std::string>() < b->getConverted<std::string>()));
 
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() < b->getConverted<object::arrayType>()));
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() < b->getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() < b->getConverted<bool>()));
 
-        return (*(*a)["<"_n])(a, {b}, &st);
+        return (*(*a)[n::less])(a, {b}, &st);
     }
 
     case GREATER:
@@ -757,13 +817,13 @@ object::objectPtr Node::evaluate(stack &st) const
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<bool>(a->get<const std::string>() > b->getConverted<std::string>()));
 
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() > b->getConverted<object::arrayType>()));
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() > b->getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() > b->getConverted<bool>()));
 
-        return (*(*a)[">"_n])(a, {b}, &st);
+        return (*(*a)[n::greater])(a, {b}, &st);
     }
 
     case LESS_EQUAL:
@@ -777,13 +837,13 @@ object::objectPtr Node::evaluate(stack &st) const
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<bool>(a->get<const std::string>() <= b->getConverted<std::string>()));
 
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() <= b->getConverted<object::arrayType>()));
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() <= b->getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() <= b->getConverted<bool>()));
 
-        return (*(*a)["<="_n])(a, {b}, &st);
+        return (*(*a)[n::lessEqual])(a, {b}, &st);
     }
 
     case GREATER_EQUAL:
@@ -797,13 +857,13 @@ object::objectPtr Node::evaluate(stack &st) const
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return object::makeObject(static_cast<bool>(a->get<const std::string>() >= b->getConverted<std::string>()));
 
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return object::makeObject(static_cast<bool>(a->get<const object::arrayType>() >= b->getConverted<object::arrayType>()));
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() >= b->getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() >= b->getConverted<bool>()));
 
-        return (*(*a)[">="_n])(a, {b}, &st);
+        return (*(*a)[n::greaterEqual])(a, {b}, &st);
     }
 
     case INCREMENT:
@@ -815,7 +875,7 @@ object::objectPtr Node::evaluate(stack &st) const
             a->get<number>()++;
             return a;
         }
-        return (*(*a)["++"_n])(a, {}, &st);
+        return (*(*a)[n::increment])(a, {}, &st);
     }
 
     case DECREMENT:
@@ -827,7 +887,7 @@ object::objectPtr Node::evaluate(stack &st) const
             a->get<number>()--;
             return a;
         }
-        return (*(*a)["--"_n])(a, {}, &st);
+        return (*(*a)[n::decrement])(a, {}, &st);
     }
 
     case NOT:
@@ -836,7 +896,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return object::makeObject(!a->getConverted<bool>());
-        return (*(*a)["!"_n])(a, {}, &st);
+        return (*(*a)[n::not])(a, {}, &st);
     }
 
     case COMPLEMENT:
@@ -845,7 +905,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
             return object::makeObject(static_cast<number>(~static_cast<int>(a->get<const number>())));
-        return (*(*a)["~"_n])(a, {}, &st);
+        return (*(*a)[n::complement])(a, {}, &st);
     }
 
     case IDENTIFIER:
@@ -871,52 +931,51 @@ object::objectPtr Node::evaluate(stack &st) const
 
 void Node::evaluateVoid(stack &st) const
 {
+
     switch (_token)
     {
     case COMPOUND_STATEMENT:
     {
         size_t i = 0;
-        if (!shouldHaveStack())
+        stack localStack(&st);
+        try
         {
-            try
-            {
-                for (; i < _children.size(); i++)
-                    _children[i].evaluateVoid(st);
-            }
-            catch (objectException &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            catch (std::exception &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            return;
+            for (; i < _children.size(); i++)
+                _children[i].evaluateVoid(localStack);
         }
-        else
+        catch (objectException &e)
         {
-            stack localStack(&st);
-            try
-            {
-                for (; i < _children.size(); i++)
-                    _children[i].evaluateVoid(localStack);
-            }
-            catch (objectException &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            catch (std::exception &e)
-            {
-                _children[i].exception();
-                throw e;
-            }
-            return;
+            _children[i].exception();
+            throw e;
         }
+        catch (std::exception &e)
+        {
+            _children[i].exception();
+            throw e;
+        }
+        return;
     }
 
+    case COMPOUND_STATEMENT_STACKLESS:
+    {
+        size_t i = 0;
+        try
+        {
+            for (; i < _children.size(); i++)
+                _children[i].evaluateVoid(st);
+        }
+        catch (objectException &e)
+        {
+            _children[i].exception();
+            throw e;
+        }
+        catch (std::exception &e)
+        {
+            _children[i].exception();
+            throw e;
+        }
+        return;
+    }
     case IF:
         assert(_children.size() == 2);
         if (_children[0].evaluateBoolean(st))
@@ -940,15 +999,37 @@ void Node::evaluateVoid(stack &st) const
         assert(_children.size() == 2);
         try
         {
-            if (_children[1]._token == COMPOUND_STATEMENT && !_children[1].shouldHaveStack())
-            {
-                while (_children[0].evaluateBoolean(st))
-                    for (auto &child : _children[1]._children)
-                        child.evaluateVoid(st);
-            }
-            else
-                while (_children[0].evaluateBoolean(st))
-                    _children[1].evaluateVoid(st);
+            while (_children[0].evaluateBoolean(st))
+                _children[1].evaluateVoid(st);
+        }
+        catch (const breakType &e)
+        {
+        }
+        return;
+
+    case WHILE_COMPOUND_STATEMENT:
+    {
+        assert(_children.size() == 2);
+        stack localStack(&st);
+        try
+        {
+            while (_children[0].evaluateBoolean(st))
+                for (auto &child : _children[1]._children)
+                    child.evaluateVoid(localStack);
+        }
+        catch (const breakType &e)
+        {
+        }
+        return;
+    }
+
+    case WHILE_COMPOUND_STATEMENT_STACKLESS:
+        assert(_children.size() == 2);
+        try
+        {
+            while (_children[0].evaluateBoolean(st))
+                for (auto &child : _children[1]._children)
+                    child.evaluateVoid(st);
         }
         catch (const breakType &e)
         {
@@ -971,6 +1052,43 @@ void Node::evaluateVoid(stack &st) const
         }
         return;
 
+    case FOR_COMPOUND_STATEMENT:
+    {
+        assert(_children.size() == 4);
+        stack localStack(&st);
+        _children[0].evaluateVoid(st);
+        try
+        {
+            while (_children[1].evaluateBoolean(st))
+            {
+                for (auto &child : _children[3]._children)
+                    child.evaluateVoid(localStack);
+                _children[2].evaluateVoid(st);
+            }
+        }
+        catch (const breakType &e)
+        {
+        }
+        return;
+    }
+
+    case FOR_COMPOUND_STATEMENT_STACKLESS:
+        assert(_children.size() == 4);
+        _children[0].evaluateVoid(st);
+        try
+        {
+            while (_children[1].evaluateBoolean(st))
+            {
+                for (auto &child : _children[3]._children)
+                    child.evaluateVoid(st);
+                _children[2].evaluateVoid(st);
+            }
+        }
+        catch (const breakType &e)
+        {
+        }
+        return;
+
     case STATEMENT:
         assert(_children.size() == 1);
         _children[0].evaluateVoid(st);
@@ -980,7 +1098,7 @@ void Node::evaluateVoid(stack &st) const
     {
         assert(_children.size() >= 1);
         auto a = _children[0].evaluate(st);
-        object::arrayType args(_children.size() - 1);
+        object::type::Array args(_children.size() - 1);
         for (size_t i = 1; i < _children.size(); i++)
             args[i - 1] = _children[i].evaluate(st);
 
@@ -1004,9 +1122,9 @@ void Node::evaluateVoid(stack &st) const
     case READ_OPERATOR:
     {
         assert(_children.size() >= 1);
-        static name readOperator = "readOperator"_n;
+        static name readOperator = n::readOperator;
         auto a = _children[0].evaluate(st);
-        object::arrayType args(_children.size() - 1);
+        object::type::Array args(_children.size() - 1);
         for (size_t i = 1; i < _children.size(); i++)
             args[i - 1] = _children[i].evaluate(st);
 
@@ -1033,7 +1151,7 @@ void Node::evaluateVoid(stack &st) const
         assert(_children[1]._token == IDENTIFIER);
         auto a = _children[0].evaluate(st);
         auto b = (*a)[_children[1]._text];
-        object::arrayType args(_children.size() - 2);
+        object::type::Array args(_children.size() - 2);
         for (size_t i = 2; i < _children.size(); i++)
             args[i - 2] = _children[i].evaluate(st);
 
@@ -1058,7 +1176,7 @@ void Node::evaluateVoid(stack &st) const
     {
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
-        auto b = (*a)["await"_n];
+        auto b = (*a)[n::await_];
         (*b)(a, {}, &st);
         return;
     }
@@ -1098,37 +1216,35 @@ void Node::evaluateVoid(stack &st) const
         return;
     }
 
-    case INIT_ASSIGNMENT:
+    case INIT_ASSIGNMENT_LET:
         assert(_children.size() == 2);
-        if (_children[0]._token == LET)
-        {
-            st.insert(_children[0]._text, _children[1].evaluate(st));
-            return;
-        }
-        else if (_children[0]._token == IDENTIFIER)
-        {
-            assert(!_children[0]._text.isEmpty());
-            auto &a = st[_children[0]._text];
-            if (a->isConst())
-                throw std::runtime_error("tried to modify constant value");
-            object::objectPtr b;
-            if (!numberAssignmentOptimization(a, b, st))
-                a = b;
-            return;
-        }
-        else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
-        {
-            assert(_children[0]._children.size() == 2);
-            auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
-            if (a->isConst())
-                throw std::runtime_error("tried to modify constant value");
-            object::objectPtr b;
-            if (!numberAssignmentOptimization(a, b, st))
-                a = b;
-            return;
-        }
-        throw std::runtime_error("left side of init_assignment is not identifier or dot operator");
-        break;
+        st.insert(_children[0]._text, _children[1].evaluate(st));
+        return;
+
+    case INIT_ASSIGNMENT_IDENTIFIER:
+    {
+        assert(_children.size() == 2);
+        assert(!_children[0]._text.isEmpty());
+        auto &a = st[_children[0]._text];
+        if (a->isConst())
+            throw std::runtime_error("tried to modify constant value");
+        object::objectPtr b;
+        if (!numberAssignmentOptimization(a, b, st))
+            a = b;
+        return;
+    }
+
+    case INIT_ASSIGNMENT_DOT:
+    {
+        assert(_children[0]._children.size() == 2);
+        auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
+        if (a->isConst())
+            throw std::runtime_error("tried to modify constant value");
+        object::objectPtr b;
+        if (!numberAssignmentOptimization(a, b, st))
+            a = b;
+        return;
+    }
 
     case JSON_ASSIGNMENT:
     {
@@ -1183,17 +1299,17 @@ void Node::evaluateVoid(stack &st) const
     {
         stack localJsonStack(&st);
         for (auto &child : _children)
-            child.evaluate(localJsonStack);
+            child.evaluateVoid(localJsonStack);
 
         auto obj = object::makeEmptyObject();
         localJsonStack.copyToObject(obj);
 
-        auto Class = st["Class"_n];
+        auto Class = st[n::Class];
         if (!_children.empty() && _children.back()._token == IDENTIFIER)
         {
-            auto &prototype = (*obj)[name::prototype];
-            prototype = (*_children.back().evaluate(st))["classPrototype"_n];
-            (*prototype)["super"_n] = (*prototype)["constructor"_n];
+            auto &prototype = (*obj)[n::prototype];
+            prototype = (*_children.back().evaluate(st))[n::classPrototype];
+            (*prototype)[n::super] = (*prototype)[n::constructor];
         }
         obj = (*Class)(Class, {obj}, &st);
         st.insert(_text, obj);
@@ -1222,14 +1338,14 @@ void Node::evaluateVoid(stack &st) const
         {
             stackTrace.clear();
             stack localStack(&st);
-            localStack.insert("exception"_n, e.getPtr());
+            localStack.insert(n::exception, e.getPtr());
             _children[1].evaluateVoid(localStack);
         }
         catch (std::exception &e)
         {
             stackTrace.clear();
             stack localStack(&st);
-            localStack.insert("exception"_n, object::makeObject((std::string)e.what()));
+            localStack.insert(n::exception, object::makeObject((std::string)e.what()));
             _children[1].evaluateVoid(localStack);
         }
         return;
@@ -1257,9 +1373,9 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
-        (*(*a)["+"_n])(a, {b}, &st);
+        (*(*a)[n::addition])(a, {b}, &st);
         return;
     }
 
@@ -1272,9 +1388,9 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<number>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<number>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<number>())
             return;
-        (*(*a)["*"_n])(a, {b}, &st);
+        (*(*a)[n::multiplication])(a, {b}, &st);
         return;
     }
 
@@ -1285,7 +1401,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)["-"_n])(a, {b}, &st);
+        (*(*a)[n::subtraction])(a, {b}, &st);
         return;
     }
 
@@ -1296,7 +1412,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)["/"_n])(a, {b}, &st);
+        (*(*a)[n::division])(a, {b}, &st);
         return;
     }
 
@@ -1307,7 +1423,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)["%"_n])(a, {b}, &st);
+        (*(*a)[n::modulus])(a, {b}, &st);
         return;
     }
 
@@ -1326,7 +1442,7 @@ void Node::evaluateVoid(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        (*(*a)["&&"_n])(a, {b}, &st);
+        (*(*a)[n::and])(a, {b}, &st);
         return;
     }
 
@@ -1345,7 +1461,7 @@ void Node::evaluateVoid(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        (*(*a)["||"_n])(a, {b}, &st);
+        (*(*a)[n::or])(a, {b}, &st);
         return;
     }
 
@@ -1356,7 +1472,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)["&"_n])(a, {b}, &st);
+        (*(*a)[n::bitwiseAnd])(a, {b}, &st);
         return;
     }
 
@@ -1367,7 +1483,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)["|"_n])(a, {b}, &st);
+        (*(*a)[n::bitwiseOr])(a, {b}, &st);
         return;
     }
 
@@ -1378,7 +1494,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)["<<"_n])(a, {b}, &st);
+        (*(*a)[n::shiftLeft])(a, {b}, &st);
         return;
     }
 
@@ -1389,7 +1505,7 @@ void Node::evaluateVoid(stack &st) const
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
-        (*(*a)[">>"_n])(a, {b}, &st);
+        (*(*a)[n::shiftRight])(a, {b}, &st);
         return;
     }
 
@@ -1402,11 +1518,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return;
-        (*(*a)["=="_n])(a, {b}, &st);
+        (*(*a)[n::equal])(a, {b}, &st);
         return;
     }
 
@@ -1419,11 +1535,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return;
-        (*(*a)["!="_n])(a, {b}, &st);
+        (*(*a)[n::lessEqual])(a, {b}, &st);
         return;
     }
 
@@ -1436,11 +1552,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return;
-        (*(*a)["<"_n])(a, {b}, &st);
+        (*(*a)[n::less])(a, {b}, &st);
         return;
     }
 
@@ -1453,11 +1569,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return;
-        (*(*a)[">"_n])(a, {b}, &st);
+        (*(*a)[n::greater])(a, {b}, &st);
         return;
     }
 
@@ -1470,11 +1586,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return;
-        (*(*a)["<="_n])(a, {b}, &st);
+        (*(*a)[n::lessEqual])(a, {b}, &st);
         return;
     }
 
@@ -1487,11 +1603,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return;
-        else if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return;
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return;
-        (*(*a)[">="_n])(a, {b}, &st);
+        (*(*a)[n::greaterEqual])(a, {b}, &st);
         return;
     }
 
@@ -1504,7 +1620,7 @@ void Node::evaluateVoid(stack &st) const
             a->get<number>()++;
             return;
         }
-        (*(*a)["++"_n])(a, {}, &st);
+        (*(*a)[n::increment])(a, {}, &st);
         return;
     }
 
@@ -1517,7 +1633,7 @@ void Node::evaluateVoid(stack &st) const
             a->get<number>()--;
             return;
         }
-        (*(*a)["--"_n])(a, {}, &st);
+        (*(*a)[n::decrement])(a, {}, &st);
         return;
     }
 
@@ -1527,7 +1643,7 @@ void Node::evaluateVoid(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return;
-        (*(*a)["!"_n])(a, {}, &st);
+        (*(*a)[n::not])(a, {}, &st);
         return;
     }
 
@@ -1537,7 +1653,7 @@ void Node::evaluateVoid(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
             return;
-        (*(*a)["~"_n])(a, {}, &st);
+        (*(*a)[n::complement])(a, {}, &st);
         return;
     }
 
@@ -1561,6 +1677,7 @@ void Node::evaluateVoid(stack &st) const
 
 number Node::evaluateNumber(stack &st) const
 {
+
     switch (_token)
     {
 
@@ -1642,7 +1759,7 @@ number Node::evaluateNumber(stack &st) const
         return static_cast<number>(static_cast<int>(a) >> static_cast<int>(b));
     }
 
-    /*case INCREMENT:
+        /*case INCREMENT:
     {
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
@@ -1672,7 +1789,6 @@ number Node::evaluateNumber(stack &st) const
     case CONDITIONAL:
         assert(_children.size() == 3);
         return _children[0].evaluateBoolean(st) ? _children[1].evaluateNumber(st) : _children[2].evaluateNumber(st);
-
     }
     return evaluate(st)->getConverted<number>();
 }
@@ -1688,7 +1804,7 @@ bool Node::evaluateBoolean(stack &st) const
         assert(_children.size() == 2);
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
-        return a->hasOwnProperty(name::prototype) && b->hasOwnProperty("classPrototype"_n) && (*a)[name::prototype].get() == (*b)["classPrototype"_n].get();
+        return a->hasOwnProperty(n::prototype) && b->hasOwnProperty(n::classPrototype) && (*a)[n::prototype].get() == (*b)[n::classPrototype].get();
     }
 
     case AND:
@@ -1706,7 +1822,7 @@ bool Node::evaluateBoolean(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)["&&"_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::and])(a, {b}, &st)->getConverted<bool>();
     }
 
     case OR:
@@ -1724,7 +1840,7 @@ bool Node::evaluateBoolean(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)["||"_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::or])(a, {b}, &st)->getConverted<bool>();
     }
 
     case EQUAL:
@@ -1738,13 +1854,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() == b->getConverted<std::string>();
 
-        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return a->get<const object::arrayType>() == b->getConverted<object::arrayType>();
+        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return a->get<const object::type::Array>() == b->getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() == b->getConverted<bool>();
 
-        return (*(*a)["=="_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::equal])(a, {b}, &st)->getConverted<bool>();
     }
 
     case NOT_EQUAL:
@@ -1758,13 +1874,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() != b->getConverted<std::string>();
 
-        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return a->get<const object::arrayType>() != b->getConverted<object::arrayType>();
+        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return a->get<const object::type::Array>() != b->getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() != b->getConverted<bool>();
 
-        return (*(*a)["!="_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::lessEqual])(a, {b}, &st)->getConverted<bool>();
     }
 
     case LESS:
@@ -1778,13 +1894,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() < b->getConverted<std::string>();
 
-        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return a->get<const object::arrayType>() < b->getConverted<object::arrayType>();
+        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return a->get<const object::type::Array>() < b->getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() < b->getConverted<bool>();
 
-        return (*(*a)["<"_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::less])(a, {b}, &st)->getConverted<bool>();
     }
 
     case GREATER:
@@ -1798,13 +1914,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() > b->getConverted<std::string>();
 
-        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return a->get<const object::arrayType>() > b->getConverted<object::arrayType>();
+        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return a->get<const object::type::Array>() > b->getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() > b->getConverted<bool>();
 
-        return (*(*a)[">"_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::greater])(a, {b}, &st)->getConverted<bool>();
     }
 
     case LESS_EQUAL:
@@ -1818,13 +1934,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() <= b->getConverted<std::string>();
 
-        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return a->get<const object::arrayType>() <= b->getConverted<object::arrayType>();
+        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return a->get<const object::type::Array>() <= b->getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() <= b->getConverted<bool>();
 
-        return (*(*a)["<="_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::lessEqual])(a, {b}, &st)->getConverted<bool>();
     }
 
     case GREATER_EQUAL:
@@ -1838,13 +1954,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() >= b->getConverted<std::string>();
 
-        if (a->isOfType<object::arrayType>() && b->isConvertible<object::arrayType>())
-            return a->get<const object::arrayType>() >= b->getConverted<object::arrayType>();
+        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+            return a->get<const object::type::Array>() >= b->getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() >= b->getConverted<bool>();
 
-        return (*(*a)[">="_n])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::greaterEqual])(a, {b}, &st)->getConverted<bool>();
     }
 
     case NOT:
@@ -1853,7 +1969,7 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return !a->getConverted<bool>();
-        return (*(*a)["!"_n])(a, {}, &st)->getConverted<bool>();
+        return (*(*a)[n::not])(a, {}, &st)->getConverted<bool>();
     }
 
     case CONDITIONAL:

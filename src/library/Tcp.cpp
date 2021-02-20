@@ -6,9 +6,9 @@ void Tcp::init(stack *st)
     object::objectPtr TcpClient = insertObject("TcpClient"_n, constructorCaller);
     object::objectPtr tcpClientPrototype = object::makeEmptyObject();
 
-    (*TcpClient)["classPrototype"_n] = tcpClientPrototype;
+    (*TcpClient)[n::classPrototype] = tcpClientPrototype;
 
-    addFunctionL(tcpClientPrototype, "constructor"_n, {
+    addFunctionL(tcpClientPrototype, n::constructor, {
         thisObj->setType<std::shared_ptr<tcpClient>>();
         thisObj->get<std::shared_ptr<tcpClient>>() = std::make_shared<tcpClient>();
         return thisObj;
@@ -71,9 +71,9 @@ void Tcp::init(stack *st)
     object::objectPtr TcpServer = insertObject("TcpServer"_n, constructorCaller);
     object::objectPtr tcpServerPrototype = object::makeEmptyObject();
 
-    (*TcpServer)["classPrototype"_n] = tcpServerPrototype;
+    (*TcpServer)[n::classPrototype] = tcpServerPrototype;
 
-    addFunctionL(tcpServerPrototype, "constructor"_n, {
+    addFunctionL(tcpServerPrototype, n::constructor, {
         thisObj->setType<std::shared_ptr<tcpServer>>();
         thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<tcpServer>();
         return thisObj;
@@ -95,7 +95,7 @@ void Tcp::init(stack *st)
     });
 
     addFunctionL(tcpServerPrototype, "listen"_n, {
-        auto tcpClientPrototype = (*(*st)["TcpClient"_n])["classPrototype"_n];
+        auto tcpClientPrototype = (*(*st)["TcpClient"_n])[n::classPrototype];
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([tcpClientPrototype, thisObj]() {
             auto t = thisObj->get<std::shared_ptr<tcpServer>>();
@@ -107,7 +107,7 @@ void Tcp::init(stack *st)
             auto tcpClientObject = object::makeEmptyObject();
             tcpClientObject->setType<std::shared_ptr<tcpClient>>();
             tcpClientObject->get<std::shared_ptr<tcpClient>>() = c;
-            (*tcpClientObject)[name::prototype] = tcpClientPrototype;
+            (*tcpClientObject)[n::prototype] = tcpClientPrototype;
             return tcpClientObject;
         }));
     });

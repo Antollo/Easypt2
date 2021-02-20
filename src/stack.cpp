@@ -40,7 +40,7 @@ object::objectPtr &stack::insert(const name &n, const object::objectPtr &obj)
 void stack::clear()
 {
     for (auto &element : immediateStorage)
-        element = {name::empty, nullptr};
+        element = {n::empty, nullptr};
     immediateIndex = 0;
     storage.clear();
 }
@@ -52,7 +52,7 @@ void stack::erase(const name &n)
         for (uint8_t i = 0; i < immediateStorage.size(); i++)
             if (immediateStorage[i].first == n)
             {
-                immediateStorage[i] = {name::empty, nullptr};
+                immediateStorage[i] = {n::empty, nullptr};
                 break;
             }
     }
@@ -83,7 +83,7 @@ void stack::copyToFlatStack(stack &st)
     if (immediateIndex < immediateStorage.size())
     {
         st.storage.insert(immediateStorage.begin(), immediateStorage.end());
-        st.storage.erase(name::empty);
+        st.storage.erase(n::empty);
     }
     else
         st.storage.insert(storage.begin(), storage.end());

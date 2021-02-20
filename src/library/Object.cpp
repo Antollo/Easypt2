@@ -24,8 +24,8 @@ void Object::init(stack *st)
 {
     object::objectPtr Object = insertObject("Object"_n, constructorCaller);
 
-    (*Object)["classPrototype"_n] = object::objectPrototype;
-    (*object::objectPrototype)[name::prototype] = object::objectPrototype;
+    (*Object)[n::classPrototype] = object::objectPrototype;
+    (*object::objectPrototype)[n::prototype] = object::objectPrototype;
 
     addFunctionL(object::objectPrototype, "hasOwnProperty"_n, {
         argsConvertibleGuard<std::string>(args);
@@ -48,7 +48,7 @@ void Object::init(stack *st)
         return object::makeObject(thisObj->getOwnPropertyNames());
     });
 
-    addFunctionL(object::objectPrototype, "readOperator"_n, {
+    addFunctionL(object::objectPrototype, n::readOperator, {
         argsConvertibleGuard<std::string>(args);
         return (*thisObj)[static_cast<name>(args[0]->getConverted<std::string>())];
     });

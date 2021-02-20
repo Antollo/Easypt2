@@ -2,20 +2,20 @@
 
 void Class::init(stack *st)
 {
-    object::objectPtr Class = insertObject("Class"_n, constructorCaller);
-    (*object::classPrototype)[name::prototype] = object::functionPrototype;
+    object::objectPtr Class = insertObject(n::Class, constructorCaller);
+    (*object::classPrototype)[n::prototype] = object::functionPrototype;
 
-    (*Class)["classPrototype"_n] = object::classPrototype;
+    (*Class)[n::classPrototype] = object::classPrototype;
 
-    addFunctionL(object::classPrototype, "constructor"_n, {
+    addFunctionL(object::classPrototype, n::constructor, {
         argsConvertibleGuard<nullptr_t>(args);
-        thisObj->setType<object::nativeFunctionType>();
-        thisObj->get<object::nativeFunctionType&>() = constructorCaller;
-        thisObj->addProperty("classPrototype"_n, args[0]);
+        thisObj->setType<object::type::NativeFunction>();
+        thisObj->get<object::type::NativeFunction&>() = constructorCaller;
+        thisObj->addProperty(n::classPrototype, args[0]);
         // TODO: 2 following lines fixes prototype destructor calling
         // in classPrototype (inherited destructor)
-        args[0]->setType<object::nativeFunctionType>();
-        args[0]->get<object::nativeFunctionType&>() = constructorCaller;
+        args[0]->setType<object::type::NativeFunction>();
+        args[0]->get<object::type::NativeFunction&>() = constructorCaller;
         return thisObj;
     });
 }

@@ -7,14 +7,14 @@ void String::init(stack *st)
 {
     object::objectPtr String = insertObject("String"_n, constructorCaller);
 
-    (*String)["classPrototype"_n] = object::stringPrototype;
+    (*String)[n::classPrototype] = object::stringPrototype;
 
-    addFunctionL(object::stringPrototype, "constructor"_n, {
+    addFunctionL(object::stringPrototype, n::constructor, {
         thisObj->setType<std::string>();
         return thisObj;
     });
 
-    addFunctionL(object::stringPrototype, "readOperator"_n, {
+    addFunctionL(object::stringPrototype, n::readOperator, {
         argsConvertibleGuard<number>(args);
         int pos = static_cast<int>(args[0]->getConverted<number>());
         const std::string &me = thisObj->get<const std::string>();
@@ -137,7 +137,7 @@ void String::init(stack *st)
         const std::string &delim = args[0]->getConverted<const std::string>();
         int begin = 0, end, delimSize = delim.size();
 
-        object::arrayType res;
+        object::type::Array res;
 
         while ((end = me.find (delim, begin)) != std::string::npos) {
             res.push_back(object::makeObject(me.substr(begin, end - begin)));
@@ -174,7 +174,7 @@ void String::init(stack *st)
             length = static_cast<int>(args[2]->getConverted<number>());
 
         std::regex_search(me.begin() + pos, me.begin() + pos + length, matchResults, regex);
-        object::arrayType array(matchResults.size());
+        object::type::Array array(matchResults.size());
         for (size_t i = 0; i < matchResults.size(); i++)
         {
             array[i] = object::makeEmptyObject();
@@ -199,7 +199,7 @@ void String::init(stack *st)
         auto begin = std::sregex_iterator(me.begin() + pos, me.begin() + pos + length, regex);
         auto end = std::sregex_iterator();
 
-        object::arrayType array(std::distance(begin, end));
+        object::type::Array array(std::distance(begin, end));
 
         size_t i = 0;
         for (auto it = begin; it != end; it++)

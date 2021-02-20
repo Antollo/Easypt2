@@ -28,6 +28,6 @@ void coroutineBase::handleException(std::exception_ptr ptr)
     catch (...)
     {
         console::stackTrace();
-        console::error("Unknown error in destructor");
+        console::error("unknown error in destructor");
     }
 }

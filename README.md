@@ -156,7 +156,7 @@ The full code of the benchmark can be found in `/benchmarks`.
 ./init.ps1
 cmake .
 cmake --build . --config Release
-ctest --output-on-failure
+ctest --output-on-failure --build-config Release
 ```
 
 #### Linux
@@ -165,5 +165,5 @@ ctest --output-on-failure
 ./init.sh
 cmake .
 cmake --build . --config Release
-ctest --output-on-failure
+ctest --output-on-failure --build-config Release
 ```

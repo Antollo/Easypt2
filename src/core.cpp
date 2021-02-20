@@ -4,21 +4,21 @@
 #include "file.h"
 #include "treeParser.h"
 
-object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
-    object::arrayType arr;
+    object::type::Array arr;
     arr.resize(importPaths.size());
     for (size_t i = 0; i < importPaths.size(); i++)
         arr[arr.size() - i - 1] = object::makeObject(std::filesystem::absolute(importPaths[i]).string());
     return object::makeObject(arr);
 }
 
-object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::nullptr_t>(args);
     std::string fileNameString;
     std::filesystem::path fileName;
-    object::functionType root = object::makeFunction();
+    object::type::Function root = object::makeFunction();
     if (args[0]->isOfType<std::string>())
     {
         fileName = args[0]->get<const std::string>();
@@ -28,8 +28,8 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&
         if (imported != nullptr) 
         {
             auto it = imported->find(name(fileName.stem().string()));
-            if  (it != imported->end() && it->second->hasOwnProperty("exports"_n))
-                    return (*it->second)["exports"_n];
+            if  (it != imported->end() && it->second->hasOwnProperty(n::exports))
+                    return (*it->second)[n::exports];
         }
 
         for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++)
@@ -68,14 +68,14 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&
         {
             std::filesystem::current_path(dir);
             importPaths.push_back(dir);
-            auto module = s.insert("module"_n, object::makeEmptyObject());
-            module->addProperty("name"_n, object::makeObject(std::filesystem::path(fileNameString).stem().string()));
-            module->addProperty("filename"_n, object::makeObject(std::filesystem::path(fileNameString).filename().string()));
-            module->addProperty("path"_n, object::makeObject(dir.string()));
+            auto module = s.insert(n::module, object::makeEmptyObject());
+            module->addProperty(n::name_, object::makeObject(std::filesystem::path(fileNameString).stem().string()));
+            module->addProperty(n::filename, object::makeObject(std::filesystem::path(fileNameString).filename().string()));
+            module->addProperty(n::path, object::makeObject(dir.string()));
             if (imported != nullptr)
                 imported->insert_or_assign(name(fileName.stem().string()), module);
             result = (*sourceFunction)(sourceFunction, std::move(args), &s);
-            (*module)["exports"_n] = result;
+            (*module)[n::exports] = result;
             std::filesystem::current_path(oldDir);
             importPaths.pop_back();
         }   
@@ -89,20 +89,20 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::arrayType &&
     return result;
 }
 
-object::objectPtr ez_parse(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<std::string>();
-    object::functionType root = object::makeFunction();
+    object::type::Function root = object::makeFunction();
     treeParser::parseString(temp, *root);
     return object::makeObject(root);
 }
 
-object::objectPtr execute(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<std::string>();
-    object::functionType root = object::makeFunction();
+    object::type::Function root = object::makeFunction();
     treeParser::parseString(temp, *root);
     size_t i = 0;
     try
@@ -125,16 +125,16 @@ object::objectPtr execute(object::objectPtr thisObj, object::arrayType &&args, s
     return thisObj;
 }
 
-object::objectPtr constructorCaller(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr constructorCaller(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     auto newObj = object::makeEmptyObject();
-    newObj->addProperty(name::prototype, (*thisObj)["classPrototype"_n]);
-    if ((*newObj)[name::prototype]->hasOwnProperty("constructor"_n))
-        (*(*newObj)["constructor"_n])(newObj, std::move(args), st);
+    newObj->addProperty(n::prototype, (*thisObj)[n::classPrototype]);
+    if ((*newObj)[n::prototype]->hasOwnProperty(n::constructor))
+        (*(*newObj)[n::constructor])(newObj, std::move(args), st);
     return newObj;
 }
 
-object::objectPtr getStack(object::objectPtr thisObj, object::arrayType &&args, stack *st)
+object::objectPtr getStack(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     auto obj = object::makeEmptyObject();
     st->copyToObject(obj, true);
