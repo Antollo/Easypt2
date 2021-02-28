@@ -475,8 +475,70 @@ Object.classPrototype.readOperator @example@
 obj.number = 21;
 obj[\"secondNumber\"] = 22;
 console.write(obj[\"number\"], \" \", obj.secondNumber);";
-Object.readOperator @expectedOutput@
+Object.classPrototype.readOperator @expectedOutput@
 "21 22";
+
+Object.classPrototype.toNumber @description@
+"Converts object to number:
+- from `String` (parses the string as number)
+- from `Array` (returns length of the array)
+- from `Boolean` (returns 1 if true and 0 otherwise)
+- from other types (if not default `toNumber` method 
+  exists, calls it, otherwise returns the number of 
+  properties not including prototype property)";
+Object.classPrototype.toNumber @example@
+"console.write(\"12.1e1\".toNumber(), \" \", false.toNumber());";
+Object.classPrototype.toNumber @expectedOutput@
+"121 0";
+
+Object.classPrototype.toString @description@
+"Converts object to number:
+- from `Number` (serializes the number to string)
+- from `Array` (serializes the array to string)
+- from `Boolean` (serializes the boolean to string)
+- from other types (if not default `toString` method 
+  exists, calls it, otherwise serializes the object 
+  to JSON)";
+Object.classPrototype.toString @example@
+"console.write(12.1e1.toString(), \"\n\", { x: 1 }.toString());";
+Object.classPrototype.toString @expectedOutput@
+"121
+{
+    \"x\": 1
+}";
+
+Object.classPrototype.toArray @description@
+"Converts object to number:
+- from `Number` (creates one element array containing 
+  this object)
+- from `String` (creates one element array containing 
+  this object)
+- from `Boolean` (creates one element array containing 
+  this object)
+- from other types (if not default `toArray` method 
+  exists, calls it, otherwise creates one element array 
+  containing this object)";
+Object.classPrototype.toArray @example@
+"console.write(\"abc\".toArray(), \" \", true.toArray());";
+Object.classPrototype.toArray @expectedOutput@
+"[\"abc\"] [true]";
+
+Object.classPrototype.toBoolean @description@
+"Converts object to number:
+- from `Number` (returns false if number is equal to 
+  0 and true otherwise)
+- from `String` (returns false if string is empty and 
+  true otherwise)
+- from `Array` (returns false if array is empty and 
+  true otherwise)
+- from other types (if not default `toBoolean` method 
+  exists, calls it, otherwise returns false if the number 
+  of properties not including prototype property is 
+  equal to 0 and true otherwise)";
+Object.classPrototype.toBoolean @example@
+"console.write([].toBoolean(), \" \", 10.toBoolean());";
+Object.classPrototype.toBoolean @expectedOutput@
+"false true";
 
 module @description@
 "Object containing information about current source file.";

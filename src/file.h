@@ -7,10 +7,10 @@
 #include <string>
 #include <filesystem>
 
-
 class stack;
 
-namespace ChildProcess {
+namespace ChildProcess
+{
     void init(stack *st);
 };
 
@@ -18,6 +18,15 @@ class file
 {
 public:
     file() = default;
+
+    file(const std::string &path) : file() { open(path); }
+    file(FILE *f) : file() { open(f); }
+
+    ~file()
+    {
+        if (isOpen())
+            close();
+    }
 
     file(const file &) = delete;
     file(file &&rhs)
@@ -43,9 +52,6 @@ public:
         rhs.path.clear();
         return *this;
     }
-
-    file(const std::string &path) : file() { open(path); }
-    file(FILE *f) : file() { open(f); }
 
     void open(const std::string &path, const char * = "r+");
     void open(FILE *f);

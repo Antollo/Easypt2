@@ -17,13 +17,6 @@ Add easypt interpreter (`easypt.exe` - Windows or `easypt` - Linux) to PATH. You
 - [For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu)
 
 
-
-## Last changes
-
-- Auto-completion added.
-- `Run source file` command added.
-- `Open repl in terminal` command added.
-
 ## For more information
 
 * [Easypt on Github](https://github.com/Antollo/Easypt2)

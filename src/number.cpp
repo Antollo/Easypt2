@@ -1,12 +1,13 @@
 #include <cmath>
 #include <stdexcept>
 #include <iostream>
+#include <limits>
 #include "number.h"
 
 number::number(const int &n) : v(n){};
 number::number(const double &n)
 {
-    if (std::floor(n) == std::ceil(n))
+    if (std::trunc(n) == n && n >= std::numeric_limits<int>::min() && n <= std::numeric_limits<int>::max())
         v = static_cast<int>(n);
     else
         v = n;
@@ -16,17 +17,18 @@ number::number(const unsigned long &n) : v(static_cast<int>(n)){};
 number::number(const unsigned long long &n) : v(static_cast<int>(n)){};
 number::number(const std::string &n)
 {
-    try{
-    if (n.find('.') == std::string::npos)
-        v = std::stoi(n);
-    else
-        v = std::stod(n);
+    try
+    {
+        if (n.find('.') == std::string::npos)
+            v = std::stoi(n, 0, 0);
+        else
+            *this = number(std::stod(n));
     }
-    catch (const std::invalid_argument&)
+    catch (const std::invalid_argument &)
     {
         throw std::runtime_error("cannot convert \"" + n + "\" to number");
     }
-    catch (const std::out_of_range&)
+    catch (const std::out_of_range &)
     {
         throw std::runtime_error("cannon convert \"" + n + "\" to number, converted value would overflow the number");
     }

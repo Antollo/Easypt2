@@ -125,5 +125,5 @@ let n = Vector(Point(1, 1), Point(17, 33));
 if (m < n) {
     console.writeLine("ok");
 } else {
-    console.writeLine("not źle");
+    console.writeLine("not ok");
 }

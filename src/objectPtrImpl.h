@@ -2,7 +2,11 @@
 #define OBJECTPTRIMPL_H_
 
 #include <stdexcept>
+#include <type_traits>
 #include "allocator.h"
+
+template <class T>
+using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
 class object;
 
@@ -30,6 +34,10 @@ public:
     const object &operator*() const { return *_obj; }
     const object *operator->() const { return _obj; }
     object *get() { return _obj; }
+    const object *get() const { return _obj; }
+
+    template <class T>
+    remove_cref_t<T> getConverted() const; // defined in "nobject.h"
 
 private:
     using refCountType = uint_fast16_t;

@@ -1,0 +1,7 @@
+let docs = import("../library/docs");
+
+console.getOutput(() => {
+    let i = 100;
+    while (i--)
+        docs.testAllExamples();
+});
