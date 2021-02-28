@@ -13,11 +13,11 @@ add_test(Conversions testConversions)
 add_executable(testRunner testRunner.cpp)
 target_link_libraries(testRunner libeasypt)
 
-set(inputs 1 2 3 4)
+set(inputs 1 2 3 4 5)
 foreach (input ${inputs})
     add_test("e2eTest${input}" testRunner
     -file "e2e/in/${input}.ez" -compare "e2e/out/${input}.out")
 endforeach()
 
-add_test(NAME "examples" COMMAND easypt -file "e2e/in/5.ez")
+add_test(NAME "examples" COMMAND easypt -file "e2e/in/examples.ez")
 set_tests_properties("examples" PROPERTIES PASS_REGULAR_EXPRESSION "ok")

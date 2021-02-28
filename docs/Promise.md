@@ -39,6 +39,10 @@ console.write(30, " ");
 - [`hasOwnProperty`](Object.classPrototype.hasOwnProperty.md)
 - [`readOperator`](Object.classPrototype.readOperator.md)
 - [`removeProperty`](Object.classPrototype.removeProperty.md)
+- [`toArray`](Object.classPrototype.toArray.md)
+- [`toBoolean`](Object.classPrototype.toBoolean.md)
+- [`toNumber`](Object.classPrototype.toNumber.md)
+- [`toString`](Object.classPrototype.toString.md)
 
 
 ### Properties:

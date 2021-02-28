@@ -1,5 +1,57 @@
-let test;
-let output = console.getOutput(() => {
-    test = import("../../library/docs.ez").testAllExamples();
-});
-console.error(test ? "ok" : output);
+for (let i = 0; i < 100; i++) {
+    console.write(i, " ");
+}
+console.writeLine();
+
+console.writeLine(0x10);
+console.writeLine(0xFFFF);
+console.writeLine(010);
+console.writeLine(0.025e3);
+
+console.writeLine("0x10".toNumber());
+console.writeLine("0xFFFF".toNumber());
+console.writeLine("010".toNumber());
+console.writeLine("0.025e3".toNumber());
+
+try {
+    console.writeLine("0xGG".toNumber());
+} catch {
+    console.writeLine("error");
+}
+
+console.writeLine([].toNumber());
+console.writeLine([1, 2, 3].toNumber());
+
+console.writeLine(true.toNumber());
+console.writeLine(false.toNumber());
+
+console.writeLine({}.toNumber());
+console.writeLine({ x: 1, y: 0 }.toNumber());
+
+console.writeLine(3.toString());
+console.writeLine(3.14e-1.toString());
+
+console.writeLine([].toString());
+console.writeLine([1, 2, 3].toString());
+
+console.writeLine(true.toString());
+console.writeLine(false.toString());
+
+console.writeLine({}.toString());
+console.writeLine({ x: 1 }.toString());
+
+console.writeLine(1.toArray());
+console.writeLine("abc".toArray());
+
+console.writeLine(0.toBoolean());
+console.writeLine(1.toBoolean());
+console.writeLine((-1).toBoolean());
+
+console.writeLine("".toBoolean());
+console.writeLine("abc".toBoolean());
+
+console.writeLine([].toBoolean());
+console.writeLine([1].toBoolean());
+
+console.writeLine({}.toBoolean());
+console.writeLine({ x: 1, y: 0 }.toBoolean());

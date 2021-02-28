@@ -10,7 +10,7 @@ void file::open(const std::string &_path, const char *mode)
     if (isOpen())
         close();
     f = std::fopen(_path.c_str(), mode);
-    assert(isOpen(), std::string("open: file not open ") + std::strerror(errno));
+    assert(isOpen(), "open: " + (_path.size() > 0 ? "file \"" + _path + "\" not open " : "file not open ") + std::strerror(errno));
     path = std::filesystem::absolute(_path);
     lastOperation = lastOperationType::openOrClose;
 }
@@ -20,7 +20,7 @@ void file::open(FILE *_f)
     if (isOpen())
         close();
     f = _f;
-    assert(isOpen(), "open: file not open");
+    assert(isOpen(), "open: " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     path.clear();
     lastOperation = lastOperationType::openOrClose;
 }
@@ -32,7 +32,7 @@ void file::create(const std::string &_path)
 
 void file::close()
 {
-    assert(isOpen(), "close: file not open");
+    assert(isOpen(), "close: " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     std::fclose(f);
     f = nullptr;
     lastOperation = lastOperationType::openOrClose;
@@ -152,14 +152,14 @@ void file::setWritePosition(size_t n)
 
 void file::clear()
 {
-    assert(isOpen(), "clear: file not open");
+    assert(isOpen(), "clear: " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     f = std::freopen(nullptr, "w+", f);
     assert(isOpen(), "clear: failed to reopen");
 }
 
 void file::readGuard(const std::string &op)
 {
-    assert(isOpen(), op + ": file not open");
+    assert(isOpen(), op + ": " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     if (lastOperation != lastOperationType::read)
     {
         std::fflush(f);
@@ -170,7 +170,7 @@ void file::readGuard(const std::string &op)
 
 void file::writeGuard(const std::string &op)
 {
-    assert(isOpen(), op + ": file not open");
+    assert(isOpen(), op + ": " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     if (lastOperation != lastOperationType::write)
     {
         std::fflush(f);
@@ -181,7 +181,7 @@ void file::writeGuard(const std::string &op)
 
 size_t file::size()
 {
-    assert(isOpen(), "size: file not open");
+    assert(isOpen(), "size: " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     size_t pos = std::ftell(f);
     fseek(f, 0, SEEK_END);
     size_t result = ftell(f);
@@ -191,7 +191,7 @@ size_t file::size()
 
 void file::flush()
 {
-    assert(isOpen(), "flush: file not open");
+    assert(isOpen(), "flush: " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
     std::fflush(f);
 }
 

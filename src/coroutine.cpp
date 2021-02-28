@@ -16,7 +16,7 @@ void coroutineBase::handleException(std::exception_ptr ptr)
         auto eObj = e.getPtr();
         console::stackTrace();
         if (eObj->isConvertible<std::string>())
-            console::error(eObj->getConverted<std::string>());
+            console::error(eObj.getConverted<std::string>());
         else
             console::error((std::string)e.what());
     }

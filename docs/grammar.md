@@ -7,7 +7,10 @@
 ```
 identifier      : [_a-zA-Z][_a-zA-Z0-9]*
 ws              : [ \t\n\r]*
-number          : [0-9]+([.][0-9]+)?
+float           : [0-9]+[.][0-9]+([eE]-?[0-9]+)?
+decimal         : [1-9][0-9]*|0
+hexadecimal     : 0[xX][0-9a-fA-F]+
+octal           : 0[0-7]+
 string          : \"[^"\\]*(\\.[^"\\]*)*\"
 ```
 
@@ -58,7 +61,10 @@ and should not be used.
 ### Literals
 
 ```
-{number}        : NUMBER_LITERAL;
+{float}         : NUMBER_LITERAL;
+{decimal}       : NUMBER_LITERAL;
+{hexadecimal}   : NUMBER_LITERAL;
+{octal}         : NUMBER_LITERAL;
 {string}        : STRING_LITERAL;
 ```
 

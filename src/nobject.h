@@ -4,7 +4,6 @@
 #include <any>
 #include <unordered_map>
 #include <vector>
-#include <type_traits>
 #include <cstddef>
 #include <array>
 #include <bitset>
@@ -17,9 +16,6 @@
 #include "file.h"
 #include "childProcess.h"
 #include "allocator.h"
-
-template <class T>
-using remove_cref_t = std::remove_const_t<std::remove_reference_t<T>>;
 
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
 
@@ -60,7 +56,8 @@ public:
         NativeFunction,
         File,
         TcpClient,
-        TcpServer
+        TcpServer,
+        ChildProcess
     };
 
     static type::Function makeFunction()
@@ -159,6 +156,11 @@ public:
         return std::holds_alternative<remove_cref_t<T>>(_value);
     }
 
+    typeIndex getTypeIndex() const
+    {
+        return static_cast<typeIndex>(_value.index());
+    }
+
     template <class T>
     void setType()
     {
@@ -196,16 +198,41 @@ public:
     constexpr bool isConvertible() const
     {
         using RT = remove_cref_t<T>;
-        return std::is_same_v<RT, type::Object> || std::is_same_v<RT, type::Boolean> || std::is_same_v<RT, type::Number> 
-        || std::is_same_v<RT, type::String> || std::is_same_v<RT, type::Array>;
+        if constexpr (std::is_same_v<RT, type::Object> || std::is_same_v<RT, type::Boolean> || std::is_same_v<RT, type::Number> || std::is_same_v<RT, type::String> || std::is_same_v<RT, type::Array>)
+            return true;
+        else
+        {
+            if constexpr (std::is_same_v<RT, type::Number>)
+            {
+                auto toNumberMethod = read(n::toNumber);
+                return toNumberMethod && toNumberMethod != toNumber;
+            }
+            else if constexpr (std::is_same_v<RT, type::String>)
+            {
+                auto toStringMethod = read(n::toString);
+                return toStringMethod && toStringMethod != toString;
+            }
+            else if constexpr (std::is_same_v<RT, type::Array>)
+            {
+                auto toArrayMethod = read(n::toArray);
+                return toArrayMethod && toArrayMethod != toArray;
+            }
+            else if constexpr (std::is_same_v<RT, type::Boolean>)
+            {
+                auto toBooleanMethod = read(n::toBoolean);
+                return toBooleanMethod && toBooleanMethod != toBoolean;
+            }
+            else
+                return false;
+        }
     }
 
     template <class T>
-    remove_cref_t<T> getConverted()
+    remove_cref_t<T> getConverted(const objectPtr &thisObj)
     {
         using RT = remove_cref_t<T>;
 
-        return std::visit([this](auto &&value) -> RT {
+        return std::visit([this, &thisObj](auto &&value) -> RT {
             using A = std::decay_t<decltype(value)>;
 
             if constexpr (std::is_same_v<RT, A>)
@@ -220,7 +247,13 @@ public:
                 else if constexpr (std::is_same_v<A, type::Boolean>)
                     return static_cast<type::Number>(value);
                 else
-                    return static_cast<type::Number>(_properties.size());
+                {
+                    auto toNumberMethod = read(n::toNumber);
+                    if (toNumberMethod && toNumberMethod != toNumber)
+                        return (*toNumberMethod)(thisObj, {}, nullptr)->get<const type::String>();
+                    else
+                        return static_cast<type::Number>(_properties.size());
+                }
             }
 
             else if constexpr (std::is_same_v<RT, type::String>)
@@ -232,12 +265,22 @@ public:
                 else if constexpr (std::is_same_v<A, type::Boolean>)
                     return value ? "true"s : "false"s;
                 else
-                    return toJson();
+                {
+                    auto toStringMethod = read(n::toString);
+                    if (toStringMethod && toStringMethod != toString)
+                        return (*toStringMethod)(thisObj, {}, nullptr)->get<const type::String>();
+                    else
+                        return toJson();
+                }
             }
 
             else if constexpr (std::is_same_v<RT, type::Array>)
             {
-                return type::Array{object::makeObject(value)};
+                auto toArrayMethod = read(n::toArray);
+                if (toArrayMethod && toArrayMethod != toArray)
+                    return (*toArrayMethod)(thisObj, {}, nullptr)->get<const type::Array>();
+                else
+                    return type::Array{object::makeObject(value)};
             }
 
             else if constexpr (std::is_same_v<RT, type::Boolean>)
@@ -249,7 +292,13 @@ public:
                 else if constexpr (std::is_same_v<A, type::Array>)
                     return static_cast<type::Boolean>(value.size());
                 else
-                    return _properties.size() != 0;
+                {
+                    auto toBooleanMethod = read(n::toBoolean);
+                    if (toBooleanMethod && toBooleanMethod != toBoolean)
+                        return (*toBooleanMethod)(thisObj, {}, nullptr)->get<const type::Boolean>();
+                    else
+                        return _properties.size() != 0;
+                }
             }
 
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
@@ -288,7 +337,8 @@ public:
     void captureStack(const std::shared_ptr<stack> &st) { _capturedStack = st; }
     void captureStack(std::shared_ptr<stack> &&st) { _capturedStack = std::move(st); }
 
-    static objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
+    static inline objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
+    static inline objectPtr toNumber, toString, toArray, toBoolean;
 
     static void setGlobalStack(stack *newGlobalStack) { globalStack = newGlobalStack; }
 
@@ -306,9 +356,12 @@ public:
 private:
     friend class objectPtrImpl;
     friend class Import;
+
 public:
     std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::Promise, type::Function, type::NativeFunction,
-    type::File, type::TcpClient, type::TcpServer, type::ChildProcess> _value;
+                 type::File, type::TcpClient, type::TcpServer, type::ChildProcess>
+        _value;
+
 private:
     propertiesType _properties;
     objectPtr _prototype;
@@ -330,12 +383,19 @@ private:
     static void reuse(object *ptr);
 
     objectPtr &read(const name &n);
+    const objectPtr &read(const name &n) const;
     const char *getTypeName() const
     {
         return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
     }
     void toJson(std::string &str, const int indentation = 1) const;
 };
+
+template <class T>
+remove_cref_t<T> objectPtrImpl::getConverted() const
+{
+    return _obj->getConverted<T>(*this);
+}
 
 class objectException : public std::exception
 {

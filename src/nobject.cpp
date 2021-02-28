@@ -1,8 +1,6 @@
 #include "nobject.h"
 #include "Node.h"
 
-object::objectPtr object::numberPrototype, object::stringPrototype, object::booleanPrototype, object::arrayPrototype,
-    object::objectPrototype, object::functionPrototype, object::promisePrototype, object::classPrototype;
 stack *object::globalStack;
 
 static allocatorBuffer<sizeof(object)> objectMemoryBuffer;
@@ -106,6 +104,21 @@ object::type::Array object::getOwnPropertyNames() const
 }
 
 object::objectPtr &object::read(const name &n)
+{
+    static object::objectPtr notFound(nullptr);
+    if (n == n::prototype)
+        return _prototype;
+    {
+        auto it = _properties.find(n);
+        if (it != _properties.end())
+            return it->second;
+    }
+    if (_prototype && _prototype.get() != this)
+        return _prototype->read(n);
+    return notFound;
+}
+
+const object::objectPtr &object::read(const name &n) const
 {
     static object::objectPtr notFound(nullptr);
     if (n == n::prototype)

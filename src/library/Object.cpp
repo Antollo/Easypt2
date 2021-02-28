@@ -29,18 +29,18 @@ void Object::init(stack *st)
 
     addFunctionL(object::objectPrototype, "hasOwnProperty"_n, {
         argsConvertibleGuard<std::string>(args);
-        return object::makeObject(thisObj->hasOwnProperty(static_cast<name>(args[0]->getConverted<std::string>())));
+        return object::makeObject(thisObj->hasOwnProperty(static_cast<name>(args[0].getConverted<std::string>())));
     });
 
     addFunctionL(object::objectPrototype, "removeProperty"_n, {
         argsConvertibleGuard<std::string>(args);
-        thisObj->removeProperty(static_cast<name>(args[0]->getConverted<std::string>()));
+        thisObj->removeProperty(static_cast<name>(args[0].getConverted<std::string>()));
         return thisObj;
     });
 
     addFunctionL(object::objectPrototype, "addProperty"_n, {
         argsConvertibleGuard<std::string, nullptr_t>(args);
-        thisObj->addProperty(static_cast<name>(args[0]->getConverted<std::string>()), args[1]);
+        thisObj->addProperty(static_cast<name>(args[0].getConverted<std::string>()), args[1]);
         return args[1];
     });
 
@@ -50,11 +50,32 @@ void Object::init(stack *st)
 
     addFunctionL(object::objectPrototype, n::readOperator, {
         argsConvertibleGuard<std::string>(args);
-        return (*thisObj)[static_cast<name>(args[0]->getConverted<std::string>())];
+        return (*thisObj)[static_cast<name>(args[0].getConverted<std::string>())];
     });
 
     addFunctionL(object::objectPrototype, "getId"_n, {
         std::uintptr_t ptr = reinterpret_cast<std::uintptr_t>(thisObj.get());
         return object::makeObject(toId(ptr));
     });
+
+    addFunctionL(object::objectPrototype, n::toNumber, {
+        return object::makeObject(thisObj.getConverted<object::type::Number>());
+    });
+
+    addFunctionL(object::objectPrototype, n::toString, {
+        return object::makeObject(thisObj.getConverted<object::type::String>());
+    });
+
+    addFunctionL(object::objectPrototype, n::toArray, {
+        return object::makeObject(thisObj.getConverted<object::type::Array>());
+    });
+
+    addFunctionL(object::objectPrototype, n::toBoolean, {
+        return object::makeObject(thisObj.getConverted<object::type::Boolean>());
+    });
+
+    object::toNumber = (*object::objectPrototype)[n::toNumber];
+    object::toString = (*object::objectPrototype)[n::toString];
+    object::toArray = (*object::objectPrototype)[n::toArray];
+    object::toBoolean = (*object::objectPrototype)[n::toBoolean];
 }

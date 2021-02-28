@@ -50,7 +50,7 @@ void Promise::init(stack *st)
         thisObj->get<object::type::Promise>() = coroutine<object::objectPtr>::makeCoroutine([args]() {
             object::objectPtr f = args[0];
             object::objectPtr c = args[1];
-            while ((*c)(c, {}, nullptr)->getConverted<bool>())
+            while ((*c)(c, {}, nullptr).getConverted<bool>())
                 yield;
             return (*f)(f, {}, nullptr);
         });

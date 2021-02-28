@@ -94,7 +94,7 @@ objectPtrImpl::~objectPtrImpl()
                         auto eObj = e.getPtr();
                         console::stackTrace();
                         if (eObj->isConvertible<std::string>())
-                            console::error(eObj->getConverted<std::string>());
+                            console::error(eObj.getConverted<std::string>());
                         else
                             console::error((std::string)e.what());
                     }

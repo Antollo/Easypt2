@@ -79,6 +79,10 @@ public:
         codeToNameMap[decrementCode] = "--"s;
         codeToNameMap[notCode] = "!"s;
         codeToNameMap[complementCode] = "~"s;
+        codeToNameMap[toNumberCode] = "toNumber"s;
+        codeToNameMap[toStringCode] = "toString"s;
+        codeToNameMap[toArrayCode] = "toArray"s;
+        codeToNameMap[toBooleanCode] = "toBoolean"s;
         
         nameToCodeMap["prototype"s] = prototypeCode;
         nameToCodeMap["args"s] = argsCode;
@@ -126,6 +130,10 @@ public:
         nameToCodeMap["--"s] = decrementCode;
         nameToCodeMap["!"s] = notCode;
         nameToCodeMap["~"s] = complementCode;
+        nameToCodeMap["toNumber"s] = toNumberCode;
+        nameToCodeMap["toString"s] = toStringCode;
+        nameToCodeMap["toArray"s] = toArrayCode;
+        nameToCodeMap["toBoolean"s] = toBooleanCode;
     }
 
 private:
@@ -178,6 +186,10 @@ private:
     static constexpr codeType decrementCode = 45;
     static constexpr codeType notCode = 46;
     static constexpr codeType complementCode = 47;
+    static constexpr codeType toNumberCode = 48;
+    static constexpr codeType toStringCode = 49;
+    static constexpr codeType toArrayCode = 50;
+    static constexpr codeType toBooleanCode = 51;
 
     codeType code;
     constexpr name(codeType i) : code(i) {}
@@ -251,6 +263,10 @@ struct n
     static constexpr name decrement = name::decrementCode;
     static constexpr name not = name::notCode;
     static constexpr name complement = name::complementCode;
+    static constexpr name toNumber = name::toNumberCode;
+    static constexpr name toString = name::toStringCode;
+    static constexpr name toArray = name::toArrayCode;
+    static constexpr name toBoolean = name::toBooleanCode;
 };
 
 #endif // NAME_H

@@ -72,10 +72,7 @@ void Node::text(const std::string &t)
     switch (_token)
     {
     case NUMBER_LITERAL:
-        if (t.find('.') == std::string::npos)
-            _value = object::makeObject(static_cast<number>(std::stoi(t, 0, 0)));
-        else
-            _value = object::makeObject(static_cast<number>(std::stod(t)));
+        _value = object::makeObject(static_cast<number>(t));
         _value->setConst();
         break;
 
@@ -483,7 +480,7 @@ object::objectPtr Node::evaluate(stack &st) const
         if (_children[0]._token == IDENTIFIER)
             return st.insert(_children[0]._text, a);
         else
-            return st.insert(static_cast<name>(_children[0].evaluate(st)->getConverted<std::string>()), a);
+            return st.insert(static_cast<name>(_children[0].evaluate(st).getConverted<std::string>()), a);
     }
 
     case DELETE_:
@@ -596,14 +593,13 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() + b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() + b.getConverted<number>()));
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<std::string>(a->get<const std::string>() + b->getConverted<std::string>()));
+            return object::makeObject(static_cast<std::string>(a->get<const std::string>() + b.getConverted<std::string>()));
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
         {
-            // TODO: in place
             object::type::Array arr = a->get<const object::type::Array>();
-            object::type::Array toAdd = b->getConverted<object::type::Array>();
+            object::type::Array toAdd = b.getConverted<object::type::Array>();
             arr.insert(arr.end(), toAdd.begin(), toAdd.end());
             return object::makeObject(arr);
         }
@@ -616,25 +612,30 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() * b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() * b.getConverted<number>()));
         else if (a->isOfType<std::string>() && b->isConvertible<number>())
         {
             const std::string &str = a->get<const std::string>();
-            int i = static_cast<int>(b->getConverted<number>());
+            int i = static_cast<int>(b.getConverted<number>());
             std::string res;
             res.reserve(str.size() * i);
             while (i--)
-                res += str;
+                res.insert(res.begin(), str.begin(), str.end());
             return object::makeObject(res);
         }
         else if (a->isOfType<object::type::Array>() && b->isConvertible<number>())
         {
             const object::type::Array &arr = a->get<const object::type::Array>();
-            int i = static_cast<int>(b->getConverted<number>());
+            int i = static_cast<int>(b.getConverted<number>());
             object::type::Array res;
             res.reserve(arr.size() * i);
             while (i--)
                 res.insert(res.begin(), arr.begin(), arr.end());
+            for(auto& el:res)
+            {
+                *el = el;
+                el->setConst(false);
+            }
             return object::makeObject(res);
         }
         return (*(*a)[n::multiplication])(a, {b}, &st);
@@ -646,7 +647,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() - b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() - b.getConverted<number>()));
         return (*(*a)[n::subtraction])(a, {b}, &st);
     }
 
@@ -656,7 +657,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() / b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() / b.getConverted<number>()));
         return (*(*a)[n::division])(a, {b}, &st);
     }
 
@@ -666,7 +667,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() % b->getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->get<const number>() % b.getConverted<number>()));
         return (*(*a)[n::modulus])(a, {b}, &st);
     }
 
@@ -677,11 +678,11 @@ object::objectPtr Node::evaluate(stack &st) const
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
-            if (!a->getConverted<bool>())
+            if (!a.getConverted<bool>())
                 return object::makeObject(false);
             b = _children[1].evaluate(st);
             if (b->isConvertible<bool>())
-                return object::makeObject(b->getConverted<bool>());
+                return object::makeObject(b.getConverted<bool>());
         }
         else
             b = _children[1].evaluate(st);
@@ -695,7 +696,7 @@ object::objectPtr Node::evaluate(stack &st) const
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
-            if (a->getConverted<bool>())
+            if (a.getConverted<bool>())
                 return a;
             b = _children[1].evaluate(st);
             if (b->isConvertible<bool>())
@@ -712,7 +713,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) & static_cast<int>(b->getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) & static_cast<int>(b.getConverted<number>())));
         return (*(*a)[n::bitwiseAnd])(a, {b}, &st);
     }
 
@@ -722,7 +723,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) | static_cast<int>(b->getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) | static_cast<int>(b.getConverted<number>())));
         return (*(*a)[n::bitwiseOr])(a, {b}, &st);
     }
 
@@ -732,7 +733,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) << static_cast<int>(b->getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) << static_cast<int>(b.getConverted<number>())));
         return (*(*a)[n::shiftLeft])(a, {b}, &st);
     }
 
@@ -742,7 +743,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) >> static_cast<int>(b->getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) >> static_cast<int>(b.getConverted<number>())));
         return (*(*a)[n::shiftRight])(a, {b}, &st);
     }
 
@@ -752,16 +753,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() == b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() == b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() == b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() == b.getConverted<std::string>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() == b->getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() == b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() == b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() == b.getConverted<bool>()));
 
         return (*(*a)[n::equal])(a, {b}, &st);
     }
@@ -772,16 +773,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() != b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() != b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() != b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() != b.getConverted<std::string>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() != b->getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() != b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() != b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() != b.getConverted<bool>()));
 
         return (*(*a)[n::lessEqual])(a, {b}, &st);
     }
@@ -792,16 +793,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() < b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() < b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() < b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() < b.getConverted<std::string>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() < b->getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() < b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() < b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() < b.getConverted<bool>()));
 
         return (*(*a)[n::less])(a, {b}, &st);
     }
@@ -812,16 +813,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() > b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() > b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() > b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() > b.getConverted<std::string>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() > b->getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() > b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() > b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() > b.getConverted<bool>()));
 
         return (*(*a)[n::greater])(a, {b}, &st);
     }
@@ -832,16 +833,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() <= b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() <= b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() <= b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() <= b.getConverted<std::string>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() <= b->getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() <= b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() <= b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() <= b.getConverted<bool>()));
 
         return (*(*a)[n::lessEqual])(a, {b}, &st);
     }
@@ -852,16 +853,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() >= b->getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->get<const number>() >= b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() >= b->getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->get<const std::string>() >= b.getConverted<std::string>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() >= b->getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() >= b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() >= b->getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->get<const bool>() >= b.getConverted<bool>()));
 
         return (*(*a)[n::greaterEqual])(a, {b}, &st);
     }
@@ -895,7 +896,7 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
-            return object::makeObject(!a->getConverted<bool>());
+            return object::makeObject(!a.getConverted<bool>());
         return (*(*a)[n::not])(a, {}, &st);
     }
 
@@ -1260,7 +1261,7 @@ void Node::evaluateVoid(stack &st) const
         if (_children[0]._token == IDENTIFIER)
             st.insert(_children[0]._text, a);
         else
-            st.insert(static_cast<name>(_children[0].evaluate(st)->getConverted<std::string>()), a);
+            st.insert(static_cast<name>(_children[0].evaluate(st).getConverted<std::string>()), a);
         return;
     }
 
@@ -1434,7 +1435,7 @@ void Node::evaluateVoid(stack &st) const
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
-            if (!a->getConverted<bool>())
+            if (!a.getConverted<bool>())
                 return;
             b = _children[1].evaluate(st);
             if (b->isConvertible<bool>())
@@ -1453,7 +1454,7 @@ void Node::evaluateVoid(stack &st) const
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
-            if (a->getConverted<bool>())
+            if (a.getConverted<bool>())
                 return;
             b = _children[1].evaluate(st);
             if (b->isConvertible<bool>())
@@ -1686,7 +1687,7 @@ number Node::evaluateNumber(stack &st) const
     // TODO
     // sin, cos, sqrt etc.
     case IDENTIFIER:
-        return st[_text]->getConverted<number>();
+        return st[_text].getConverted<number>();
     case ADDITION:
     {
         assert(_children.size() == 2);
@@ -1790,7 +1791,7 @@ number Node::evaluateNumber(stack &st) const
         assert(_children.size() == 3);
         return _children[0].evaluateBoolean(st) ? _children[1].evaluateNumber(st) : _children[2].evaluateNumber(st);
     }
-    return evaluate(st)->getConverted<number>();
+    return evaluate(st).getConverted<number>();
 }
 
 bool Node::evaluateBoolean(stack &st) const
@@ -1798,7 +1799,7 @@ bool Node::evaluateBoolean(stack &st) const
     switch (_token)
     {
     case IDENTIFIER:
-        return st[_text]->getConverted<bool>();
+        return st[_text].getConverted<bool>();
     case INSTANCEOF:
     {
         assert(_children.size() == 2);
@@ -1814,15 +1815,15 @@ bool Node::evaluateBoolean(stack &st) const
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
-            if (!a->getConverted<bool>())
+            if (!a.getConverted<bool>())
                 return false;
             b = _children[1].evaluate(st);
             if (b->isConvertible<bool>())
-                return b->getConverted<bool>();
+                return b.getConverted<bool>();
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n::and])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::and])(a, {b}, &st).getConverted<bool>();
     }
 
     case OR:
@@ -1832,15 +1833,15 @@ bool Node::evaluateBoolean(stack &st) const
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
-            if (a->getConverted<bool>())
+            if (a.getConverted<bool>())
                 return true;
             b = _children[1].evaluate(st);
             if (b->isConvertible<bool>())
-                return b->getConverted<bool>();
+                return b.getConverted<bool>();
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n::or])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::or])(a, {b}, &st).getConverted<bool>();
     }
 
     case EQUAL:
@@ -1849,18 +1850,18 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() == b->getConverted<number>();
+            return a->get<const number>() == b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() == b->getConverted<std::string>();
+            return a->get<const std::string>() == b.getConverted<std::string>();
 
         if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() == b->getConverted<object::type::Array>();
+            return a->get<const object::type::Array>() == b.getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() == b->getConverted<bool>();
+            return a->get<const bool>() == b.getConverted<bool>();
 
-        return (*(*a)[n::equal])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::equal])(a, {b}, &st).getConverted<bool>();
     }
 
     case NOT_EQUAL:
@@ -1869,18 +1870,18 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() != b->getConverted<number>();
+            return a->get<const number>() != b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() != b->getConverted<std::string>();
+            return a->get<const std::string>() != b.getConverted<std::string>();
 
         if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() != b->getConverted<object::type::Array>();
+            return a->get<const object::type::Array>() != b.getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() != b->getConverted<bool>();
+            return a->get<const bool>() != b.getConverted<bool>();
 
-        return (*(*a)[n::lessEqual])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::lessEqual])(a, {b}, &st).getConverted<bool>();
     }
 
     case LESS:
@@ -1889,18 +1890,18 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() < b->getConverted<number>();
+            return a->get<const number>() < b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() < b->getConverted<std::string>();
+            return a->get<const std::string>() < b.getConverted<std::string>();
 
         if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() < b->getConverted<object::type::Array>();
+            return a->get<const object::type::Array>() < b.getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() < b->getConverted<bool>();
+            return a->get<const bool>() < b.getConverted<bool>();
 
-        return (*(*a)[n::less])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::less])(a, {b}, &st).getConverted<bool>();
     }
 
     case GREATER:
@@ -1909,18 +1910,18 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() > b->getConverted<number>();
+            return a->get<const number>() > b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() > b->getConverted<std::string>();
+            return a->get<const std::string>() > b.getConverted<std::string>();
 
         if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() > b->getConverted<object::type::Array>();
+            return a->get<const object::type::Array>() > b.getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() > b->getConverted<bool>();
+            return a->get<const bool>() > b.getConverted<bool>();
 
-        return (*(*a)[n::greater])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::greater])(a, {b}, &st).getConverted<bool>();
     }
 
     case LESS_EQUAL:
@@ -1929,18 +1930,18 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() <= b->getConverted<number>();
+            return a->get<const number>() <= b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() <= b->getConverted<std::string>();
+            return a->get<const std::string>() <= b.getConverted<std::string>();
 
         if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() <= b->getConverted<object::type::Array>();
+            return a->get<const object::type::Array>() <= b.getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() <= b->getConverted<bool>();
+            return a->get<const bool>() <= b.getConverted<bool>();
 
-        return (*(*a)[n::lessEqual])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::lessEqual])(a, {b}, &st).getConverted<bool>();
     }
 
     case GREATER_EQUAL:
@@ -1949,18 +1950,18 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() >= b->getConverted<number>();
+            return a->get<const number>() >= b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() >= b->getConverted<std::string>();
+            return a->get<const std::string>() >= b.getConverted<std::string>();
 
         if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() >= b->getConverted<object::type::Array>();
+            return a->get<const object::type::Array>() >= b.getConverted<object::type::Array>();
 
         if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() >= b->getConverted<bool>();
+            return a->get<const bool>() >= b.getConverted<bool>();
 
-        return (*(*a)[n::greaterEqual])(a, {b}, &st)->getConverted<bool>();
+        return (*(*a)[n::greaterEqual])(a, {b}, &st).getConverted<bool>();
     }
 
     case NOT:
@@ -1968,13 +1969,13 @@ bool Node::evaluateBoolean(stack &st) const
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
-            return !a->getConverted<bool>();
-        return (*(*a)[n::not])(a, {}, &st)->getConverted<bool>();
+            return !a.getConverted<bool>();
+        return (*(*a)[n::not])(a, {}, &st).getConverted<bool>();
     }
 
     case CONDITIONAL:
         assert(_children.size() == 3);
         return _children[0].evaluateBoolean(st) ? _children[1].evaluateBoolean(st) : _children[2].evaluateBoolean(st);
     }
-    return evaluate(st)->getConverted<bool>();
+    return evaluate(st).getConverted<bool>();
 }

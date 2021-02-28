@@ -12,7 +12,10 @@
 
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 ws [ \t\n\r]*
-number [0-9]+([.][0-9]+)?
+float [0-9]+[.][0-9]+([eE]-?[0-9]+)?
+decimal [1-9][0-9]*|0
+hexadecimal 0[xX][0-9a-fA-F]+
+octal 0[0-7]+
 string \"[^"\\]*(\\.[^"\\]*)*\"
 multilineComment \/\*([^*]*(\*[^\/])*)*\*\/
 comment \/\/.*
@@ -56,7 +59,19 @@ comment \/\/.*
                                 treeParser::text = yytext;
                                 return IDENTIFIER;
                             }
-<INITIAL>{number}           {
+<INITIAL>{float}            {
+                                treeParser::text = yytext;
+                                return NUMBER_LITERAL;
+                            }
+<INITIAL>{decimal}          {
+                                treeParser::text = yytext;
+                                return NUMBER_LITERAL;
+                            }
+<INITIAL>{hexadecimal}      {
+                                treeParser::text = yytext;
+                                return NUMBER_LITERAL;
+                            }
+<INITIAL>{octal}            {
                                 treeParser::text = yytext;
                                 return NUMBER_LITERAL;
                             }
