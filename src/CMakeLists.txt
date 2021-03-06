@@ -7,7 +7,7 @@ add_library(libeasypt OBJECT console.cpp core.cpp name.cpp nobject.cpp number.cp
 osDependent.cpp runtime.cpp stack.cpp objectPtrImpl.cpp file.cpp coroutine.cpp childProcess.cpp
 library/consoleObj.cpp library/Accessible.cpp library/Object.cpp library/Array.cpp
 library/File.cpp library/String.cpp library/Number.cpp library/Boolean.cpp library/Class.cpp
-library/Promise.cpp library/Time.cpp library/Tcp.cpp library/ChildProcess.cpp
+library/Promise.cpp library/Time.cpp library/Tcp.cpp library/ChildProcess.cpp library/Buffer.cpp
 parser/gram.c parser/lex.yy.c parser/gramUtility.cpp parser/treeParser.cpp parser/Node.cpp)
 
 target_include_directories(libeasypt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/parser)

@@ -67,6 +67,7 @@ void runtime::init(stack *st)
     Tcp::init(st);
     Accessible::init(st);
     ChildProcess::init(st);
+    Buffer::init(st);
 
     auto modules = st->insert("modules"_n, object::makeEmptyObject());
     Import::init(modules);

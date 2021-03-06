@@ -83,6 +83,7 @@ public:
         codeToNameMap[toStringCode] = "toString"s;
         codeToNameMap[toArrayCode] = "toArray"s;
         codeToNameMap[toBooleanCode] = "toBoolean"s;
+        codeToNameMap[BufferCode] = "Buffer"s;
         
         nameToCodeMap["prototype"s] = prototypeCode;
         nameToCodeMap["args"s] = argsCode;
@@ -134,6 +135,7 @@ public:
         nameToCodeMap["toString"s] = toStringCode;
         nameToCodeMap["toArray"s] = toArrayCode;
         nameToCodeMap["toBoolean"s] = toBooleanCode;
+        nameToCodeMap["Buffer"s] = BufferCode;
     }
 
 private:
@@ -190,6 +192,7 @@ private:
     static constexpr codeType toStringCode = 49;
     static constexpr codeType toArrayCode = 50;
     static constexpr codeType toBooleanCode = 51;
+    static constexpr codeType BufferCode = 52;
 
     codeType code;
     constexpr name(codeType i) : code(i) {}
@@ -267,6 +270,7 @@ struct n
     static constexpr name toString = name::toStringCode;
     static constexpr name toArray = name::toArrayCode;
     static constexpr name toBoolean = name::toBooleanCode;
+    static constexpr name Buffer = name::BufferCode;
 };
 
 #endif // NAME_H
