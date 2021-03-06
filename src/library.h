@@ -81,4 +81,9 @@ namespace ChildProcess
 {
 void init(stack *st);
 };
+
+namespace Buffer
+{
+void init(stack *st);
+};
 #endif /* !LIBRARY_H_ */
