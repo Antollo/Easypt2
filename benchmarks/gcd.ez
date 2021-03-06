@@ -19,7 +19,7 @@ for (let i = 0; i < iterations; i++) {
     time = Time.sinceEpoch.asFloatingPoint();
     gcd(144, 1836311903);
     mean = mean + Time.sinceEpoch.asFloatingPoint() - time;
-    console.write("\r--- " + (i / iterations * 100 + 1) + "% ---");
+    console.write("\r--- " + (i / iterations * 100 + 1).toInteger() + "% ---");
 }
 
 mean = mean / iterations;

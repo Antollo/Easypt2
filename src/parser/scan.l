@@ -54,6 +54,7 @@ comment \/\/.*
 <INITIAL>await              { return AWAIT; }
 <INITIAL>delete             { return DELETE_; }
 <INITIAL>break              { return BREAK; }
+<INITIAL>\.\.\.             { return SPREAD_OPERATOR; }
 
 <INITIAL>{identifier}       {
                                 treeParser::text = yytext;

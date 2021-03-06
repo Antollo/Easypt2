@@ -56,7 +56,7 @@ public:
         T *temp = new T[_size + 1];
         if (_data)
         {
-            for (int i = 0; i < _size; i++)
+            for (size_t i = 0; i < _size; i++)
                 temp[i] = std::move(_data[i]);
             delete[] _data;
         }
@@ -73,11 +73,11 @@ public:
             _size = 0;
         }
     }
-    T &operator[](int index)
+    T &operator[](size_t index)
     {
         return _data[index];
     }
-    const T &operator[](int index) const
+    const T &operator[](size_t index) const
     {
         return _data[index];
     }
@@ -113,10 +113,10 @@ public:
     {
         return _data[_size - 1];
     }
-    int size() const { return _size; }
+    size_t size() const { return _size; }
     bool empty() const { return _size == 0; }
 
 private:
     T *_data = nullptr;
-    int _size = 0;
+    size_t _size = 0;
 };

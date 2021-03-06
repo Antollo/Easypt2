@@ -86,6 +86,8 @@
 %token INIT_ASSIGNMENT_DOT;
 %token INIT_ASSIGNMENT_IDENTIFIER;
 
+%token SPREAD_OPERATOR;
+
 %start parse, input;
 
 input { Node a(INI); }
@@ -299,6 +301,9 @@ factorBase(Node& me)  { Node b(INI); } :
     |
     DELETE_
     expression(100, b) { me.token(DELETE_); me.addChild(b); }
+    |
+    SPREAD_OPERATOR
+    expression(100, b) { me.token(SPREAD_OPERATOR); me.addChild(b); }
     |
     IDENTIFIER { me.token(IDENTIFIER); me.text(treeParser::text); }
     |
