@@ -325,8 +325,16 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() >= 1);
         auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
-        for (size_t i = 1; i < _children.size(); i++)
-            args[i - 1] = _children[i].evaluate(st);
+        for (size_t i = 1, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
 
         try
         {
@@ -349,8 +357,16 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() >= 1);
         auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
-        for (size_t i = 1; i < _children.size(); i++)
-            args[i - 1] = _children[i].evaluate(st);
+        for (size_t i = 1, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
 
         try
         {
@@ -375,8 +391,16 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = (*a)[_children[1]._text];
         object::type::Array args(_children.size() - 2);
-        for (size_t i = 2; i < _children.size(); i++)
-            args[i - 2] = _children[i].evaluate(st);
+        for (size_t i = 2, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
 
         try
         {
@@ -404,10 +428,18 @@ object::objectPtr Node::evaluate(stack &st) const
 
     case ARRAY_LITERAL:
     {
-        object::type::Array arr(_children.size());
-        for (size_t i = 0; i < _children.size(); i++)
-            arr[i] = _children[i].evaluate(st);
-        return object::makeObject(arr);
+        object::type::Array args(_children.size());
+        for (size_t i = 0, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
+        return object::makeObject(args);
     }
 
     case DOT:
@@ -481,6 +513,15 @@ object::objectPtr Node::evaluate(stack &st) const
             return st.insert(_children[0]._text, a);
         else
             return st.insert(static_cast<name>(_children[0].evaluate(st).getConverted<std::string>()), a);
+    }
+
+    case SPREAD_OPERATOR:
+    {
+        auto a = _children[0].evaluate(st);
+        auto properties = a->getOwnPropertiesWithoutPrototype();
+        for (const auto &property : properties)
+            st.insert(property.first, property.second);
+        return a;
     }
 
     case DELETE_:
@@ -631,7 +672,7 @@ object::objectPtr Node::evaluate(stack &st) const
             res.reserve(arr.size() * i);
             while (i--)
                 res.insert(res.begin(), arr.begin(), arr.end());
-            for(auto& el:res)
+            for (auto &el : res)
             {
                 *el = el;
                 el->setConst(false);
@@ -704,7 +745,7 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n::or])(a, {b}, &st);
+        return (*(*a)[n:: or ])(a, {b}, &st);
     }
 
     case BITWISE_AND:
@@ -763,6 +804,9 @@ object::objectPtr Node::evaluate(stack &st) const
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return object::makeObject(static_cast<bool>(a->get<const bool>() == b.getConverted<bool>()));
+
+        else if (a->isOfType<nullptr_t>() && b->isOfType<nullptr_t>())
+            return object::makeObject(*a == *b);
 
         return (*(*a)[n::equal])(a, {b}, &st);
     }
@@ -897,7 +941,7 @@ object::objectPtr Node::evaluate(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return object::makeObject(!a.getConverted<bool>());
-        return (*(*a)[n::not])(a, {}, &st);
+        return (*(*a)[n::not ])(a, {}, &st);
     }
 
     case COMPLEMENT:
@@ -1100,8 +1144,16 @@ void Node::evaluateVoid(stack &st) const
         assert(_children.size() >= 1);
         auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
-        for (size_t i = 1; i < _children.size(); i++)
-            args[i - 1] = _children[i].evaluate(st);
+        for (size_t i = 1, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
 
         try
         {
@@ -1126,8 +1178,16 @@ void Node::evaluateVoid(stack &st) const
         static name readOperator = n::readOperator;
         auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
-        for (size_t i = 1; i < _children.size(); i++)
-            args[i - 1] = _children[i].evaluate(st);
+        for (size_t i = 1, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
 
         try
         {
@@ -1153,8 +1213,16 @@ void Node::evaluateVoid(stack &st) const
         auto a = _children[0].evaluate(st);
         auto b = (*a)[_children[1]._text];
         object::type::Array args(_children.size() - 2);
-        for (size_t i = 2; i < _children.size(); i++)
-            args[i - 2] = _children[i].evaluate(st);
+        for (size_t i = 2, j = 0; i < _children.size(); i++)
+            if (_children[i]._token != SPREAD_OPERATOR)
+                args[j++] = _children[i].evaluate(st);
+            else
+            {
+                args.erase(args.begin() + j);
+                auto arr = _children[i].evaluate(st).getConverted<object::type::Array>();
+                args.insert(args.begin() + j, arr.begin(), arr.end());
+                j += arr.size();
+            }
 
         try
         {
@@ -1262,6 +1330,15 @@ void Node::evaluateVoid(stack &st) const
             st.insert(_children[0]._text, a);
         else
             st.insert(static_cast<name>(_children[0].evaluate(st).getConverted<std::string>()), a);
+        return;
+    }
+
+    case SPREAD_OPERATOR:
+    {
+        auto a = _children[0].evaluate(st);
+        auto properties = a->getOwnPropertiesWithoutPrototype();
+        for (const auto &property : properties)
+            st.insert(property.first, property.second);
         return;
     }
 
@@ -1462,7 +1539,7 @@ void Node::evaluateVoid(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        (*(*a)[n::or])(a, {b}, &st);
+        (*(*a)[n:: or ])(a, {b}, &st);
         return;
     }
 
@@ -1644,7 +1721,7 @@ void Node::evaluateVoid(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return;
-        (*(*a)[n::not])(a, {}, &st);
+        (*(*a)[n::not ])(a, {}, &st);
         return;
     }
 
@@ -1841,7 +1918,7 @@ bool Node::evaluateBoolean(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n::or])(a, {b}, &st).getConverted<bool>();
+        return (*(*a)[n:: or ])(a, {b}, &st).getConverted<bool>();
     }
 
     case EQUAL:
@@ -1855,11 +1932,14 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() == b.getConverted<std::string>();
 
-        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return a->get<const object::type::Array>() == b.getConverted<object::type::Array>();
 
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
+        else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() == b.getConverted<bool>();
+
+        else if (a->isOfType<nullptr_t>() && b->isOfType<nullptr_t>())
+            return object::makeObject(*a == *b);
 
         return (*(*a)[n::equal])(a, {b}, &st).getConverted<bool>();
     }
@@ -1872,13 +1952,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<number>() && b->isConvertible<number>())
             return a->get<const number>() != b.getConverted<number>();
 
-        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
+        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() != b.getConverted<std::string>();
 
-        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return a->get<const object::type::Array>() != b.getConverted<object::type::Array>();
 
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
+        else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() != b.getConverted<bool>();
 
         return (*(*a)[n::lessEqual])(a, {b}, &st).getConverted<bool>();
@@ -1892,13 +1972,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<number>() && b->isConvertible<number>())
             return a->get<const number>() < b.getConverted<number>();
 
-        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
+        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() < b.getConverted<std::string>();
 
-        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return a->get<const object::type::Array>() < b.getConverted<object::type::Array>();
 
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
+        else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() < b.getConverted<bool>();
 
         return (*(*a)[n::less])(a, {b}, &st).getConverted<bool>();
@@ -1912,13 +1992,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<number>() && b->isConvertible<number>())
             return a->get<const number>() > b.getConverted<number>();
 
-        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
+        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() > b.getConverted<std::string>();
 
-        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return a->get<const object::type::Array>() > b.getConverted<object::type::Array>();
 
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
+        else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() > b.getConverted<bool>();
 
         return (*(*a)[n::greater])(a, {b}, &st).getConverted<bool>();
@@ -1932,13 +2012,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<number>() && b->isConvertible<number>())
             return a->get<const number>() <= b.getConverted<number>();
 
-        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
+        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() <= b.getConverted<std::string>();
 
-        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return a->get<const object::type::Array>() <= b.getConverted<object::type::Array>();
 
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
+        else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() <= b.getConverted<bool>();
 
         return (*(*a)[n::lessEqual])(a, {b}, &st).getConverted<bool>();
@@ -1952,13 +2032,13 @@ bool Node::evaluateBoolean(stack &st) const
         if (a->isOfType<number>() && b->isConvertible<number>())
             return a->get<const number>() >= b.getConverted<number>();
 
-        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
+        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
             return a->get<const std::string>() >= b.getConverted<std::string>();
 
-        if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
+        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
             return a->get<const object::type::Array>() >= b.getConverted<object::type::Array>();
 
-        if (a->isOfType<bool>() && b->isConvertible<bool>())
+        else if (a->isOfType<bool>() && b->isConvertible<bool>())
             return a->get<const bool>() >= b.getConverted<bool>();
 
         return (*(*a)[n::greaterEqual])(a, {b}, &st).getConverted<bool>();
@@ -1970,7 +2050,7 @@ bool Node::evaluateBoolean(stack &st) const
         auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return !a.getConverted<bool>();
-        return (*(*a)[n::not])(a, {}, &st).getConverted<bool>();
+        return (*(*a)[n::not ])(a, {}, &st).getConverted<bool>();
     }
 
     case CONDITIONAL:

@@ -113,6 +113,7 @@ and should not be used.
 \[              : BRACKET_OPEN
 \]              : BRACKET_CLOSE
 \?              : CONDITIONAL
+\.\.\.          : SPREAD_OPERATOR
 ```
 
 ## Grammar

@@ -16,6 +16,7 @@
 #include "file.h"
 #include "childProcess.h"
 #include "allocator.h"
+#include "buffer.h"
 
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
 
@@ -42,6 +43,7 @@ public:
         using TcpClient = std::shared_ptr<tcpClient>;
         using TcpServer = std::shared_ptr<tcpServer>;
         using ChildProcess = std::shared_ptr<childProcess>;
+        using Buffer = std::shared_ptr<buffer>;
     };
 
     enum class typeIndex
@@ -57,7 +59,8 @@ public:
         File,
         TcpClient,
         TcpServer,
-        ChildProcess
+        ChildProcess,
+        Buffer
     };
 
     static type::Function makeFunction()
@@ -150,6 +153,16 @@ public:
         return *(*set)(parent, {rhs}, nullptr);
     }
 
+    bool operator==(const object &rhs) const
+    {
+
+        return _value == rhs._value && _properties.size() == rhs._properties.size() &&
+               std::all_of(_properties.begin(), _properties.end(), [&rhs](const propertiesType::value_type &x) {
+                   auto it = rhs._properties.find(x.first);
+                   return it != rhs._properties.end() && *it->second == *x.second;
+               });
+    }
+
     template <class T>
     bool isOfType() const
     {
@@ -201,30 +214,7 @@ public:
         if constexpr (std::is_same_v<RT, type::Object> || std::is_same_v<RT, type::Boolean> || std::is_same_v<RT, type::Number> || std::is_same_v<RT, type::String> || std::is_same_v<RT, type::Array>)
             return true;
         else
-        {
-            if constexpr (std::is_same_v<RT, type::Number>)
-            {
-                auto toNumberMethod = read(n::toNumber);
-                return toNumberMethod && toNumberMethod != toNumber;
-            }
-            else if constexpr (std::is_same_v<RT, type::String>)
-            {
-                auto toStringMethod = read(n::toString);
-                return toStringMethod && toStringMethod != toString;
-            }
-            else if constexpr (std::is_same_v<RT, type::Array>)
-            {
-                auto toArrayMethod = read(n::toArray);
-                return toArrayMethod && toArrayMethod != toArray;
-            }
-            else if constexpr (std::is_same_v<RT, type::Boolean>)
-            {
-                auto toBooleanMethod = read(n::toBoolean);
-                return toBooleanMethod && toBooleanMethod != toBoolean;
-            }
-            else
-                return false;
-        }
+            return false;
     }
 
     template <class T>
@@ -330,6 +320,8 @@ public:
     }
     void removeProperty(const name &n) { _properties.erase(n); }
     type::Array getOwnPropertyNames() const;
+    type::Array getOwnPropertyValues() const;
+    const propertiesType &getOwnPropertiesWithoutPrototype() const { return _properties; }
     std::string toJson() const;
     void clear();
 
@@ -359,7 +351,7 @@ private:
 
 public:
     std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::Promise, type::Function, type::NativeFunction,
-                 type::File, type::TcpClient, type::TcpServer, type::ChildProcess>
+                 type::File, type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer>
         _value;
 
 private:

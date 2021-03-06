@@ -55,3 +55,10 @@ console.writeLine([1].toBoolean());
 
 console.writeLine({}.toBoolean());
 console.writeLine({ x: 1, y: 0 }.toBoolean());
+
+let v = { x: 1, y: 2 };
+console.writeLine({ z: 3, ...v } == {x: 1, y: 2, z: 3});
+...{ z: 3, ...v };
+console.writeLine(z, y, x);
+console.writeLine(3, 4, ...[1, 2, 3], 5, 6);
+console.writeLine([4, 5, 6, ...[1, 2, 3], 7, 8, 9]);

@@ -231,7 +231,29 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 
 ## Other operators
 
-- #### `a ? b : c` Conditional (ternary) operator 
+- #### `...a` Spread operator
+  - `f(...a)` Function call, method call and read operator.
+
+    If `a` is convertible to `Array`, pass elements of the array to the function. Example:
+    ```js
+    console.log(1, 2, ...[3, 4], 5, 6);
+    ```
+
+  - `{ ...a }` Object literal.
+
+    Pass properties of `a` (excluding prototype) to the new object. Example:
+    ```js
+    { x: 1, ...{ y: 2, z:3 } }
+    ```
+
+  - `[ ...a ]` Array literal.
+
+    If `a` is convertible to `Array`, pass elements of the array to new array. Example:
+    ```js
+    [1, 2, ...[3, 4], 5, 6]
+    ```
+
+- #### `a ? b : c` Conditional (ternary) operator.
   If `a` is true then value of conditional expression
   is `b`, otherwise it's `c`.
 

@@ -103,6 +103,17 @@ object::type::Array object::getOwnPropertyNames() const
     return res;
 }
 
+object::type::Array object::getOwnPropertyValues() const
+{
+    type::Array res;
+    res.reserve(_properties.size());
+    for (const auto &property : _properties)
+        res.push_back(property.second);
+    if (_prototype)
+        res.push_back(_prototype);
+    return res;
+}
+
 object::objectPtr &object::read(const name &n)
 {
     static object::objectPtr notFound(nullptr);

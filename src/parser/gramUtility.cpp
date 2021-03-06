@@ -88,6 +88,7 @@ int operatorPriority(int token)
     case INIT_ASSIGNMENT:
     case RETURN:
     case THROW:
+    case SPREAD_OPERATOR:
         return 18;
 
     default:
