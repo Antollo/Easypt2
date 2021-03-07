@@ -19,6 +19,10 @@ int main(int argc, char **argv)
         initialize();
         runtime::init(&globalStack);
 
+        //auto opengl = dynamicLibrary::loadLibrary("./opengl.so");
+        //auto fun = reinterpret_cast<void(*)()>(dynamicLibrary::getFunction(opengl, "fun"));
+        //fun();
+
         auto st = &globalStack;
         insertObject(n::argv, object::type::Array());
         insertObject(n::argc, 0_n);

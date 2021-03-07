@@ -363,7 +363,7 @@ private:
     static constexpr int _accessible = 1;
     static constexpr int _setttable = 2;
 
-    static stack *globalStack;
+    static inline stack *globalStack = nullptr;
 
     struct buffer
     {
@@ -371,7 +371,8 @@ private:
         static constexpr int maxLength = 128;
         std::array<object *, maxLength> data;
     };
-    inline static buffer objects;
+    static inline buffer objects;
+
     static void reuse(object *ptr);
 
     objectPtr &read(const name &n);
@@ -382,6 +383,8 @@ private:
     }
     void toJson(std::string &str, const int indentation = 1) const;
 };
+
+extern allocatorBuffer<sizeof(object)> objectMemoryBuffer;
 
 template <class T>
 remove_cref_t<T> objectPtrImpl::getConverted() const

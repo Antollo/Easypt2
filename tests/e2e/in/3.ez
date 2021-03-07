@@ -39,14 +39,14 @@ Timeout(400).then(function { console.writeLine(400); Object.condition = "two"; }
 ConditionalPromise(() => console.writeLine(Object.condition);, () => "one" == Object.condition;);
 console.setInput("a b c d e", () =>  {
     let a = console.readAsync().then((x) => console.writeLine(x););
-    let b = console.readAsync().then((x) => console.writeLine(x););
-    let c = console.readAsync().then((x) => console.writeLine(x););
-    let d = console.readAsync().then((x) => console.writeLine(x););
-    let e = console.readAsync().then((x) => console.writeLine(x););
     await a;
+    let b = console.readAsync().then((x) => console.writeLine(x););
     await b;
+    let c = console.readAsync().then((x) => console.writeLine(x););
     await c;
+    let d = console.readAsync().then((x) => console.writeLine(x););
     await d;
+    let e = console.readAsync().then((x) => console.writeLine(x););
     await e;
 });
 

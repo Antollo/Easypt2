@@ -16,32 +16,32 @@ object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::type
 object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::nullptr_t>(args);
-    std::string fileNameString;
+    std::filesystem::path filePath;
     std::filesystem::path fileName;
     object::type::Function root = object::makeFunction();
     if (args[0]->isOfType<std::string>())
     {
         fileName = args[0]->get<const std::string>();
-        if (fileName.extension() != ".ez"s)
-            fileName += ".ez"s;
 
         if (imported != nullptr) 
         {
-            auto it = imported->find(name(fileName.stem().string()));
+            auto it = imported->find(name(fileName.filename().string()));
             if  (it != imported->end() && it->second->hasOwnProperty(n::exports))
                     return (*it->second)[n::exports];
         }
+
+        fileName.replace_extension(".ez"s);
 
         for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++)
         {
             if (std::filesystem::exists(*it / fileName))
             {
-                fileNameString = (*it / fileName).string();
+                filePath = (*it / fileName);
                 break;
             }
         }
 
-        if (fileNameString.empty())
+        if (filePath.empty())
             throw std::runtime_error("file " + fileName.string() + " not found");
     }
     else if (args[0]->isOfType<std::shared_ptr<file>>())
@@ -52,25 +52,25 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
         if (!sourceFile->isOpen())
             throw std::runtime_error("file " + fileName.string() + " is not opened");
 
-        fileNameString = sourceFile->getPath().string();
+        filePath = sourceFile->getPath().string();
     }
     else
         throw std::runtime_error("wrong type of argument");
 
-    treeParser::parseFile(fileNameString, *root);
+    treeParser::parseFile(filePath.string(), *root);
     object::objectPtr sourceFunction = object::makeObject(root);
     object::objectPtr result;
     {
         stack s(st);
         auto oldDir = std::filesystem::current_path();
-        auto dir = std::filesystem::absolute(std::filesystem::path(fileNameString)).parent_path();
+        auto dir = std::filesystem::absolute(filePath.parent_path());
         try
         {
             std::filesystem::current_path(dir);
             importPaths.push_back(dir);
             auto module = s.insert(n::module, object::makeEmptyObject());
-            module->addProperty(n::name_, object::makeObject(std::filesystem::path(fileNameString).stem().string()));
-            module->addProperty(n::filename, object::makeObject(std::filesystem::path(fileNameString).filename().string()));
+            module->addProperty(n::name_, object::makeObject(filePath.stem().string()));
+            module->addProperty(n::filename, object::makeObject(filePath.filename().string()));
             module->addProperty(n::path, object::makeObject(dir.string()));
             if (imported != nullptr)
                 imported->insert_or_assign(name(fileName.stem().string()), module);

@@ -3,7 +3,7 @@
 
 #include <string>
 #include <algorithm>
-#include <unordered_map>
+#include <vector>
 #include <iostream>
 #include <string>
 #include <locale>
@@ -61,11 +61,11 @@ void initializeThread();
 class dynamicLibrary
 {
 public:
-    static int loadLibrary(const std::string &fileName);
-    static void *getFunction(int library, const std::string &functionName);
+    static unsigned int loadLibrary(const std::filesystem::path &fileName);
+    static void *getFunction(unsigned int library, const std::string &functionName);
     static void unloadLibraries();
 private:
-    static std::unordered_map<int, libraryType> libraries;
+    static inline std::vector<libraryType> libraries;
 };
 
 #ifdef _WIN32

@@ -2,30 +2,24 @@ environment:
   APPVEYOR_YML_DISABLE_PS_LINUX: true
 version: 0.0.{build}
 image:
-    - Visual Studio 2019
     - Ubuntu
+    - Visual Studio 2019
 init:
     - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 70 --slave /usr/bin/g++ g++ /usr/bin/g++-8
-    - sh: sudo apt install -y flex
-    - sh: wget -O /tmp/llnextgen.deb "https://os.ghalkes.nl/LLnextgen/releases/llnextgen_0.5.5-1_amd64.deb"
-    - sh: sudo apt install -y /tmp/llnextgen.deb
-    - ps: Invoke-WebRequest -Uri "https://netix.dl.sourceforge.net/project/gnuwin32/flex/2.5.4a-1/flex-2.5.4a-1-bin.zip" -OutFile "$env:TEMP\flex.zip" -ErrorAction SilentlyContinue
-    - ps: Expand-Archive "$env:TEMP\flex.zip" -DestinationPath "$env:TEMP\flex"
-    - ps: Invoke-WebRequest -Uri "https://os.ghalkes.nl/LLnextgen/releases/LLnextgen-w64-0.5.5.zip" -OutFile "$env:TEMP\LLnextgen.zip" -ErrorAction SilentlyContinue
-    - ps: Expand-Archive "$env:TEMP\LLnextgen.zip" -DestinationPath "$env:TEMP\LLnextgen"
-    - ps: Invoke-Expression "$env:TEMP\flex\bin\flex --version"
-    - ps: Invoke-Expression "$env:TEMP\LLnextgen\LLnextgen\LLnextgen --version"
+    - sh: sudo apt install -y xorg-dev libglu1-mesa-dev libgl1-mesa-dev
 before_build:
+    - sh: sudo bash init.sh
+    - ps: ./init.ps1
+build_script:
     - sh: cmake .
     - cmd: cmake -A x64 -B . -DPGO=GENPROFILE
-build_script:
     - ps: cmake --build . --config Release
     - ps: .\run_pgo.bat
     - cmd: cmake -A x64 -B . -DPGO=USEPROFILE
     - cmake --build . --config Release 
     - cpack
 test_script:
-    - ps: ctest --output-on-failure --build-config Release
+    - ctest --output-on-failure --build-config Release
 artifacts:
     - path: 'packages\**\*.sh'
       name: linux_installer

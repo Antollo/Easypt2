@@ -1,9 +1,7 @@
 #include "nobject.h"
 #include "Node.h"
 
-stack *object::globalStack;
-
-static allocatorBuffer<sizeof(object)> objectMemoryBuffer;
+allocatorBuffer<sizeof(object)> objectMemoryBuffer;
 
 void *object::operator new(size_t)
 {

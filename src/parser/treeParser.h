@@ -16,15 +16,15 @@ public:
     static void throwLater(const std::string &str);
 
 
-    static std::string file;
-    static std::string text;
-    static Node* root;
+    static inline std::string file;
+    static inline std::string text;
+    static inline Node* root = nullptr;
 
 private:
     static void parseStream(std::istream &stream, Node &node);
-    static std::istream* stream;
-    static std::string exception;
-    static bool exceptionToThrow;
+    static inline std::istream* stream = nullptr;
+    static inline std::string exception;
+    static inline bool exceptionToThrow = false;
 };
 
 #endif /* !TREEPARSER_H_ */
