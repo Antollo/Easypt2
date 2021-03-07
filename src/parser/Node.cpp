@@ -1175,7 +1175,6 @@ void Node::evaluateVoid(stack &st) const
     case READ_OPERATOR:
     {
         assert(_children.size() >= 1);
-        static name readOperator = n::readOperator;
         auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
         for (size_t i = 1, j = 0; i < _children.size(); i++)
@@ -1191,7 +1190,7 @@ void Node::evaluateVoid(stack &st) const
 
         try
         {
-            (*(*a)[readOperator])(a, std::move(args), &st);
+            (*(*a)[n::readOperator])(a, std::move(args), &st);
             return;
         }
         catch (objectException &e)

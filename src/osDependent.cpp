@@ -95,7 +95,6 @@ std::wstring utf8Decode(const std::string &str)
     return wstrTo;
 }
 
-
 const bool isAttyInput()
 {
     static const bool attyInput = _isatty(_fileno(stdin));
@@ -175,39 +174,27 @@ void initializeThread()
 #endif
 }
 
-std::unordered_map<int, libraryType> dynamicLibrary::libraries;
-
-int dynamicLibrary::loadLibrary(const std::string &fileName)
+unsigned int dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
 {
 #ifdef _WIN32
-    libraryType library = LoadLibraryA((fileName + ".dll").c_str());
+    libraryType library = LoadLibraryA(filePath.string().c_str());
     if (!library)
-    {
-        std::filesystem::path executablePath = getExecutablePath().parent_path();
-        library = LoadLibraryA((executablePath / std::filesystem::path(fileName + ".dll")).string().c_str());
-        if (!library)
-            throw std::runtime_error("library " + fileName + " not found");
-    }
+        throw std::runtime_error("library " + filePath.string() + " not found");
+
 #elif defined(__linux__)
-    libraryType library = dlopen((fileName + ".so").c_str(), RTLD_LAZY);
+    libraryType library = dlopen(filePath.string().c_str(), RTLD_NOW | RTLD_GLOBAL);
     if (!library)
-    {
-        std::filesystem::path executablePath = getExecutablePath().parent_path();
-        library = dlopen((executablePath / std::filesystem::path(fileName + ".so")).string().c_str(), RTLD_LAZY);
-        if (!library)
-            throw std::runtime_error("library " + fileName + " not found");
-    }
+        throw std::runtime_error("library " + filePath.string() + " not found: " + dlerror());
 #else
     throw std::runtime_error("dynamic libraries are not supported on this OS");
 #endif
-    static int i = 0;
-    libraries[i] = library;
-    return i;
+    libraries.push_back(library);
+    return libraries.size() - 1;
 }
 
-void *dynamicLibrary::getFunction(int i, const std::string &functionName)
+void *dynamicLibrary::getFunction(unsigned int i, const std::string &functionName)
 {
-    if (libraries.count(i))
+    if (i >= libraries.size())
         throw std::runtime_error("library does not exist");
 #ifdef _WIN32
     void *function = reinterpret_cast<void *>(GetProcAddress(libraries[i], functionName.c_str()));
@@ -228,8 +215,8 @@ void dynamicLibrary::unloadLibraries()
 {
     for (const auto &library : libraries)
 #ifdef _WIN32
-        FreeLibrary(library.second);
+        FreeLibrary(library);
 #elif defined(__linux__)
-        dlclose(library.second);
+        dlclose(library);
 #endif
 }

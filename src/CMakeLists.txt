@@ -25,4 +25,6 @@ target_link_libraries(libeasypt Threads::Threads)
 add_executable(easypt main.cpp)
 target_link_libraries(easypt libeasypt)
 
+add_subdirectory(library)
+
 install(TARGETS easypt RUNTIME DESTINATION bin COMPONENT binaries)

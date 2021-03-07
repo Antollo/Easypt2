@@ -14,7 +14,7 @@ console.writeLine("010".toNumber());
 console.writeLine("0.025e3".toNumber());
 
 try {
-    console.writeLine("0xGG".toNumber());
+    console.writeLine("GG".toNumber());
 } catch {
     console.writeLine("error");
 }

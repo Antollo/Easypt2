@@ -1,3 +1,4 @@
+protocols.txt
 *.json
 !easypt_vsce/*.json
 x.c

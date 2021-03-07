@@ -7,12 +7,6 @@
 
 void yyrestart(FILE *);
 
-std::string treeParser::file;
-std::string treeParser::text;
-Node *treeParser::root = nullptr;
-std::istream *treeParser::stream = nullptr;
-std::string treeParser::exception;
-bool treeParser::exceptionToThrow;
 
 void treeParser::parseFile(const std::string &filename, Node &node)
 {
