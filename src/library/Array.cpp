@@ -17,7 +17,7 @@ void Array::init(stack *st)
 
     addFunctionL(object::arrayPrototype, n::readOperator, {
         argsConvertibleGuard<number>(args);
-        int pos = static_cast<int>(args[0].getConverted<number>());
+        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
         const object::type::Array &me = thisObj->get<const object::type::Array>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
@@ -31,7 +31,7 @@ void Array::init(stack *st)
     addFunctionL(object::arrayPrototype, "insert"_n, {
         argsConvertibleGuard<number, nullptr_t>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
-        int destPos = static_cast<int>(args[0].getConverted<number>());
+        size_t destPos= static_cast<size_t>(args[0].getConverted<number>());
         assert<std::greater_equal>(destPos, 0);
         assert<std::less_equal>(destPos, dest.size());
         dest.insert(dest.begin() + destPos, args[1]);
@@ -42,18 +42,18 @@ void Array::init(stack *st)
         argsConvertibleGuard<number, object::type::Array>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
         const object::type::Array &src = args[1]->get<const object::type::Array>();
-        int destPos = static_cast<int>(args[0].getConverted<number>());
-        int srcPos = 0;
-        int srcLength = src.size();
+        size_t destPos= static_cast<size_t>(args[0].getConverted<number>());
+        size_t srcPos = 0;
+        size_t srcLength = src.size();
         if (args.size() > 2)
         {
             argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
-            srcPos = static_cast<int>(args[2].getConverted<number>());
+            srcPos = static_cast<size_t>(args[2].getConverted<number>());
             srcLength = srcLength - srcPos;
             if (args.size() > 3)
             {
                 argsConvertibleGuard<nullptr_t, nullptr_t, number, number>(args);
-                srcLength = std::min(srcLength, static_cast<int>(args[3].getConverted<number>()));
+                srcLength = std::min(srcLength, static_cast<size_t>(args[3].getConverted<number>()));
             }
         }
         assert<std::greater_equal>(destPos, 0);
@@ -68,12 +68,12 @@ void Array::init(stack *st)
     addFunctionL(object::arrayPrototype, "subarray"_n, {
         argsConvertibleGuard<number>(args);
         const object::type::Array &me = thisObj->get<const object::type::Array>();
-        int pos = static_cast<int>(args[0].getConverted<number>());
-        int length = me.size() - pos;
+        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
+        size_t length = me.size() - pos;
         if (args.size() > 1)
         {
             argsConvertibleGuard<nullptr_t, number>(args);
-            length = std::min(length, static_cast<int>(args[1].getConverted<number>()));
+            length = std::min(length, static_cast<size_t>(args[1].getConverted<number>()));
         }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
@@ -84,12 +84,12 @@ void Array::init(stack *st)
     addFunctionL(object::arrayPrototype, "erase"_n, {
         argsConvertibleGuard<number>(args);
         object::type::Array &me = thisObj->get<object::type::Array>();
-        int pos = static_cast<int>(args[0].getConverted<number>());
-        int length = me.size() - pos;
+        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
+        size_t length = me.size() - pos;
         if (args.size() > 1)
         {
             argsConvertibleGuard<nullptr_t, number>(args);
-            length = std::min(length, static_cast<int>(args[1].getConverted<number>()));
+            length = std::min(length, static_cast<size_t>(args[1].getConverted<number>()));
         }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
@@ -101,7 +101,7 @@ void Array::init(stack *st)
     addFunctionL(object::arrayPrototype, "forEach"_n, {
         argsConvertibleGuard<nullptr_t>(args);
         object::type::Array &me = thisObj->get<object::type::Array>();
-        for (int i = 0; i < me.size(); i++)
+        for (size_t i = 0; i < me.size(); i++)
             (*args[0])(args[0], {me[i], object::makeObject(static_cast<number>(i)), thisObj}, st);
         return thisObj;
     });

@@ -23,8 +23,8 @@ class DocItem {
         if (DocItem.sourceToDoc.has(source))
             return new Promise(resolve => resolve(DocItem.sourceToDoc.get(source)));
         return new Promise(resolve => {
-            child_process.execFile('easypt', ['-docs', source], { encoding: 'utf16le' }, async (err, stdout) => {
-                const processOutput = stdout.toString().replace(/\x1B\[[0-9]+m/g, '');
+            child_process.execFile('easypt', ['-docs', source], { encoding: 'utf8' }, async (err, stdout) => {
+                const processOutput = stdout.replace(/\x1B\[[0-9]+m/g, '');
                 if (processOutput.length == 0) {
                     DocItem.sourceToDoc.set(source, undefined);
                     resolve(undefined);
@@ -71,8 +71,8 @@ class DocItem {
         if (DocItem.globalStack.length !== 0)
             return new Promise(resolve => resolve(DocItem.globalStack));
         return new Promise(resolve => {
-            child_process.execFile('easypt', ['-execute', 'getStack().getOwnPropertyNames().forEach((x) => console.writeLine(x););'], { encoding: 'utf16le' }, (err, stdout) => {
-                DocItem.globalStack = stdout.toString().replace(/\x1B\[[0-9]+m/g, '').split('\n').map(x => x.trim()).filter(x => x.length);
+            child_process.execFile('easypt', ['-execute', 'getStack().getOwnPropertyNames().forEach((x) => console.writeLine(x););'], { encoding: 'utf8' }, (err, stdout) => {
+                DocItem.globalStack = stdout.replace(/\x1B\[[0-9]+m/g, '').split('\n').map(x => x.trim()).filter(x => x.length);
                 resolve(DocItem.globalStack);
             });
         });
@@ -118,7 +118,7 @@ export function activate(context: vscode.ExtensionContext) {
             const result = await vscode.window.showInformationMessage('Easypt interpreter not found. Would you like to install Easypt interpreter?', 'Yes', 'No');
             if (result === 'Yes') {
                 if (os.platform() === 'win32')
-                    vscode.env.openExternal(vscode.Uri.parse('https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win32.exe?branch=master&job=Image%3A%20Visual%20Studio%202019'));
+                    vscode.env.openExternal(vscode.Uri.parse('https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win64.exe?branch=master&job=Image%3A%20Visual%20Studio%202019'));
                 else
                     vscode.env.openExternal(vscode.Uri.parse('https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu'));
             } else

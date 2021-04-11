@@ -2,7 +2,7 @@ let input;
 let src <- String();
 while (true)
     if (input = await console.write("> ").readLineAsync())
-        src.append(input);
+        src.append(input).append("\n");
     else
         try
             (execute(src) && false) || src.erase(0, src.length());

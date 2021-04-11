@@ -22,7 +22,3 @@ console.write("abcde".getByteAt(0));
 97
 ```
 
-### Properties:
-
-
-

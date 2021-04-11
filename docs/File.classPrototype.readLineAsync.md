@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Return value: `/*Promise*/`
+#### Return value: `/*Promise of String*/`
 
 ### Description:
 
@@ -30,8 +30,4 @@ console.write(name, " ", port);
 ```
 http 80
 ```
-
-### Properties:
-
-
 

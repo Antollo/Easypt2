@@ -32,7 +32,3 @@ try {
 error
 ```
 
-### Properties:
-
-
-

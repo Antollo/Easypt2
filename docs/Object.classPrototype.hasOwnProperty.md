@@ -24,7 +24,3 @@ console.write(obj.hasOwnProperty("first"), " ", obj.hasOwnProperty("second"));
 true false
 ```
 
-### Properties:
-
-
-

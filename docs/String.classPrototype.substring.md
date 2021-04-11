@@ -22,7 +22,3 @@ console.write("abcde".substring(1, 2));
 bc
 ```
 
-### Properties:
-
-
-

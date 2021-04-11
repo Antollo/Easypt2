@@ -22,7 +22,3 @@ obj.getOwnPropertyNames().forEach(function {
 });
 ```
 
-### Properties:
-
-
-

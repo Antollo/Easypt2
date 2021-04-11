@@ -46,13 +46,14 @@ void runtime::init(stack *st)
 
     insertObject("true"_n, true)->setConst();
     insertObject("false"_n, false)->setConst();
-
+    
     auto import = insertObject(n::import, &Import::import);
     import->addProperty("getImportPaths"_n, object::makeObject(&Import::getImportPaths));
 
     insertObject("parse"_n, ez_parse);
     insertObject(n::execute, execute);
     insertObject("getStack"_n, getStack);
+
 
     Object::init(st);
     Array::init(st);
@@ -80,4 +81,17 @@ void runtime::fini(stack *st)
     Import::fini();
     object::setGlobalStack(nullptr);
     st->clear();
+    object::numberPrototype = nullptr;
+    object::stringPrototype = nullptr;
+    object::booleanPrototype = nullptr;
+    object::arrayPrototype = nullptr;
+    object::functionPrototype = nullptr;
+    object::promisePrototype = nullptr;
+    object::classPrototype = nullptr;
+    object::toNumber = nullptr;
+    object::toString = nullptr;
+    object::toArray = nullptr;
+    object::toBoolean = nullptr;
+    (*object::objectPrototype)[n::prototype] = nullptr;
+    object::objectPrototype = nullptr;
 }

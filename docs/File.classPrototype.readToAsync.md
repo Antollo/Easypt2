@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `/*String*/`
+#### Parameters: `/*Promise of String*/`
 
 #### Return value: `/*Promise*/`
 
@@ -27,8 +27,4 @@ console.write(await file.readToAsync("c"));
 ```
 abba
 ```
-
-### Properties:
-
-
 

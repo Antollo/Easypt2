@@ -2,6 +2,8 @@
 
 #### Instance of: [`Function`](Function.md)
 
+#### Return value: `this`
+
 ### Description:
 
 Suspends the current context of execution
@@ -28,8 +30,4 @@ await b;
 ```
 12
 ```
-
-### Properties:
-
-
 

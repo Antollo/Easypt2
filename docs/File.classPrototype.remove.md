@@ -29,7 +29,3 @@ try {
 error
 ```
 
-### Properties:
-
-
-

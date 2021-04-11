@@ -19,7 +19,3 @@ if (a != 7)
     console.warn("value of input is not 7");
 ```
 
-### Properties:
-
-
-

@@ -2,7 +2,9 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `key /*String*/, value`
+#### Parameters: `key /*String*/, value /*Object*/`
+
+#### Return value: `key /*String*/`
 
 ### Description:
 
@@ -22,8 +24,4 @@ console.write(obj.first, " ", obj.second);
 ```
 1 a
 ```
-
-### Properties:
-
-
 

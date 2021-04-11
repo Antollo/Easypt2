@@ -4,6 +4,8 @@
 
 #### Parameters: `position /*Number*/, byte /*Number*/`
 
+#### Return value: `this`
+
 ### Description:
 
 Sets new value of character (byte at given position).
@@ -21,8 +23,4 @@ console.write(x);
 ```
 bbc
 ```
-
-### Properties:
-
-
 

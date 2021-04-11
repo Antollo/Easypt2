@@ -22,7 +22,3 @@ console.write("Harry"[1]);
 a
 ```
 
-### Properties:
-
-
-

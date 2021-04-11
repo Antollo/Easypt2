@@ -4,6 +4,8 @@
 
 #### Parameters: `/*String*/`
 
+#### Return value: `console`
+
 ### Description:
 
 Writes ANSI escape code starting with `ESC` and `[` 
@@ -14,8 +16,4 @@ Writes ANSI escape code starting with `ESC` and `[`
 ```js
 console.controlSequence("7m").write("special").controlSequence("0m");
 ```
-
-### Properties:
-
-
 

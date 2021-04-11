@@ -1,4 +1,4 @@
-sudo apt install -y flex
+sudo apt install -y flex unzip
 
 wget -O /tmp/llnextgen.deb "https://os.ghalkes.nl/LLnextgen/releases/llnextgen_0.5.5-1_amd64.deb"
 sudo apt install -y /tmp/llnextgen.deb

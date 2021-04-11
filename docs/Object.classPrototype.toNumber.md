@@ -2,6 +2,8 @@
 
 #### Instance of: [`Function`](Function.md)
 
+#### Return value: `/*Number*/`
+
 ### Description:
 
 Converts object to number:
@@ -23,8 +25,4 @@ console.write("12.1e1".toNumber(), " ", false.toNumber());
 ```
 121 0
 ```
-
-### Properties:
-
-
 

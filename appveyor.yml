@@ -2,11 +2,12 @@ environment:
   APPVEYOR_YML_DISABLE_PS_LINUX: true
 version: 0.0.{build}
 image:
-    - Ubuntu
+    - Ubuntu2004
     - Visual Studio 2019
 init:
-    - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 70 --slave /usr/bin/g++ g++ /usr/bin/g++-8
-    - sh: sudo apt install -y xorg-dev libglu1-mesa-dev libgl1-mesa-dev
+    - sh: sudo apt update
+    - sh: sudo apt install -y g++-10 xorg-dev libglu1-mesa-dev libgl1-mesa-dev
+    - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 70 --slave /usr/bin/g++ g++ /usr/bin/g++-10
 before_build:
     - sh: sudo bash init.sh
     - ps: ./init.ps1

@@ -17,7 +17,3 @@ console.writeLine("ABC".getId());
 console.writeLine(Object().getId());
 ```
 
-### Properties:
-
-
-

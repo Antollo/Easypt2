@@ -6,14 +6,14 @@ void consoleObj::init(stack *st)
 
     addFunctionL(consoleObj, "write"_n, {
         for (auto &el : args)
-            console::write(el.getConverted<std::string>());
+            console::write(el.getConverted<object::type::String>());
         return thisObj;
     });
     addFunctionL(consoleObj, "writeAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
             auto f = std::async(std::launch::async, [&args]() mutable{
                 for (auto &el : args)
-                    console::write(el.getConverted<std::string>());
+                    console::write(el.getConverted<object::type::String>());
             });
             await f;
             return thisObj;
@@ -22,34 +22,34 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "debug"_n, {
         std::string temp;
         for (auto &el : args)
-            temp += el.getConverted<std::string>();
+            temp += el.getConverted<object::type::String>();
         console::debug(temp);
         return thisObj;
     });
     addFunctionL(consoleObj, "log"_n, {
         std::string temp;
         for (auto &el : args)
-            temp += el.getConverted<std::string>();
+            temp += el.getConverted<object::type::String>();
         console::log(temp);
         return thisObj;
     });
     addFunctionL(consoleObj, "warn"_n, {
         std::string temp;
         for (auto &el : args)
-            temp += el.getConverted<std::string>();
+            temp += el.getConverted<object::type::String>();
         console::warn(temp);
         return thisObj;
     });
     addFunctionL(consoleObj, "error"_n, {
         std::string temp;
         for (auto &el : args)
-            temp += el.getConverted<std::string>();
+            temp += el.getConverted<object::type::String>();
         console::error(temp);
         return thisObj;
     });
     addFunctionL(consoleObj, "writeLine"_n, {
         for (auto &el : args)
-            console::write(el.getConverted<std::string>());
+            console::write(el.getConverted<object::type::String>());
         console::newLine();
         return thisObj;
     });
@@ -57,7 +57,7 @@ void consoleObj::init(stack *st)
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
             auto f = std::async(std::launch::async, [&args]() mutable{
                 for (auto &el : args)
-                    console::write(el.getConverted<std::string>());
+                    console::write(el.getConverted<object::type::String>());
                 console::newLine();
             });
             await f;

@@ -20,7 +20,3 @@ console.write("abc".length());
 3
 ```
 
-### Properties:
-
-
-

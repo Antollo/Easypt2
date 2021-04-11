@@ -4,6 +4,8 @@
 
 #### Parameters: `n /*Number*/, string /*String*/, [position = 0 /*Number*/], [length = string.length() /*Number*/]`
 
+#### Return value: `this`
+
 ### Description:
 
 Inserts bytes to string before n-th byte from substring of second
@@ -22,8 +24,4 @@ console.write(x);
 ```
 xbcyz
 ```
-
-### Properties:
-
-
 

@@ -22,7 +22,3 @@ console.write(3.toFloatingPoint());
 3.000000
 ```
 
-### Properties:
-
-
-

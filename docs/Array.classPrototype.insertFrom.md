@@ -4,6 +4,8 @@
 
 #### Parameters: `n /*Number*/, array /*Array*/, [position = 0 /*Number*/], [length = array.length() /*Number*/]`
 
+#### Return value: `this`
+
 ### Description:
 
 Inserts to array new elements before n-th element from subarray of second
@@ -22,8 +24,4 @@ console.write(arr[3], arr[4], arr[5], arr[6]);
 ```
 3456
 ```
-
-### Properties:
-
-
 

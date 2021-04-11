@@ -17,6 +17,8 @@
 #include "childProcess.h"
 #include "allocator.h"
 #include "buffer.h"
+#include "externalFunction.h"
+#include "copyPtr.h"
 
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
 
@@ -37,8 +39,9 @@ public:
         using String = std::string;
         using Array = std::vector<objectPtr, allocator<objectPtr>>;
         using Promise = std::shared_ptr<coroutine<objectPtr>>;
-        using Function = std::shared_ptr<Node>;
+        using Function = std::pair<std::shared_ptr<Node>, std::shared_ptr<stack>>;
         using NativeFunction = objectPtr (*)(objectPtr, Array &&, stack *);
+        using ExternalFunction = externalFunction;
         using File = std::shared_ptr<file>;
         using TcpClient = std::shared_ptr<tcpClient>;
         using TcpServer = std::shared_ptr<tcpServer>;
@@ -56,6 +59,7 @@ public:
         Promise,
         Function,
         NativeFunction,
+        ExternalFunction,
         File,
         TcpClient,
         TcpServer,
@@ -65,7 +69,7 @@ public:
 
     static type::Function makeFunction()
     {
-        return std::make_shared<Node>(0, "root");
+        return {std::make_shared<Node>(), nullptr};
     }
 
     template <class T>
@@ -119,7 +123,7 @@ public:
             _prototype = booleanPrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, type::Promise>)
             _prototype = promisePrototype;
-        else if constexpr (std::is_same_v<std::decay_t<T>, type::Function> || std::is_same_v<std::decay_t<T>, type::NativeFunction>)
+        else if constexpr (std::is_same_v<std::decay_t<T>, type::Function> || std::is_same_v<std::decay_t<T>, type::NativeFunction> || std::is_same_v<std::decay_t<T>, type::ExternalFunction>)
         {
             if constexpr (std::is_same_v<std::decay_t<T>, type::NativeFunction>)
             {
@@ -156,10 +160,10 @@ public:
     bool operator==(const object &rhs) const
     {
 
-        return _value == rhs._value && _properties.size() == rhs._properties.size() &&
-               std::all_of(_properties.begin(), _properties.end(), [&rhs](const propertiesType::value_type &x) {
-                   auto it = rhs._properties.find(x.first);
-                   return it != rhs._properties.end() && *it->second == *x.second;
+        return _value == rhs._value && _properties->size() == rhs._properties->size() &&
+               std::all_of(_properties->begin(), _properties->end(), [&rhs](const propertiesType::value_type &x) {
+                   auto it = rhs._properties->find(x.first);
+                   return it != rhs._properties->end() && *it->second == *x.second;
                });
     }
 
@@ -181,24 +185,37 @@ public:
     }
 
     template <class T>
-    std::remove_reference_t<T> &get()
+    std::enable_if_t<std::is_const_v<T>, T> &get()
     {
-        if constexpr (std::is_const_v<T>)
-        {
-            return std::get<remove_cref_t<T>>(_value);
-        }
-        else
-        {
-            if (isConst())
-                throw std::runtime_error("tried to modify constant value");
-            return std::get<remove_cref_t<T>>(_value);
-        }
+        return std::get<std::remove_const_t<T>>(_value);
     }
 
     template <class T>
-    const remove_cref_t<T> &get() const
+    std::enable_if_t<!std::is_const_v<T>, T> &get()
     {
-        return std::get<remove_cref_t<T>>(_value);
+        if (!isConst())
+            return std::get<T>(_value);
+        else
+            throw std::runtime_error("tried to modify constant value");
+    }
+
+    template <class T>
+    const T &get() const
+    {
+        return std::get<std::remove_const_t<T>>(_value);
+    }
+
+    // There is a test to check if this hack works
+    template <class T>
+    T &uncheckedGet()
+    {
+        return *reinterpret_cast<T *>(&_value);
+    }
+
+    template <class T>
+    const T &uncheckedGet() const
+    {
+        return *reinterpret_cast<const T *>(&_value);
     }
 
     template <class Visitor>
@@ -211,123 +228,138 @@ public:
     constexpr bool isConvertible() const
     {
         using RT = remove_cref_t<T>;
-        if constexpr (std::is_same_v<RT, type::Object> || std::is_same_v<RT, type::Boolean> || std::is_same_v<RT, type::Number> || std::is_same_v<RT, type::String> || std::is_same_v<RT, type::Array>)
-            return true;
-        else
-            return false;
+        return std::is_same_v<RT, type::Object> || std::is_same_v<RT, type::Boolean> || std::is_same_v<RT, type::Number> || std::is_same_v<RT, type::String> || std::is_same_v<RT, type::Array>;
     }
 
     template <class T>
-    remove_cref_t<T> getConverted(const objectPtr &thisObj)
+    T getConverted(const objectPtr &thisObj)
     {
-        using RT = remove_cref_t<T>;
-
-        return std::visit([this, &thisObj](auto &&value) -> RT {
-            using A = std::decay_t<decltype(value)>;
-
-            if constexpr (std::is_same_v<RT, A>)
-                return value;
-
-            else if constexpr (std::is_same_v<RT, type::Number>)
+        if constexpr (std::is_same_v<T, type::Number>)
+        {
+            switch (getTypeIndex())
             {
-                if constexpr (std::is_same_v<A, type::String>)
-                    return static_cast<type::Number>(value);
-                else if constexpr (std::is_same_v<A, type::Array>)
-                    return static_cast<type::Number>(value.size());
-                else if constexpr (std::is_same_v<A, type::Boolean>)
-                    return static_cast<type::Number>(value);
+            case typeIndex::Number:
+                return uncheckedGet<type::Number>();
+
+            case typeIndex::String:
+                return static_cast<type::Number>(uncheckedGet<type::String>());
+            case typeIndex::Array:
+                return static_cast<type::Number>(uncheckedGet<type::Array>().size());
+            case typeIndex::Boolean:
+                return static_cast<type::Number>(uncheckedGet<type::Boolean>());
+            default:
+            {
+                auto toNumberMethod = read(n::toNumber);
+                if (toNumberMethod && toNumberMethod != toNumber)
+                    return (*toNumberMethod)(thisObj, {}, nullptr)->get<const type::Number>();
                 else
-                {
-                    auto toNumberMethod = read(n::toNumber);
-                    if (toNumberMethod && toNumberMethod != toNumber)
-                        return (*toNumberMethod)(thisObj, {}, nullptr)->get<const type::String>();
-                    else
-                        return static_cast<type::Number>(_properties.size());
-                }
+                    return static_cast<type::Number>(_properties->size());
             }
-
-            else if constexpr (std::is_same_v<RT, type::String>)
+            }
+        }
+        else if constexpr (std::is_same_v<T, type::String>)
+        {
+            switch (getTypeIndex())
             {
-                if constexpr (std::is_same_v<A, type::Number>)
-                    return static_cast<type::String>(value);
-                else if constexpr (std::is_same_v<A, type::Array>)
+            case typeIndex::String:
+                return uncheckedGet<type::String>();
+
+            case typeIndex::Number:
+                return static_cast<type::String>(uncheckedGet<type::Number>());
+            case typeIndex::Array:
+                return toJson();
+            case typeIndex::Boolean:
+                return uncheckedGet<type::Boolean>() ? "true"s : "false"s;
+            default:
+            {
+                auto toStringMethod = read(n::toString);
+                if (toStringMethod && toStringMethod != toString)
+                    return (*toStringMethod)(thisObj, {}, nullptr)->get<const type::String>();
+                else
                     return toJson();
-                else if constexpr (std::is_same_v<A, type::Boolean>)
-                    return value ? "true"s : "false"s;
-                else
-                {
-                    auto toStringMethod = read(n::toString);
-                    if (toStringMethod && toStringMethod != toString)
-                        return (*toStringMethod)(thisObj, {}, nullptr)->get<const type::String>();
-                    else
-                        return toJson();
-                }
             }
-
-            else if constexpr (std::is_same_v<RT, type::Array>)
+            }
+        }
+        else if constexpr (std::is_same_v<T, type::Array>)
+        {
+            if (getTypeIndex() == typeIndex::Array)
+                return uncheckedGet<type::Array>();
+            else
             {
                 auto toArrayMethod = read(n::toArray);
                 if (toArrayMethod && toArrayMethod != toArray)
                     return (*toArrayMethod)(thisObj, {}, nullptr)->get<const type::Array>();
                 else
-                    return type::Array{object::makeObject(value)};
+                    return type::Array{thisObj};
             }
-
-            else if constexpr (std::is_same_v<RT, type::Boolean>)
+        }
+        else if constexpr (std::is_same_v<T, type::Boolean>)
+        {
+            switch (getTypeIndex())
             {
-                if constexpr (std::is_same_v<A, type::Number>)
-                    return static_cast<type::Boolean>(value);
-                else if constexpr (std::is_same_v<A, type::String>)
-                    return static_cast<type::Boolean>(value.size());
-                else if constexpr (std::is_same_v<A, type::Array>)
-                    return static_cast<type::Boolean>(value.size());
-                else
-                {
-                    auto toBooleanMethod = read(n::toBoolean);
-                    if (toBooleanMethod && toBooleanMethod != toBoolean)
-                        return (*toBooleanMethod)(thisObj, {}, nullptr)->get<const type::Boolean>();
-                    else
-                        return _properties.size() != 0;
-                }
-            }
+            case typeIndex::Boolean:
+                return uncheckedGet<type::Boolean>();
 
+            case typeIndex::Number:
+                return static_cast<type::Boolean>(uncheckedGet<type::Number>());
+            case typeIndex::String:
+                return static_cast<type::Boolean>(uncheckedGet<type::String>().size());
+            case typeIndex::Array:
+                return static_cast<type::Boolean>(uncheckedGet<type::Array>().size());
+            default:
+            {
+                auto toBooleanMethod = read(n::toBoolean);
+                if (toBooleanMethod && toBooleanMethod != toBoolean)
+                    return (*toBooleanMethod)(thisObj, {}, nullptr)->get<const type::Boolean>();
+                else
+                    return _properties->size() != 0;
+            }
+            }
+        }
+        else
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
-        },
-                          _value);
     }
 
     void setConst(bool v = true) { _flags[_const] = v; }
     void setAccessible(bool v = true) { _flags[_accessible] = v; }
     void setSettable(bool v = true) { _flags[_setttable] = v; }
+    void setDestructible(bool v = true) { _flags[_destructible] = v; }
     bool isConst() const { return _flags[_const]; }
     bool isAccessible() const { return _flags[_accessible]; }
     bool isSettable() const { return _flags[_setttable]; }
+    bool isDestructible() const { return _flags[_destructible]; }
     objectPtr &operator[](const name &n);
     objectPtr operator()(objectPtr thisObj, type::Array &&args, stack *st);
-    bool hasOwnProperty(const name &n) const { return _properties.count(n) || (n == n::prototype && _prototype); }
+    bool hasOwnProperty(const name &n) const { return _properties->count(n) || (n == n::prototype && _prototype); }
     void addProperty(const name &n, objectPtr ptr)
     {
         if (n == n::prototype)
             _prototype = ptr;
         else
-            _properties.insert_or_assign(n, ptr);
+            _properties->insert_or_assign(n, ptr);
     }
     template <class It>
     void addProperties(It begin, It end)
     {
-        _properties.insert(begin, end);
-        _properties.erase(n::empty);
+        _properties->insert(begin, end);
+        _properties->erase(n::empty);
     }
-    void removeProperty(const name &n) { _properties.erase(n); }
+    void removeProperty(const name &n)
+    {
+        if (n == n::prototype)
+            _prototype = nullptr;
+        else
+            _properties->erase(n);
+    }
     type::Array getOwnPropertyNames() const;
     type::Array getOwnPropertyValues() const;
-    const propertiesType &getOwnPropertiesWithoutPrototype() const { return _properties; }
+    const propertiesType &getOwnPropertiesWithoutPrototype() const { return *_properties; }
     std::string toJson() const;
     void clear();
 
-    void captureStack(stack &&st) { _capturedStack = std::make_shared<stack>(std::move(st)); }
-    void captureStack(const std::shared_ptr<stack> &st) { _capturedStack = st; }
-    void captureStack(std::shared_ptr<stack> &&st) { _capturedStack = std::move(st); }
+    void captureStack(stack &&st) { get<type::Function>().second = std::make_shared<stack>(std::move(st)); }
+    void captureStack(const std::shared_ptr<stack> &st) { get<type::Function>().second = st; }
+    void captureStack(std::shared_ptr<stack> &&st) { get<type::Function>().second = std::move(st); }
 
     static inline objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
     static inline objectPtr toNumber, toString, toArray, toBoolean;
@@ -349,26 +381,24 @@ private:
     friend class objectPtrImpl;
     friend class Import;
 
-public:
     std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::Promise, type::Function, type::NativeFunction,
-                 type::File, type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer>
+                 type::File, type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer, type::ExternalFunction>
         _value;
 
-private:
-    propertiesType _properties;
     objectPtr _prototype;
-    std::shared_ptr<stack> _capturedStack;
-    std::bitset<3> _flags;
-    static constexpr int _const = 0;
-    static constexpr int _accessible = 1;
-    static constexpr int _setttable = 2;
+    copyPtr<propertiesType> _properties;
+    std::bitset<4> _flags;
+    static constexpr size_t _const = 0;
+    static constexpr size_t _accessible = 1;
+    static constexpr size_t _setttable = 2;
+    static constexpr size_t _destructible = 3;
 
     static inline stack *globalStack = nullptr;
 
     struct buffer
     {
-        int length, head, tail;
-        static constexpr int maxLength = 128;
+        size_t length, head, tail;
+        static constexpr size_t maxLength = 256;
         std::array<object *, maxLength> data;
     };
     static inline buffer objects;
@@ -381,7 +411,7 @@ private:
     {
         return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
     }
-    void toJson(std::string &str, const int indentation = 1) const;
+    void toJson(std::string &str, const size_t indentation = 1) const;
 };
 
 extern allocatorBuffer<sizeof(object)> objectMemoryBuffer;

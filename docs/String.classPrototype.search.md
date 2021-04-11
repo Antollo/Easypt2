@@ -26,7 +26,3 @@ for (let i = 0; i < arr.length(); i++)
 0 5, 0 1, 1 4, 
 ```
 
-### Properties:
-
-
-

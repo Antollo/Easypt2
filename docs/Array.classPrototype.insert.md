@@ -4,6 +4,8 @@
 
 #### Parameters: `n /*Number*/, element`
 
+#### Return value: `this`
+
 ### Description:
 
 Inserts new element before n-th element.
@@ -21,8 +23,4 @@ console.write(arr[1], arr[2]);
 ```
 Dirty Harry
 ```
-
-### Properties:
-
-
 

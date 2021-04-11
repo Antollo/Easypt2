@@ -2,6 +2,8 @@
 
 #### Instance of: [`Function`](Function.md)
 
+#### Return value: `/*Boolean*/`
+
 ### Description:
 
 Converts object to number:
@@ -27,8 +29,4 @@ console.write([].toBoolean(), " ", 10.toBoolean());
 ```
 false true
 ```
-
-### Properties:
-
-
 

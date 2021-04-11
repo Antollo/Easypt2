@@ -4,10 +4,12 @@
 
 #### Parameters: `caller, [...]`
 
+#### Return value: `return value of function /*Object*/`
+
 ### Description:
 
 Calls function with the first argument as caller
-and passes following to this function.
+and passes following arguments to this function.
 
 #### Example:
 
@@ -22,8 +24,4 @@ console.write(x);
 ```
 b
 ```
-
-### Properties:
-
-
 

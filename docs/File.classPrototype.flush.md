@@ -27,7 +27,3 @@ file.close();
 abbacda
 ```
 
-### Properties:
-
-
-

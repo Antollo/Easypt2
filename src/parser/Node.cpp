@@ -4,6 +4,49 @@
 #include <cassert>
 #include <exception>
 
+#define caseUnary(TOKEN, ...)             \
+    case TOKEN:                           \
+    {                                     \
+        auto a = _evaluate(0);            \
+        __VA_ARGS__                       \
+    }                                     \
+    case TOKEN | A_IDENTIFIER:            \
+    {                                     \
+        auto &a = _evaluateIdentifier(0); \
+        __VA_ARGS__                       \
+    }
+
+#define caseBinary(TOKEN, ...)                \
+    case TOKEN:                               \
+    {                                         \
+        auto a = _evaluate(0);                \
+        auto b = _evaluate(1);                \
+        __VA_ARGS__                           \
+    }                                         \
+    case TOKEN | A_IDENTIFIER:                \
+    {                                         \
+        auto &a = _evaluateIdentifier(0);     \
+        auto b = _evaluate(1);                \
+        __VA_ARGS__                           \
+    }                                         \
+    case TOKEN | B_IDENTIFIER:                \
+    {                                         \
+        auto a = _evaluate(0);                \
+        auto &b = _evaluateIdentifier(1);     \
+        __VA_ARGS__                           \
+    }                                         \
+    case TOKEN | AB_IDENTIFIER: \
+    {                                         \
+        auto &a = _evaluateIdentifier(0);     \
+        auto &b = _evaluateIdentifier(1);     \
+        __VA_ARGS__                           \
+    }
+#define allCases(TOKEN)                       \
+    case TOKEN:                               \
+    case TOKEN | A_IDENTIFIER:                \
+    case TOKEN | B_IDENTIFIER:                \
+    case TOKEN | AB_IDENTIFIER:               \
+
 std::string Node::parseString(const std::string &source)
 {
     std::string ret;
@@ -97,8 +140,7 @@ void Node::addChild(Node &arg)
         names().clear();
         Node *node = new Node(std::move(arg));
         node->optimize();
-        _value = object::makeObject(object::type::Function(node));
-        _value->setConst();
+        _value = object::makeObject(object::type::Function(node, nullptr));
         break;
     }
     default:
@@ -118,20 +160,50 @@ bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr 
                 switch (_children[1]._token)
                 {
                 case ADDITION:
+                case ADDITION | A_IDENTIFIER:
                     a->get<number>() += _children[1]._children[1].evaluateNumber(st);
                     break;
+                case ADDITION | B_IDENTIFIER:
+                case ADDITION | AB_IDENTIFIER:
+                    a->get<number>() += st[_children[1]._children[1]._text].getConverted<number>();
+                    break;
+
                 case SUBTRACTION:
+                case SUBTRACTION | A_IDENTIFIER:
                     a->get<number>() -= _children[1]._children[1].evaluateNumber(st);
                     break;
+                case SUBTRACTION | B_IDENTIFIER:
+                case SUBTRACTION | AB_IDENTIFIER:
+                    a->get<number>() -= st[_children[1]._children[1]._text].getConverted<number>();
+                    break;
+
                 case MULTIPLICATION:
+                case MULTIPLICATION | A_IDENTIFIER:
                     a->get<number>() *= _children[1]._children[1].evaluateNumber(st);
                     break;
+                case MULTIPLICATION | B_IDENTIFIER:
+                case MULTIPLICATION | AB_IDENTIFIER:
+                    a->get<number>() *= st[_children[1]._children[1]._text].getConverted<number>();
+                    break;
+
                 case DIVISION:
+                case DIVISION | A_IDENTIFIER:
                     a->get<number>() /= _children[1]._children[1].evaluateNumber(st);
                     break;
+                case DIVISION | B_IDENTIFIER:
+                case DIVISION | AB_IDENTIFIER:
+                    a->get<number>() /= st[_children[1]._children[1]._text].getConverted<number>();
+                    break;
+
                 case MODULUS:
+                case MODULUS | A_IDENTIFIER:
                     a->get<number>() %= _children[1]._children[1].evaluateNumber(st);
                     break;
+                case MODULUS | B_IDENTIFIER:
+                case MODULUS | AB_IDENTIFIER:
+                    a->get<number>() %= st[_children[1]._children[1]._text].getConverted<number>();
+                    break;
+
                 default:
                     a->get<number>() = _children[1].evaluateNumber(st);
                     break;
@@ -155,6 +227,9 @@ bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr 
 
     return false;
 }
+
+#define _evaluate(i) _children[i].evaluate(st)
+#define _evaluateIdentifier(i) st[_children[i]._text]
 
 object::objectPtr Node::evaluate(stack &st) const
 {
@@ -320,10 +395,9 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 1);
         return _children[0].evaluate(st);
 
-    case CALL_OPERATOR:
+    caseUnary(CALL_OPERATOR,
     {
         assert(_children.size() >= 1);
-        auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
         for (size_t i = 1, j = 0; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
@@ -350,12 +424,11 @@ object::objectPtr Node::evaluate(stack &st) const
             _children[0].exception(_children[0].toName());
             throw e;
         }
-    }
+    })
 
-    case READ_OPERATOR:
+    caseUnary(READ_OPERATOR,
     {
         assert(_children.size() >= 1);
-        auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
         for (size_t i = 1, j = 0; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
@@ -367,7 +440,6 @@ object::objectPtr Node::evaluate(stack &st) const
                 args.insert(args.begin() + j, arr.begin(), arr.end());
                 j += arr.size();
             }
-
         try
         {
             return (*(*a)[n::readOperator])(a, std::move(args), &st);
@@ -382,13 +454,12 @@ object::objectPtr Node::evaluate(stack &st) const
             _children[0].exception(_children[0].toName() + ".readOperator");
             throw e;
         }
-    }
+    })
 
-    case METHOD_CALL_OPERATOR:
+    caseUnary(METHOD_CALL_OPERATOR,
     {
         assert(_children.size() >= 2);
         assert(_children[1]._token == IDENTIFIER);
-        auto a = _children[0].evaluate(st);
         auto b = (*a)[_children[1]._text];
         object::type::Array args(_children.size() - 2);
         for (size_t i = 2, j = 0; i < _children.size(); i++)
@@ -401,7 +472,6 @@ object::objectPtr Node::evaluate(stack &st) const
                 args.insert(args.begin() + j, arr.begin(), arr.end());
                 j += arr.size();
             }
-
         try
         {
             return (*b)(a, std::move(args), &st);
@@ -416,15 +486,14 @@ object::objectPtr Node::evaluate(stack &st) const
             _children[0].exception(_children[0].toName() + "." + _children[1].toName());
             throw e;
         }
-    }
+    })
 
-    case AWAIT:
+    caseUnary(AWAIT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         auto b = (*a)[n::await_];
         return (*b)(a, {}, &st);
-    }
+    })
 
     case ARRAY_LITERAL:
     {
@@ -442,21 +511,20 @@ object::objectPtr Node::evaluate(stack &st) const
         return object::makeObject(args);
     }
 
-    case DOT:
+    caseUnary(DOT,
     {
         assert(_children.size() == 2);
         assert(_children[1]._token == IDENTIFIER);
-        return (*(_children[0].evaluate(st)))[_children[1]._text];
-    }
+        return (*a)[_children[1]._text];
+    })
 
     case LET:
         assert(_children.size() == 0);
         return st.insert(_text, object::makeEmptyObject());
 
-    case ASSIGNMENT:
+    caseUnary(ASSIGNMENT,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         if (a->isConst())
             throw std::runtime_error("tried to modify constant value");
 
@@ -467,7 +535,7 @@ object::objectPtr Node::evaluate(stack &st) const
             a->setConst(false);
         }
         return a;
-    }
+    })
 
     case INIT_ASSIGNMENT_LET:
         assert(_children.size() == 2);
@@ -515,14 +583,13 @@ object::objectPtr Node::evaluate(stack &st) const
             return st.insert(static_cast<name>(_children[0].evaluate(st).getConverted<std::string>()), a);
     }
 
-    case SPREAD_OPERATOR:
+    caseUnary(SPREAD_OPERATOR,
     {
-        auto a = _children[0].evaluate(st);
         auto properties = a->getOwnPropertiesWithoutPrototype();
         for (const auto &property : properties)
             st.insert(property.first, property.second);
         return a;
-    }
+    })
 
     case DELETE_:
         assert(_children.size() == 1);
@@ -576,13 +643,17 @@ object::objectPtr Node::evaluate(stack &st) const
         return obj;
     }
 
-    case RETURN:
+    caseUnary(RETURN,
+    {
         assert(_children.size() == 1);
-        throw _children[0].evaluate(st);
+        throw a;
+    })
 
-    case THROW:
+    caseUnary(THROW,
+    {
         assert(_children.size() == 1);
-        throw objectException(_children[0].evaluate(st));
+        throw objectException(a);
+    })
 
     case BREAK:
         throw breakType();
@@ -611,53 +682,45 @@ object::objectPtr Node::evaluate(stack &st) const
         return nullptr;
     }
 
-    case USER_OPERATOR:
+    caseBinary(USER_OPERATOR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         auto op = st[_text];
         return (*op)(op, {a, b}, &st);
-    }
+    })
 
-    case INSTANCEOF:
+    caseBinary(INSTANCEOF,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         return object::makeObject(a->hasOwnProperty(n::prototype) && b->hasOwnProperty(n::classPrototype) && (*a)[n::prototype].get() == (*b)[n::classPrototype].get());
-    }
+    })
 
-    case ADDITION:
+    caseBinary(ADDITION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() + b.getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->uncheckedGet<const number>() + b.getConverted<number>()));
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<std::string>(a->get<const std::string>() + b.getConverted<std::string>()));
+            return object::makeObject(static_cast<std::string>(a->uncheckedGet<const object::type::String>() + b.getConverted<object::type::String>()));
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
         {
-            object::type::Array arr = a->get<const object::type::Array>();
+            object::type::Array arr = a->uncheckedGet<const object::type::Array>();
             object::type::Array toAdd = b.getConverted<object::type::Array>();
             arr.insert(arr.end(), toAdd.begin(), toAdd.end());
             return object::makeObject(arr);
         }
         return (*(*a)[n::addition])(a, {b}, &st);
-    }
+    })
 
-    case MULTIPLICATION:
+    caseBinary(MULTIPLICATION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() * b.getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->uncheckedGet<const number>() * b.getConverted<number>()));
         else if (a->isOfType<std::string>() && b->isConvertible<number>())
         {
-            const std::string &str = a->get<const std::string>();
-            int i = static_cast<int>(b.getConverted<number>());
+            const std::string &str = a->uncheckedGet<const std::string>();
+            size_t i = static_cast<size_t>(b.getConverted<number>());
             std::string res;
             res.reserve(str.size() * i);
             while (i--)
@@ -666,8 +729,8 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else if (a->isOfType<object::type::Array>() && b->isConvertible<number>())
         {
-            const object::type::Array &arr = a->get<const object::type::Array>();
-            int i = static_cast<int>(b.getConverted<number>());
+            const object::type::Array &arr = a->uncheckedGet<const object::type::Array>();
+            size_t i = static_cast<size_t>(b.getConverted<number>());
             object::type::Array res;
             res.reserve(arr.size() * i);
             while (i--)
@@ -680,42 +743,35 @@ object::objectPtr Node::evaluate(stack &st) const
             return object::makeObject(res);
         }
         return (*(*a)[n::multiplication])(a, {b}, &st);
-    }
+    })
 
-    case SUBTRACTION:
+    caseBinary(SUBTRACTION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() - b.getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->uncheckedGet<const number>() - b.getConverted<number>()));
         return (*(*a)[n::subtraction])(a, {b}, &st);
-    }
+    })
 
-    case DIVISION:
+    caseBinary(DIVISION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() / b.getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->uncheckedGet<const number>() / b.getConverted<number>()));
         return (*(*a)[n::division])(a, {b}, &st);
-    }
+    })
 
-    case MODULUS:
+    caseBinary(MODULUS,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(a->get<const number>() % b.getConverted<number>()));
+            return object::makeObject(static_cast<number>(a->uncheckedGet<const number>() % b.getConverted<number>()));
         return (*(*a)[n::modulus])(a, {b}, &st);
-    }
+    })
 
-    case AND:
+    caseUnary(AND,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
@@ -728,12 +784,11 @@ object::objectPtr Node::evaluate(stack &st) const
         else
             b = _children[1].evaluate(st);
         return (*(*a)[n::and])(a, {b}, &st);
-    }
+    })
 
-    case OR:
+    caseUnary(OR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
@@ -746,212 +801,189 @@ object::objectPtr Node::evaluate(stack &st) const
         else
             b = _children[1].evaluate(st);
         return (*(*a)[n:: or ])(a, {b}, &st);
-    }
+    })
 
-    case BITWISE_AND:
+    caseBinary(BITWISE_AND,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) & static_cast<int>(b.getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<number::intType>(a->uncheckedGet<const number>()) & static_cast<number::intType>(b.getConverted<number>())));
         return (*(*a)[n::bitwiseAnd])(a, {b}, &st);
-    }
+    })
 
-    case BITWISE_OR:
+    caseBinary(BITWISE_OR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) | static_cast<int>(b.getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<number::intType>(a->uncheckedGet<const number>()) | static_cast<number::intType>(b.getConverted<number>())));
         return (*(*a)[n::bitwiseOr])(a, {b}, &st);
-    }
+    })
 
-    case SHIFT_LEFT:
+    caseBinary(SHIFT_LEFT,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) << static_cast<int>(b.getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<number::intType>(a->uncheckedGet<const number>()) << static_cast<number::intType>(b.getConverted<number>())));
         return (*(*a)[n::shiftLeft])(a, {b}, &st);
-    }
+    })
 
-    case SHIFT_RIGHT:
+    caseBinary(SHIFT_RIGHT,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<number>(static_cast<int>(a->get<const number>()) >> static_cast<int>(b.getConverted<number>())));
+            return object::makeObject(static_cast<number>(static_cast<number::intType>(a->uncheckedGet<const number>()) >> static_cast<number::intType>(b.getConverted<number>())));
         return (*(*a)[n::shiftRight])(a, {b}, &st);
-    }
+    })
 
-    case EQUAL:
+    caseBinary(EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() == b.getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() == b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() == b.getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() == b.getConverted<object::type::String>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() == b.getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() == b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() == b.getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() == b.getConverted<bool>()));
 
         else if (a->isOfType<nullptr_t>() && b->isOfType<nullptr_t>())
             return object::makeObject(*a == *b);
 
         return (*(*a)[n::equal])(a, {b}, &st);
-    }
+    })
 
-    case NOT_EQUAL:
+    caseBinary(NOT_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() != b.getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() != b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() != b.getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() != b.getConverted<object::type::String>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() != b.getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() != b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() != b.getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() != b.getConverted<bool>()));
 
         return (*(*a)[n::lessEqual])(a, {b}, &st);
-    }
+    })
 
-    case LESS:
+    caseBinary(LESS,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() < b.getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() < b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() < b.getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() < b.getConverted<object::type::String>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() < b.getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() < b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() < b.getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() < b.getConverted<bool>()));
 
         return (*(*a)[n::less])(a, {b}, &st);
-    }
+    })
 
-    case GREATER:
+    caseBinary(GREATER,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() > b.getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() > b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() > b.getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() > b.getConverted<object::type::String>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() > b.getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() > b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() > b.getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() > b.getConverted<bool>()));
 
         return (*(*a)[n::greater])(a, {b}, &st);
-    }
+    })
 
-    case LESS_EQUAL:
+    caseBinary(LESS_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() <= b.getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() <= b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() <= b.getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() <= b.getConverted<object::type::String>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() <= b.getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() <= b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() <= b.getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() <= b.getConverted<bool>()));
 
         return (*(*a)[n::lessEqual])(a, {b}, &st);
-    }
+    })
 
-    case GREATER_EQUAL:
+    caseBinary(GREATER_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->get<const number>() >= b.getConverted<number>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() >= b.getConverted<number>()));
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->get<const std::string>() >= b.getConverted<std::string>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() >= b.getConverted<object::type::String>()));
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->get<const object::type::Array>() >= b.getConverted<object::type::Array>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() >= b.getConverted<object::type::Array>()));
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->get<const bool>() >= b.getConverted<bool>()));
+            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() >= b.getConverted<bool>()));
 
         return (*(*a)[n::greaterEqual])(a, {b}, &st);
-    }
+    })
 
-    case INCREMENT:
+    caseUnary(INCREMENT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
         {
-            a->get<number>()++;
+            a->uncheckedGet<number>()++;
             return a;
         }
         return (*(*a)[n::increment])(a, {}, &st);
-    }
+    })
+        
 
-    case DECREMENT:
+    caseUnary(DECREMENT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
         {
-            a->get<number>()--;
+            a->uncheckedGet<number>()--;
             return a;
         }
         return (*(*a)[n::decrement])(a, {}, &st);
-    }
+    })
 
-    case NOT:
+    caseUnary(NOT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return object::makeObject(!a.getConverted<bool>());
         return (*(*a)[n::not ])(a, {}, &st);
-    }
+    })
 
-    case COMPLEMENT:
+    caseUnary(COMPLEMENT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
-            return object::makeObject(static_cast<number>(~static_cast<int>(a->get<const number>())));
+            return object::makeObject(static_cast<number>(~static_cast<number::intType>(a->uncheckedGet<const number>())));
         return (*(*a)[n::complement])(a, {}, &st);
-    }
+    })
 
     case IDENTIFIER:
         assert(!_text.isEmpty());
@@ -1139,10 +1171,9 @@ void Node::evaluateVoid(stack &st) const
         _children[0].evaluateVoid(st);
         return;
 
-    case CALL_OPERATOR:
+    caseUnary(CALL_OPERATOR,
     {
         assert(_children.size() >= 1);
-        auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
         for (size_t i = 1, j = 0; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
@@ -1154,7 +1185,6 @@ void Node::evaluateVoid(stack &st) const
                 args.insert(args.begin() + j, arr.begin(), arr.end());
                 j += arr.size();
             }
-
         try
         {
             (*a)(a, std::move(args), &st);
@@ -1170,12 +1200,11 @@ void Node::evaluateVoid(stack &st) const
             _children[0].exception(_children[0].toName());
             throw e;
         }
-    }
+    })
 
-    case READ_OPERATOR:
+    caseUnary(READ_OPERATOR,
     {
         assert(_children.size() >= 1);
-        auto a = _children[0].evaluate(st);
         object::type::Array args(_children.size() - 1);
         for (size_t i = 1, j = 0; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
@@ -1187,7 +1216,6 @@ void Node::evaluateVoid(stack &st) const
                 args.insert(args.begin() + j, arr.begin(), arr.end());
                 j += arr.size();
             }
-
         try
         {
             (*(*a)[n::readOperator])(a, std::move(args), &st);
@@ -1203,13 +1231,12 @@ void Node::evaluateVoid(stack &st) const
             _children[0].exception(_children[0].toName() + ".readOperator");
             throw e;
         }
-    }
+    })
 
-    case METHOD_CALL_OPERATOR:
+    caseUnary(METHOD_CALL_OPERATOR,
     {
         assert(_children.size() >= 2);
         assert(_children[1]._token == IDENTIFIER);
-        auto a = _children[0].evaluate(st);
         auto b = (*a)[_children[1]._text];
         object::type::Array args(_children.size() - 2);
         for (size_t i = 2, j = 0; i < _children.size(); i++)
@@ -1222,7 +1249,6 @@ void Node::evaluateVoid(stack &st) const
                 args.insert(args.begin() + j, arr.begin(), arr.end());
                 j += arr.size();
             }
-
         try
         {
             (*b)(a, std::move(args), &st);
@@ -1238,16 +1264,15 @@ void Node::evaluateVoid(stack &st) const
             _children[0].exception(_children[0].toName() + "." + _children[1].toName());
             throw e;
         }
-    }
+    })
 
-    case AWAIT:
+    caseUnary(AWAIT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         auto b = (*a)[n::await_];
         (*b)(a, {}, &st);
         return;
-    }
+    })
 
     case ARRAY_LITERAL:
     {
@@ -1256,23 +1281,22 @@ void Node::evaluateVoid(stack &st) const
         return;
     }
 
-    case DOT:
+    caseUnary(DOT,
     {
         assert(_children.size() == 2);
         assert(_children[1]._token == IDENTIFIER);
-        (*(_children[0].evaluate(st)))[_children[1]._text];
+        (*a)[_children[1]._text];
         return;
-    }
+    })
 
     case LET:
         assert(_children.size() == 0);
         st.insert(_text, object::makeEmptyObject());
         return;
 
-    case ASSIGNMENT:
+    caseUnary(ASSIGNMENT,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         if (a->isConst())
             throw std::runtime_error("tried to modify constant value");
         object::objectPtr b;
@@ -1282,7 +1306,7 @@ void Node::evaluateVoid(stack &st) const
             a->setConst(false);
         }
         return;
-    }
+    })
 
     case INIT_ASSIGNMENT_LET:
         assert(_children.size() == 2);
@@ -1332,14 +1356,13 @@ void Node::evaluateVoid(stack &st) const
         return;
     }
 
-    case SPREAD_OPERATOR:
+    caseUnary(SPREAD_OPERATOR,
     {
-        auto a = _children[0].evaluate(st);
         auto properties = a->getOwnPropertiesWithoutPrototype();
         for (const auto &property : properties)
             st.insert(property.first, property.second);
         return;
-    }
+    })
 
     case DELETE_:
         assert(_children.size() == 1);
@@ -1393,13 +1416,17 @@ void Node::evaluateVoid(stack &st) const
         return;
     }
 
-    case RETURN:
+    caseUnary(RETURN,
+    {
         assert(_children.size() == 1);
-        throw _children[0].evaluate(st);
+        throw a;
+    })
 
-    case THROW:
+    caseUnary(THROW,
+    {
         assert(_children.size() == 1);
-        throw objectException(_children[0].evaluate(st));
+        throw objectException(a);
+    })
 
     case BREAK:
         throw breakType();
@@ -1428,24 +1455,20 @@ void Node::evaluateVoid(stack &st) const
         return;
     }
 
-    case USER_OPERATOR:
+    caseBinary(USER_OPERATOR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         auto op = st[_text];
         (*op)(op, {a, b}, &st);
         return;
-    }
+    })
 
-    case INSTANCEOF:
+    allCases(INSTANCEOF)
         return;
 
-    case ADDITION:
+    caseBinary(ADDITION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1454,13 +1477,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::addition])(a, {b}, &st);
         return;
-    }
+    })
 
-    case MULTIPLICATION:
+    caseBinary(MULTIPLICATION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<number>())
@@ -1469,45 +1490,38 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::multiplication])(a, {b}, &st);
         return;
-    }
+    })
 
-    case SUBTRACTION:
+    caseBinary(SUBTRACTION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::subtraction])(a, {b}, &st);
         return;
-    }
+    })
 
-    case DIVISION:
+    caseBinary(DIVISION,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::division])(a, {b}, &st);
         return;
-    }
+    })
 
-    case MODULUS:
+    caseBinary(MODULUS,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::modulus])(a, {b}, &st);
         return;
-    }
+    })
 
-    case AND:
+    caseUnary(AND,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
@@ -1521,12 +1535,11 @@ void Node::evaluateVoid(stack &st) const
             b = _children[1].evaluate(st);
         (*(*a)[n::and])(a, {b}, &st);
         return;
-    }
+    })
 
-    case OR:
+    caseUnary(OR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
@@ -1540,57 +1553,47 @@ void Node::evaluateVoid(stack &st) const
             b = _children[1].evaluate(st);
         (*(*a)[n:: or ])(a, {b}, &st);
         return;
-    }
+    })
 
-    case BITWISE_AND:
+    caseBinary(BITWISE_AND,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::bitwiseAnd])(a, {b}, &st);
         return;
-    }
+    })
 
-    case BITWISE_OR:
+    caseBinary(BITWISE_OR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::bitwiseOr])(a, {b}, &st);
         return;
-    }
+    })
 
-    case SHIFT_LEFT:
+    caseBinary(SHIFT_LEFT,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::shiftLeft])(a, {b}, &st);
         return;
-    }
+    })
 
-    case SHIFT_RIGHT:
+    caseBinary(SHIFT_RIGHT,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         (*(*a)[n::shiftRight])(a, {b}, &st);
         return;
-    }
+    })
 
-    case EQUAL:
+    caseBinary(EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1601,13 +1604,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::equal])(a, {b}, &st);
         return;
-    }
+    })
 
-    case NOT_EQUAL:
+    caseBinary(NOT_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1618,13 +1619,10 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::lessEqual])(a, {b}, &st);
         return;
-    }
+    })
 
-    case LESS:
+    caseBinary(LESS,
     {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1635,13 +1633,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::less])(a, {b}, &st);
         return;
-    }
+    })
 
-    case GREATER:
+    caseBinary(GREATER,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1652,13 +1648,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::greater])(a, {b}, &st);
         return;
-    }
+    })
 
-    case LESS_EQUAL:
+    caseBinary(LESS_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1669,13 +1663,11 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::lessEqual])(a, {b}, &st);
         return;
-    }
+    })
 
-    case GREATER_EQUAL:
+    caseBinary(GREATER_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
             return;
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
@@ -1686,53 +1678,49 @@ void Node::evaluateVoid(stack &st) const
             return;
         (*(*a)[n::greaterEqual])(a, {b}, &st);
         return;
-    }
+    })
 
-    case INCREMENT:
+    caseUnary(INCREMENT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
         {
-            a->get<number>()++;
+            a->uncheckedGet<number>()++;
             return;
         }
         (*(*a)[n::increment])(a, {}, &st);
         return;
-    }
+    })
 
-    case DECREMENT:
+    caseUnary(DECREMENT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
         {
-            a->get<number>()--;
+            a->uncheckedGet<number>()--;
             return;
         }
         (*(*a)[n::decrement])(a, {}, &st);
         return;
-    }
+    })
 
-    case NOT:
+    caseUnary(NOT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return;
         (*(*a)[n::not ])(a, {}, &st);
         return;
-    }
+    })
 
-    case COMPLEMENT:
+    caseUnary(COMPLEMENT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isOfType<number>())
             return;
         (*(*a)[n::complement])(a, {}, &st);
         return;
-    }
+    })
 
     case IDENTIFIER:
         return;
@@ -1764,79 +1752,7 @@ number Node::evaluateNumber(stack &st) const
     // sin, cos, sqrt etc.
     case IDENTIFIER:
         return st[_text].getConverted<number>();
-    case ADDITION:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return a + b;
-    }
-
-    case MULTIPLICATION:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return a * b;
-    }
-
-    case SUBTRACTION:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return a - b;
-    }
-
-    case DIVISION:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return a / b;
-    }
-
-    case MODULUS:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return a % b;
-    }
-
-    case BITWISE_AND:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return static_cast<number>(static_cast<int>(a) & static_cast<int>(b));
-    }
-
-    case BITWISE_OR:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return static_cast<number>(static_cast<int>(a) & static_cast<int>(b));
-    }
-
-    case SHIFT_LEFT:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return static_cast<number>(static_cast<int>(a) << static_cast<int>(b));
-    }
-
-    case SHIFT_RIGHT:
-    {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluateNumber(st);
-        auto b = _children[1].evaluateNumber(st);
-        return static_cast<number>(static_cast<int>(a) >> static_cast<int>(b));
-    }
-
-        /*case INCREMENT:
+    /*case INCREMENT:
     {
         assert(_children.size() == 1);
         auto a = _children[0].evaluate(st);
@@ -1852,16 +1768,16 @@ number Node::evaluateNumber(stack &st) const
             return --(a->get<number>());
     }*/
 
-    case COMPLEMENT:
+    allCases(COMPLEMENT)
     {
         assert(_children.size() == 1);
         auto a = _children[0].evaluateNumber(st);
-        return static_cast<number>(~static_cast<int>(a));
+        return static_cast<number>(~static_cast<number::intType>(a));
     }
 
     case NUMBER_LITERAL:
         assert(_value != nullptr);
-        return _value->get<const number>();
+        return _value->uncheckedGet<const number>();
 
     case CONDITIONAL:
         assert(_children.size() == 3);
@@ -1876,18 +1792,15 @@ bool Node::evaluateBoolean(stack &st) const
     {
     case IDENTIFIER:
         return st[_text].getConverted<bool>();
-    case INSTANCEOF:
+    caseBinary(INSTANCEOF,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         return a->hasOwnProperty(n::prototype) && b->hasOwnProperty(n::classPrototype) && (*a)[n::prototype].get() == (*b)[n::classPrototype].get();
-    }
+    })
 
-    case AND:
+    caseUnary(AND,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
@@ -1900,12 +1813,11 @@ bool Node::evaluateBoolean(stack &st) const
         else
             b = _children[1].evaluate(st);
         return (*(*a)[n::and])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case OR:
+    caseUnary(OR,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
         object::objectPtr b;
         if (a->isConvertible<bool>())
         {
@@ -1918,139 +1830,125 @@ bool Node::evaluateBoolean(stack &st) const
         else
             b = _children[1].evaluate(st);
         return (*(*a)[n:: or ])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case EQUAL:
+    caseBinary(EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() == b.getConverted<number>();
+            return a->uncheckedGet<const number>() == b.getConverted<number>();
 
         if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() == b.getConverted<std::string>();
+            return a->uncheckedGet<const std::string>() == b.getConverted<object::type::String>();
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() == b.getConverted<object::type::Array>();
+            return a->uncheckedGet<const object::type::Array>() == b.getConverted<object::type::Array>();
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() == b.getConverted<bool>();
+            return a->uncheckedGet<const bool>() == b.getConverted<bool>();
 
         else if (a->isOfType<nullptr_t>() && b->isOfType<nullptr_t>())
             return object::makeObject(*a == *b);
 
         return (*(*a)[n::equal])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case NOT_EQUAL:
+    caseBinary(NOT_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() != b.getConverted<number>();
+            return a->uncheckedGet<const number>() != b.getConverted<number>();
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() != b.getConverted<std::string>();
+            return a->uncheckedGet<const std::string>() != b.getConverted<object::type::String>();
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() != b.getConverted<object::type::Array>();
+            return a->uncheckedGet<const object::type::Array>() != b.getConverted<object::type::Array>();
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() != b.getConverted<bool>();
+            return a->uncheckedGet<const bool>() != b.getConverted<bool>();
 
         return (*(*a)[n::lessEqual])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case LESS:
+    caseBinary(LESS,
     {
-        assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() < b.getConverted<number>();
+            return a->uncheckedGet<const number>() < b.getConverted<number>();
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() < b.getConverted<std::string>();
+            return a->uncheckedGet<const std::string>() < b.getConverted<object::type::String>();
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() < b.getConverted<object::type::Array>();
+            return a->uncheckedGet<const object::type::Array>() < b.getConverted<object::type::Array>();
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() < b.getConverted<bool>();
+            return a->uncheckedGet<const bool>() < b.getConverted<bool>();
 
         return (*(*a)[n::less])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case GREATER:
+    caseBinary(GREATER,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() > b.getConverted<number>();
+            return a->uncheckedGet<const number>() > b.getConverted<number>();
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() > b.getConverted<std::string>();
+            return a->uncheckedGet<const std::string>() > b.getConverted<object::type::String>();
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() > b.getConverted<object::type::Array>();
+            return a->uncheckedGet<const object::type::Array>() > b.getConverted<object::type::Array>();
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() > b.getConverted<bool>();
+            return a->uncheckedGet<const bool>() > b.getConverted<bool>();
 
         return (*(*a)[n::greater])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case LESS_EQUAL:
+    caseBinary(LESS_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() <= b.getConverted<number>();
+            return a->uncheckedGet<const number>() <= b.getConverted<number>();
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() <= b.getConverted<std::string>();
+            return a->uncheckedGet<const std::string>() <= b.getConverted<object::type::String>();
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() <= b.getConverted<object::type::Array>();
+            return a->uncheckedGet<const object::type::Array>() <= b.getConverted<object::type::Array>();
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() <= b.getConverted<bool>();
+            return a->uncheckedGet<const bool>() <= b.getConverted<bool>();
 
         return (*(*a)[n::lessEqual])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case GREATER_EQUAL:
+    caseBinary(GREATER_EQUAL,
     {
         assert(_children.size() == 2);
-        auto a = _children[0].evaluate(st);
-        auto b = _children[1].evaluate(st);
         if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->get<const number>() >= b.getConverted<number>();
+            return a->uncheckedGet<const number>() >= b.getConverted<number>();
 
         else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->get<const std::string>() >= b.getConverted<std::string>();
+            return a->uncheckedGet<const std::string>() >= b.getConverted<object::type::String>();
 
         else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->get<const object::type::Array>() >= b.getConverted<object::type::Array>();
+            return a->uncheckedGet<const object::type::Array>() >= b.getConverted<object::type::Array>();
 
         else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->get<const bool>() >= b.getConverted<bool>();
+            return a->uncheckedGet<const bool>() >= b.getConverted<bool>();
 
         return (*(*a)[n::greaterEqual])(a, {b}, &st).getConverted<bool>();
-    }
+    })
 
-    case NOT:
+    caseUnary(NOT,
     {
         assert(_children.size() == 1);
-        auto a = _children[0].evaluate(st);
         if (a->isConvertible<bool>())
             return !a.getConverted<bool>();
         return (*(*a)[n::not ])(a, {}, &st).getConverted<bool>();
-    }
+    })
 
     case CONDITIONAL:
         assert(_children.size() == 3);

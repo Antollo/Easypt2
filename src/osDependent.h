@@ -61,8 +61,8 @@ void initializeThread();
 class dynamicLibrary
 {
 public:
-    static unsigned int loadLibrary(const std::filesystem::path &fileName);
-    static void *getFunction(unsigned int library, const std::string &functionName);
+    static size_t loadLibrary(const std::filesystem::path &fileName);
+    static void *getFunction(size_t library, const std::string &functionName);
     static void unloadLibraries();
 private:
     static inline std::vector<libraryType> libraries;

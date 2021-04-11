@@ -27,7 +27,3 @@ console.write(output);
 abc
 ```
 
-### Properties:
-
-
-

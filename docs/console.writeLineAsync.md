@@ -25,7 +25,3 @@ seven: 7
 
 ```
 
-### Properties:
-
-
-

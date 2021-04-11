@@ -216,7 +216,7 @@ let name = console.read();
 console.writeLine(\"Welcome \", name);";
 
 console.readAsync @returns@
-"/*String*/";
+"/*Promise of String*/";
 console.readAsync @description@
 "Reads word terminated by whitespace from standard input stream.";
 console.readAsync @example@
@@ -235,7 +235,7 @@ let writer = console.readLine();
 console.writeLine(\"I like books written by \", writer, \" too.\");";
 
 console.readLineAsync @returns@
-"/*String*/";
+"/*Promise of String*/";
 console.readLineAsync @description@
 "Reads string terminated by new line character 
 from standard input stream.";
@@ -246,6 +246,8 @@ console.writeLine(\"I like books written by \", writer, \" too.\");";
 
 console.controlSequence @parameters@
 "/*String*/";
+console.controlSequence @returns@
+"console";
 console.controlSequence @description@
 "Writes ANSI escape code starting with `ESC` and `[` 
 (CSI sequence) to the standard output stream.";
@@ -365,6 +367,8 @@ Array.classPrototype.subarray @expectedOutput@
 
 Array.classPrototype.readOperator @parameters@
 "position /*Number*/";
+Array.classPrototype.readOperator @returns@
+"/*Object*/";
 Array.classPrototype.readOperator @description@
 "Read operator (arrayInstance[n]) returns element at given position.
 Not to be confused with static method Array.readOperator.";
@@ -376,6 +380,8 @@ Array.classPrototype.readOperator @expectedOutput@
 
 Array.readOperator @parameters@
 "...";
+Array.readOperator @returns@
+"/*Array*/";
 Array.readOperator @description@
 "Static read operator ([1, \"A\"]) constructs new Array.
 Not to be confused with method Array.classPrototype.readOperator.";
@@ -411,7 +417,9 @@ console.writeLine(\"ABC\".getId());
 console.writeLine(Object().getId());";
 
 Object.classPrototype.addProperty @parameters@
-"key /*String*/, value";
+"key /*String*/, value /*Object*/";
+Object.classPrototype.addProperty @returns@
+"key /*String*/";
 Object.classPrototype.addProperty @description@
 "Adds new property to object.";
 Object.classPrototype.addProperty @example@
@@ -478,6 +486,8 @@ console.write(obj[\"number\"], \" \", obj.secondNumber);";
 Object.classPrototype.readOperator @expectedOutput@
 "21 22";
 
+Object.classPrototype.toNumber @returns@
+"/*Number*/";
 Object.classPrototype.toNumber @description@
 "Converts object to number:
 - from `String` (parses the string as number)
@@ -491,6 +501,8 @@ Object.classPrototype.toNumber @example@
 Object.classPrototype.toNumber @expectedOutput@
 "121 0";
 
+Object.classPrototype.toString @returns@
+"/*String*/";
 Object.classPrototype.toString @description@
 "Converts object to number:
 - from `Number` (serializes the number to string)
@@ -507,6 +519,8 @@ Object.classPrototype.toString @expectedOutput@
     \"x\": 1
 }";
 
+Object.classPrototype.toArray @returns@
+"/*Array*/";
 Object.classPrototype.toArray @description@
 "Converts object to number:
 - from `Number` (creates one element array containing 
@@ -523,6 +537,8 @@ Object.classPrototype.toArray @example@
 Object.classPrototype.toArray @expectedOutput@
 "[\"abc\"] [true]";
 
+Object.classPrototype.toBoolean @returns@
+"/*Boolean*/";
 Object.classPrototype.toBoolean @description@
 "Converts object to number:
 - from `Number` (returns false if number is equal to 
@@ -760,9 +776,11 @@ Function @expectedOutput@
 
 Function.classPrototype.call @parameters@
 "caller, [...]";
+Function.classPrototype.call @returns@
+"return value of function /*Object*/";
 Function.classPrototype.call @description@
 "Calls function with the first argument as caller
-and passes following to this function.";
+and passes following arguments to this function.";
 Function.classPrototype.call @example@
 "let x = String.classPrototype.substring.call(\"abc\", 1, 1);
 // equivalent of \"abc\".substring(1, 1)
@@ -822,12 +840,17 @@ Time.sinceEpoch @example@
 "console.writeLine(Time.sinceEpoch.asFloatingPoint());
 console.writeLine(Time.sinceEpoch.asInteger());";
 
+Time.sinceEpoch.asFloatingPoint @returns@
+"/*Number*/";
 Time.sinceEpoch.asFloatingPoint @description@
 "Returns the number of milliseconds elapsed since UNIX epoch 
 (January 1, 1970 00:00:00 UTC) as floating point number.";
 Time.sinceEpoch.asFloatingPoint @example@
 "console.writeLine(Time.sinceEpoch.asFloatingPoint());";
 
+
+Time.sinceEpoch.asInteger @returns@
+"/*Number*/";
 Time.sinceEpoch.asInteger @description@
 "Returns the number of seconds elapsed since UNIX epoch 
 (January 1, 1970 00:00:00 UTC) as integer.";
@@ -952,7 +975,7 @@ File.classPrototype.read @expectedOutput@
 "http 80";
 
 File.classPrototype.readAsync @returns@
-"/*Promise*/";
+"/*Promise of String*/";
 File.classPrototype.readAsync @description@
 "Input operation. 
 Reads word terminated by whitespace from file.";
@@ -991,7 +1014,7 @@ File.classPrototype.readLine @expectedOutput@
 "http 80";
 
 File.classPrototype.readLineAsync @returns@
-"/*Promise*/";
+"/*Promise of String*/";
 File.classPrototype.readLineAsync @description@
 "Input operation. 
 Reads string terminated by new line character 
@@ -1090,7 +1113,7 @@ File.classPrototype.readTo @expectedOutput@
 "abba";
 
 File.classPrototype.readToAsync @parameters@
-"/*String*/";
+"/*Promise of String*/";
 File.classPrototype.readToAsync @returns@
 "/*Promise*/";
 File.classPrototype.readToAsync @description@
@@ -1126,7 +1149,7 @@ File.classPrototype.readBytes @expectedOutput@
 File.classPrototype.readBytesAsync @parameters@
 "/*Number*/";
 File.classPrototype.readBytesAsync @returns@
-"/*Promise*/";
+"/*Promise of String*/";
 File.classPrototype.readBytesAsync @description@
 "Input operation. 
 Reads string of given length (in bytes)
@@ -1378,6 +1401,102 @@ await Timeout(23);
 console.write(23);";
 Timeout @expectedOutput@
 "0123";
+
+let tcpExample = "let tcpServer = TcpServer();
+let port = 3000;
+let portNotSet = true;
+
+while (portNotSet) {
+    try {
+        await tcpServer.bind(port++);
+        portNotSet = false;
+    } catch {
+        // https://wiki.c2.com/?PokemonExceptionHandling
+    }
+}
+
+tcpServer.listen().then((tcpClientB) => {
+    console.write(await tcpClientB.receive());
+    await tcpClientB.close();
+});
+
+let tcpClientA = TcpClient();
+await tcpClientA.connect(\"127.0.0.1\", port);
+await tcpClientA.send(\"abcd\");
+await tcpClientA.close();";
+
+let tcpExampleOutput = "abcd";
+
+TcpServer @description@
+"TCP server listens for TCP connections.";
+TcpServer @example@
+tcpExample;
+TcpServer @expectedOutput@
+tcpExampleOutput;
+
+TcpServer.classPrototype.bind @parameters@
+"port /*Number*/";
+TcpServer.classPrototype.bind @description@
+"Assigns socket to port and start listening for 
+client connections.";
+TcpServer.classPrototype.bind @example@
+tcpExample;
+TcpServer.classPrototype.bind @expectedOutput@
+tcpExampleOutput;
+
+TcpServer.classPrototype.listen @returns@
+"/*Promise of TcpClient*/";
+TcpServer.classPrototype.listen @description@
+"Accepts connection request asynchronously, 
+returns TCP client used to send and receive data.";
+TcpServer.classPrototype.listen @example@
+tcpExample;
+TcpServer.classPrototype.listen @expectedOutput@
+tcpExampleOutput;
+
+TcpServer.classPrototype.close @description@
+"Closes the socket.";
+TcpServer.classPrototype.close @example@
+tcpExample;
+TcpServer.classPrototype.close @expectedOutput@
+tcpExampleOutput;
+
+
+TcpClient @description@
+"TCP client provides TCP socket 
+input and output operations.";
+TcpClient @example@
+tcpExample;
+TcpClient @expectedOutput@
+tcpExampleOutput;
+
+TcpClient.classPrototype.send @parameters@
+"message /*String*/";
+TcpClient.classPrototype.send @returns@
+"/*Promise of TcpClient*/";
+TcpClient.classPrototype.send @description@
+"Sends message to another socket asynchronously.";
+TcpClient.classPrototype.send @example@
+tcpExample;
+TcpClient.classPrototype.send @expectedOutput@
+tcpExampleOutput;
+
+TcpClient.classPrototype.receive @returns@
+"/*Promise of String*/";
+TcpClient.classPrototype.receive @description@
+"Receives message from another socket asynchronously.";
+TcpClient.classPrototype.receive @example@
+tcpExample;
+TcpClient.classPrototype.receive @expectedOutput@
+tcpExampleOutput;
+
+TcpClient.classPrototype.close @description@
+"Closes the socket.";
+TcpClient.classPrototype.close @example@
+tcpExample;
+TcpClient.classPrototype.close @expectedOutput@
+tcpExampleOutput;
+
 
 /* TODO: 
 - ChildProcess

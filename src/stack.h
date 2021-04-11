@@ -29,6 +29,23 @@ public:
     stack copyToFlatStack();
     void clear();
     void erase(const name &n);
+    void reserve(size_t count)
+    {
+        if (immediateIndex < immediateStorage.size())
+        {
+            if (count > immediateStorage.size())
+            {
+                moveToMap();
+                storage.reserve(count);
+            }
+        }
+        else
+            storage.reserve(count);
+    }
+    void keepAlive(const std::shared_ptr<stack> &st)
+    {
+        keepAlivePtr = st;
+    }
 
 private:
     void copyToFlatStack(stack &st);
@@ -38,9 +55,10 @@ private:
         storage.erase(n::empty);
         immediateIndex = immediateStorage.size();
     }
-    stack *previous;
     storageType storage;
     immediateStorageType immediateStorage;
+    std::shared_ptr<stack> keepAlivePtr;
+    stack *previous;
     uint8_t immediateIndex;
 };
 

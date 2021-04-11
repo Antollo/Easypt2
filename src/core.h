@@ -11,7 +11,7 @@ public:
     static void init(objectPtrImpl modulesPtr)
     {
         modules = modulesPtr;
-        imported = &modules->_properties;
+        imported = &*modules->_properties;
     }
     static void fini()
     { 

@@ -1,0 +1,47 @@
+...import("opengl");
+
+glfw.init();
+glfw.windowHint(GLFW.SAMPLES, 4);
+glfw.windowHint(GLFW.CONTEXT_VERSION_MAJOR, 3);
+glfw.windowHint(GLFW.CONTEXT_VERSION_MINOR, 3);
+glfw.windowHint(GLFW.OPENGL_FORWARD_COMPAT, GL.TRUE);
+glfw.windowHint(GLFW.OPENGL_PROFILE, GLFW.OPENGL_CORE_PROFILE);
+let window = glfw.createWindow(1024, 800, "Hello world", Buffer(), Buffer());
+glfw.makeContextCurrent(window);
+glew.init();
+glfw.setInputMode(window, GLFW.STICKY_KEYS, GL.TRUE);
+
+let g_vertex_buffer_data = Buffer.fromFloatArray([
+    -1.0,
+    -1.0,
+    0.0,
+    1.0,
+    -1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0
+]);
+
+let vertexArrayID = Buffer.fromInt32Array(0);
+gl.genVertexArrays(1, vertexArrayID);
+gl.bindVertexArray(vertexArrayID);
+
+let vertexbuffer = Buffer.fromInt32Array(0);
+gl.genBuffers(1, vertexbuffer);
+gl.bindBuffer(GL.ARRAY_BUFFER, vertexbuffer);
+gl.bufferData(GL.ARRAY_BUFFER, g_vertex_buffer_data.size(), g_vertex_buffer_data, GL.STATIC_DRAW);
+
+gl.clearColor(1.0, 0.0, 0.4, 0.0);
+while (!glfw.windowShouldClose(window))
+{
+    gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+    gl.enableVertexAttribArray(0);
+    gl.bindBuffer(GL.ARRAY_BUFFER, vertexbuffer);
+    gl.vertexAttribPointer(0, 3, GL.FLOAT, GL.FALSE, 0, Buffer());
+    gl.drawArrays(GL.TRIANGLES, 0, 3);
+    gl.disableVertexAttribArray(0);
+    glfw.swapBuffers(window);
+    glfw.pollEvents();
+}
+

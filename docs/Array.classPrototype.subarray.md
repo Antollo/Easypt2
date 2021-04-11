@@ -24,7 +24,3 @@ console.write(subarr[0]);
 2
 ```
 
-### Properties:
-
-
-

@@ -4,6 +4,8 @@
 
 #### Parameters: `str /*String*/, [position = 0 /*Number*/, length = string.length() /*Number*/]`
 
+#### Return value: `this`
+
 ### Description:
 
 Appends str to this string (or optionally 
@@ -27,8 +29,4 @@ console.write(" | ", str);
 ```
 Roses are red, Violets are blue. | Roses are blue.
 ```
-
-### Properties:
-
-
 
