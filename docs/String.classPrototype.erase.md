@@ -4,6 +4,8 @@
 
 #### Parameters: `position /*Number*/, [length = string.length() /*Number*/]`
 
+#### Return value: `this`
+
 ### Description:
 
 Erases bytes from range [position, position + length).
@@ -21,8 +23,4 @@ console.write(str);
 ```
 abfg
 ```
-
-### Properties:
-
-
 

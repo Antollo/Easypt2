@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Return value: `/*String*/`
+#### Return value: `/*Promise of String*/`
 
 ### Description:
 
@@ -16,8 +16,4 @@ console.writeLine("Who is your favourite writer?");
 let writer = await console.readLineAsync();
 console.writeLine("I like books written by ", writer, " too.");
 ```
-
-### Properties:
-
-
 

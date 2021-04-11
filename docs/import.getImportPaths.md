@@ -26,7 +26,3 @@ console.write(interpreterExecutablePath.indexOf(interpreterExecutableParentPath)
 0
 ```
 
-### Properties:
-
-
-

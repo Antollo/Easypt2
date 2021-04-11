@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Return value: `/*Promise*/`
+#### Return value: `/*Promise of String*/`
 
 ### Description:
 
@@ -23,8 +23,4 @@ file.close();
 
 console.write(name, " ", port);
 ```
-
-### Properties:
-
-
 

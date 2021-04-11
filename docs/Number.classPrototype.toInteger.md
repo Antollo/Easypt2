@@ -20,7 +20,3 @@ console.write(3.14.toInteger());
 3
 ```
 
-### Properties:
-
-
-

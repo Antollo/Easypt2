@@ -4,6 +4,8 @@
 
 #### Parameters: `callback /*Function*/`
 
+#### Return value: `this`
+
 ### Description:
 
 Executes a callback for each array element. Arguments of callback are:
@@ -23,8 +25,4 @@ arr.forEach(function {
 ```
 36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, 
 ```
-
-### Properties:
-
-
 

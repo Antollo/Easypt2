@@ -34,7 +34,3 @@ console.write(file.getWritePosition());
 abba 5 0
 ```
 
-### Properties:
-
-
-

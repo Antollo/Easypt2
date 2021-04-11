@@ -15,7 +15,3 @@ for (let i = 0; i < argc; i++)
     console.writeLine(argv[i]);
 ```
 
-### Properties:
-
-
-

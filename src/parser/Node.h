@@ -14,7 +14,7 @@
 class Node
 {
 public:
-    Node(int line = 0, const std::string &file = "invalid") : _token(0), _optimizations(0)
+    Node(size_t line = 0, const std::string &file = "invalid") : _token(0), _optimizations(0)
     {
         debugInfo[this]._line = line;
         debugInfo[this]._fileIndex = getFileIndex(file);
@@ -97,7 +97,7 @@ public:
     {
         return _children;
     }
-    void init(int line, std::string file)
+    void init(size_t line, std::string file)
     {
         debugInfo[this]._line = line;
         debugInfo[this]._fileIndex = getFileIndex(file);
@@ -168,6 +168,49 @@ public:
                 throw std::runtime_error("left side of init_assignment is not identifier or dot operator");
             break;
 
+        case AWAIT:
+        case DOT:
+        case ASSIGNMENT:
+        case SPREAD_OPERATOR:
+        case AND:
+        case OR:
+        case INCREMENT:
+        case DECREMENT:
+        case NOT:
+        case COMPLEMENT:
+        case RETURN:
+        case THROW:
+        case CALL_OPERATOR:
+        case READ_OPERATOR:
+        case METHOD_CALL_OPERATOR:
+
+            if (_children[0]._token == IDENTIFIER)
+                _token |= A_IDENTIFIER;
+            break;
+
+        case ADDITION:
+        case SUBTRACTION:
+        case MULTIPLICATION:
+        case DIVISION:
+        case MODULUS:
+        case USER_OPERATOR:
+        case INSTANCEOF:
+        case BITWISE_AND:
+        case BITWISE_OR:
+        case SHIFT_LEFT:
+        case SHIFT_RIGHT:
+        case EQUAL:
+        case NOT_EQUAL:
+        case LESS:
+        case GREATER:
+        case LESS_EQUAL:
+        case GREATER_EQUAL:
+            if (_children[0]._token == IDENTIFIER)
+                _token |= A_IDENTIFIER;
+            if (_children[1]._token == IDENTIFIER)
+                _token |= B_IDENTIFIER;
+            break;
+
         default:
             break;
         }
@@ -197,6 +240,11 @@ private:
         static constexpr int8_t hasStack = 1;
         static constexpr int8_t hasNoStack = 2;
     };
+
+    static constexpr int A_IDENTIFIER = 1 << 16;
+    static constexpr int B_IDENTIFIER = 1 << 17;
+    static constexpr int AB_IDENTIFIER = A_IDENTIFIER | B_IDENTIFIER;
+
     int _token;
     mutable int8_t _optimizations;
     name _text;
@@ -221,9 +269,9 @@ private:
                 return true;
         return false;
     }
-    static int getFileIndex(const std::string &file)
+    static size_t getFileIndex(const std::string &file)
     {
-        int fileIndex;
+        size_t fileIndex;
         auto fileIterator = std::find_if(files.begin(), files.end(), [&file](const auto &entry) {
             return entry == file;
         });
@@ -260,7 +308,7 @@ private:
     class debugInfoType
     {
     public:
-        int _line, _fileIndex;
+        size_t _line, _fileIndex;
     };
     static inline std::unordered_map<const Node *, debugInfoType> debugInfo;
 };

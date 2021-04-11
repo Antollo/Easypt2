@@ -2,11 +2,13 @@
 
 ## Language
 
-See the [grammar](grammar.md).
+- [Grammar](grammar.md).
 
-See the [expressions reference](expressions.md).
+- [Expressions reference](expressions.md).
 
-See the [statements reference](statements.md).
+- [Statements reference](statements.md).
+
+- [Type conversion](type_conversion.md).
 
 ## Built-in objects functions and classes
 
@@ -20,6 +22,8 @@ See the [statements reference](statements.md).
 - [`Object`](Object.md)
 - [`Promise`](Promise.md)
 - [`String`](String.md)
+- [`TcpClient`](TcpClient.md)
+- [`TcpServer`](TcpServer.md)
 - [`Time`](Time.md)
 - [`Timeout`](Timeout.md)
 - [`argc`](argc.md)

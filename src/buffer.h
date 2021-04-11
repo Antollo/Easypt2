@@ -11,6 +11,16 @@
 class buffer
 {
 public:
+    enum class type {
+        Int8,
+        Int16,
+        Int32,
+        Int64,
+        Float,
+        Double,
+        Unknown
+    };
+
     buffer() = default;
     buffer(const buffer &rhs) = delete;
     buffer(const std::string &str)
@@ -29,15 +39,18 @@ public:
             _data = rhs._data;
             _size = rhs._size;
             _t_size = rhs._t_size;
+            _t = rhs._t;
             rhs._data = nullptr;
             rhs._size = 0;
             rhs._t_size = 0;
+            rhs._t = type::Unknown;
         }
         else
         {
             _data = nullptr;
             _size = 0;
             _t_size = 0;
+            _t = type::Unknown;
         }
     }
     buffer &operator=(const buffer &rhs) = delete;
@@ -50,15 +63,18 @@ public:
             _data = rhs._data;
             _size = rhs._size;
             _t_size = rhs._t_size;
+            _t = rhs._t;
             rhs._data = nullptr;
             rhs._size = 0;
             rhs._t_size = 0;
+            rhs._t = type::Unknown;
         }
         else
         {
             _data = nullptr;
             _size = 0;
             _t_size = 0;
+            _t = type::Unknown;
         }
         return *this;
     }
@@ -79,19 +95,33 @@ public:
             std::free(_data);
         _size = _n_size;
         _t_size = sizeof(T);
-        _data = std::malloc(_n_size * sizeof(T) + 15);
+        _data = std::calloc(_n_size * sizeof(T) + 15, 1);
+        if constexpr(std::is_same_v<T, int8_t> || std::is_same_v<T, uint8_t>)
+            _t = type::Int8;
+        else if constexpr(std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t>)
+            _t = type::Int16;
+        else if constexpr(std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
+            _t = type::Int32;
+        else if constexpr(std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>)
+            _t = type::Int64;
+        else if constexpr(std::is_same_v<T, float>)
+            _t = type::Float;
+        else if constexpr(std::is_same_v<T, double>)
+            _t = type::Double;
+        else
+            _t = type::Unknown;
     }
-    template <class T>
+    //template <class T>
     void reallocate(size_t _n_size)
     {
-        void *temp = std::malloc(_n_size * sizeof(T) + 15);
+        void *temp = std::calloc(_n_size * _t_size + 15, 1);
         if (_data)
         {
-            std::memcpy(temp, _data, std::min(_n_size * sizeof(T) + 15, static_cast<size_t>(_size * _t_size + 15)));
+            std::memcpy(temp, _data, std::min(_n_size * _t_size + 15, static_cast<size_t>(_size * _t_size + 15)));
             std::free(_data);
         }
         _size = _n_size;
-        _t_size = sizeof(T);
+        //_t_size = sizeof(T);
         _data = temp;
     }
     template <class T>
@@ -138,6 +168,8 @@ public:
         return reinterpret_cast<char*>(align(_data)) + _size * _t_size;
     }
     size_t size() const { return _size * _t_size; }
+    size_t length() const { return _size; }
+    type elementType() const { return _t; }
     bool empty() const { return _size == 0; }
 
 private:
@@ -147,7 +179,8 @@ private:
     }
     void *_data = nullptr;
     size_t _size = 0;
-    int _t_size = 0;
+    uint8_t _t_size = 0;
+    type _t;
 };
 
 #endif

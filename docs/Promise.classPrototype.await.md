@@ -37,7 +37,3 @@ await promise;
 c is now true
 ```
 
-### Properties:
-
-
-

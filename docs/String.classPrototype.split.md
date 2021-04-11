@@ -25,7 +25,3 @@ for (let i = 0; i<arr.length(); i++)
 ab,  ab, e ab, ef b, efg, 
 ```
 
-### Properties:
-
-
-

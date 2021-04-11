@@ -28,7 +28,3 @@ console.write(file.readBytes(4));
 abba
 ```
 
-### Properties:
-
-
-

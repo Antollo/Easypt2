@@ -30,7 +30,3 @@ await promise;
 5
 ```
 
-### Properties:
-
-
-

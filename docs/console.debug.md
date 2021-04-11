@@ -18,7 +18,3 @@ let a = 7;
 console.debug("value of a : ", a);
 ```
 
-### Properties:
-
-
-

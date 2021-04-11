@@ -26,7 +26,3 @@ console.setInput("abc", () => {
 abc
 ```
 
-### Properties:
-
-
-

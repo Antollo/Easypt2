@@ -2,6 +2,8 @@
 
 #### Instance of: [`Function`](Function.md)
 
+#### Return value: `/*Number*/`
+
 ### Description:
 
 Returns the number of seconds elapsed since UNIX epoch 
@@ -12,8 +14,4 @@ Returns the number of seconds elapsed since UNIX epoch
 ```js
 console.writeLine(Time.sinceEpoch.asInteger());
 ```
-
-### Properties:
-
-
 

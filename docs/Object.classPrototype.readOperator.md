@@ -4,6 +4,8 @@
 
 #### Parameters: `key /*String*/`
 
+#### Return value: `this`
+
 ### Description:
 
 Read operator (string[key]) returns property.
@@ -22,8 +24,4 @@ console.write(obj["number"], " ", obj.secondNumber);
 ```
 21 22
 ```
-
-### Properties:
-
-
 

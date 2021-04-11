@@ -3,6 +3,7 @@
 #include "common.h"
 #include "file.h"
 #include "treeParser.h"
+#include "externalLibrary.h"
 
 object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
@@ -18,16 +19,15 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
     argsConvertibleGuard<std::nullptr_t>(args);
     std::filesystem::path filePath;
     std::filesystem::path fileName;
-    object::type::Function root = object::makeFunction();
     if (args[0]->isOfType<std::string>())
     {
         fileName = args[0]->get<const std::string>();
 
-        if (imported != nullptr) 
+        if (imported != nullptr)
         {
             auto it = imported->find(name(fileName.filename().string()));
-            if  (it != imported->end() && it->second->hasOwnProperty(n::exports))
-                    return (*it->second)[n::exports];
+            if (it != imported->end() && it->second->hasOwnProperty(n::exports))
+                return (*it->second)[n::exports];
         }
 
         fileName.replace_extension(".ez"s);
@@ -42,7 +42,22 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
         }
 
         if (filePath.empty())
-            throw std::runtime_error("file " + fileName.string() + " not found");
+        {
+
+            fileName.replace_extension(".dll"s);
+
+            for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++) // != gives error C2593 on msvc
+            {
+                if (std::filesystem::exists(*it / fileName))
+                {
+                    filePath = (*it / fileName);
+                    break;
+                }
+            }
+
+            if (filePath.empty())
+                throw std::runtime_error("file " + fileName.string() + " not found");
+        }
     }
     else if (args[0]->isOfType<std::shared_ptr<file>>())
     {
@@ -57,9 +72,6 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
     else
         throw std::runtime_error("wrong type of argument");
 
-    treeParser::parseFile(filePath.string(), *root);
-    object::objectPtr sourceFunction = object::makeObject(root);
-    object::objectPtr result;
     {
         stack s(st);
         auto oldDir = std::filesystem::current_path();
@@ -74,19 +86,31 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
             module->addProperty(n::path, object::makeObject(dir.string()));
             if (imported != nullptr)
                 imported->insert_or_assign(name(fileName.stem().string()), module);
-            result = (*sourceFunction)(sourceFunction, std::move(args), &s);
+
+            object::objectPtr result;
+            if (filePath.extension() == ".ez")
+            {
+                object::type::Function root = object::makeFunction();
+                treeParser::parseFile(filePath.string(), *root.first);
+                object::objectPtr sourceFunction = object::makeObject(root);
+                result = (*sourceFunction)(sourceFunction, std::move(args), &s);
+            }
+            else
+            {
+                result = externalLibrary::load(filePath);
+            }
             (*module)[n::exports] = result;
             std::filesystem::current_path(oldDir);
             importPaths.pop_back();
-        }   
-        catch(...)
+            return result;
+        }
+        catch (...)
         {
             std::filesystem::current_path(oldDir);
             importPaths.pop_back();
             throw;
         }
     }
-    return result;
 }
 
 object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args, stack *st)
@@ -94,7 +118,7 @@ object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0].getConverted<std::string>();
     object::type::Function root = object::makeFunction();
-    treeParser::parseString(temp, *root);
+    treeParser::parseString(temp, *root.first);
     return object::makeObject(root);
 }
 
@@ -103,12 +127,11 @@ object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args,
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0].getConverted<std::string>();
     object::type::Function root = object::makeFunction();
-    treeParser::parseString(temp, *root);
-    size_t i = 0;
+    treeParser::parseString(temp, *root.first);
     try
     {
-        for (; i < root->children().size(); i++)
-            root->children()[i].evaluate(*st);
+        for (auto &child : root.first->children())
+            child.evaluate(*st);
     }
     catch (const object::objectPtr &ret)
     {
@@ -131,6 +154,8 @@ object::objectPtr constructorCaller(object::objectPtr thisObj, object::type::Arr
     newObj->addProperty(n::prototype, (*thisObj)[n::classPrototype]);
     if ((*newObj)[n::prototype]->hasOwnProperty(n::constructor))
         (*(*newObj)[n::constructor])(newObj, std::move(args), st);
+    if ((*newObj)[n::prototype]->hasOwnProperty(n::destructor))
+        newObj->setDestructible();
     return newObj;
 }
 

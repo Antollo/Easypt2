@@ -3,13 +3,12 @@
 #include "console.h"
 #include "core.h"
 
-
 objectPtrImpl::objectPtrImpl(object *obj)
 {
     _obj = obj;
     if (_obj != nullptr)
     {
-        _refCount = static_cast<refCountType*>(memory.allocate());
+        _refCount = static_cast<refCountType *>(memory.allocate());
         *_refCount = 1;
     }
     else
@@ -80,50 +79,52 @@ objectPtrImpl::~objectPtrImpl()
         {
             if (_obj != nullptr)
             {
-                auto obj = _obj->read(n::prototype);
-                if (obj) obj = obj->read(n::destructor);
-                if (object::globalStack != nullptr && obj != nullptr && (!_obj->isOfType<object::type::NativeFunction>() || _obj->get<object::type::NativeFunction>() != constructorCaller))
+                if (_obj->isDestructible())
                 {
-                    (*_refCount)++;
-                    try
+                    auto obj = _obj->read(n::prototype);
+                    if (obj)
+                        obj = obj->read(n::destructor);
+                    if (object::globalStack != nullptr && obj != nullptr && (!_obj->isOfType<object::type::NativeFunction>() || _obj->get<object::type::NativeFunction>() != constructorCaller))
                     {
-                        (*obj)(*this, {}, nullptr);
-                    }
-                    catch (objectException &e)
-                    {
-                        auto eObj = e.getPtr();
-                        console::stackTrace();
-                        if (eObj->isConvertible<std::string>())
-                            console::error(eObj.getConverted<std::string>());
-                        else
+                        (*_refCount)++;
+                        try
+                        {
+                            (*obj)(*this, {}, nullptr);
+                        }
+                        catch (objectException &e)
+                        {
+                            auto eObj = e.getPtr();
+                            console::stackTrace();
+                            if (eObj->isConvertible<std::string>())
+                                console::error(eObj.getConverted<object::type::String>());
+                            else
+                                console::error((std::string)e.what());
+                        }
+                        catch (std::exception &e)
+                        {
+                            console::stackTrace();
                             console::error((std::string)e.what());
-                    }
-                    catch (std::exception &e)
-                    {
-                        console::stackTrace();
-                        console::error((std::string)e.what());
-                    }
-                    catch (...)
-                    {
-                        console::stackTrace();
-                        console::error("unknown error in destructor");
-                    }
-                    (*_refCount)--;
-                    if (*_refCount == 0)
-                    {
-                        object::reuse(_obj);
-                        memory.deallocate(_refCount);
-                        _obj = nullptr;
-                        _refCount = nullptr;
+                        }
+                        catch (...)
+                        {
+                            console::stackTrace();
+                            console::error("unknown error in destructor");
+                        }
+                        (*_refCount)--;
+                        if (*_refCount == 0)
+                        {
+                            object::reuse(_obj);
+                            memory.deallocate(_refCount);
+                            _obj = nullptr;
+                            _refCount = nullptr;
+                        }
+                        return;
                     }
                 }
-                else
-                {
-                    object::reuse(_obj);
-                    memory.deallocate(_refCount);
-                    _obj = nullptr;
-                    _refCount = nullptr;
-                }
+                object::reuse(_obj);
+                memory.deallocate(_refCount);
+                _obj = nullptr;
+                _refCount = nullptr;
             }
             else
             {

@@ -12,7 +12,7 @@ void Time::init(stack *st)
     });
 
     addFunctionL(now, "asInteger"_n, {
-        int timeSinceEpoch = std::chrono::duration_cast<std::chrono::duration<int>>(std::chrono::system_clock::now().time_since_epoch()).count();
+        number::intType timeSinceEpoch = std::chrono::duration_cast<std::chrono::duration<number::intType>>(std::chrono::system_clock::now().time_since_epoch()).count();
         return object::makeObject(static_cast<number>(timeSinceEpoch));
     });
 }

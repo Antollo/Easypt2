@@ -4,7 +4,7 @@
 
 #### Parameters: `/*Number*/`
 
-#### Return value: `/*Promise*/`
+#### Return value: `/*Promise of String*/`
 
 ### Description:
 
@@ -27,8 +27,4 @@ console.write(await file.readBytesAsync(4));
 ```
 abba
 ```
-
-### Properties:
-
-
 

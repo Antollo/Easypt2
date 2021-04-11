@@ -21,7 +21,3 @@ try {
 }
 ```
 
-### Properties:
-
-
-

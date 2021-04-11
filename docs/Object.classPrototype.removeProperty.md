@@ -4,6 +4,8 @@
 
 #### Parameters: `key /*String*/, value`
 
+#### Return value: `this`
+
 ### Description:
 
 Adds new property to object.
@@ -26,8 +28,4 @@ else
 ```
 1
 ```
-
-### Properties:
-
-
 

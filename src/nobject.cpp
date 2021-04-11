@@ -33,8 +33,8 @@ object::objectPtr &object::operator[](const name &n)
     if (n == n::prototype)
         return _prototype;
     {
-        auto it = _properties.find(n);
-        if (it != _properties.end())
+        auto it = _properties->find(n);
+        if (it != _properties->end())
             return checkGetter(it->second);
     }
     if (_prototype)
@@ -43,7 +43,7 @@ object::objectPtr &object::operator[](const name &n)
         if (res)
             return res;
     }
-    return (_properties[n] = makeEmptyObject());
+    return ((*_properties)[n] = makeEmptyObject());
 }
 
 object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stack *st)
@@ -58,15 +58,18 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
     }
     else if (isOfType<type::Function>())
     {
-        if (_capturedStack != nullptr)
-            st = _capturedStack.get();
+        auto& [node, capturedStack] = get<type::Function>();
+
+        if (capturedStack != nullptr)
+            st = capturedStack.get();
         stack localStack(st);
-        if (_capturedStack != nullptr)
+        if (capturedStack != nullptr)
         {
-            auto referenceToFather = localStack.insert(n::__stack, makeEmptyObject());
-            referenceToFather->captureStack(_capturedStack);
+            // IDK what is it, putting callee on the stack should have the same effect, need to implement something like shared_from_this
+            // auto referenceToFather = localStack.insert(n::__stack, makeObject(makeFunction()));
+            // referenceToFather->captureStack(capturedStack);
+            localStack.keepAlive(capturedStack);
         }
-        const type::Function &node = get<const type::Function>();
         for (size_t i = 0; i < node->names().size() && i < args.size(); i++)
             localStack.insert(node->names()[i], args[i]);
         localStack.insert(n::args, makeObject(std::move(args)));
@@ -87,14 +90,20 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
         else
             return makeEmptyObject();
     }
+    else if (isOfType<type::ExternalFunction>())
+    {
+        if (thisObj)
+            return get<type::ExternalFunction>()(thisObj, std::move(args), st);
+        throw std::runtime_error("invalid this");
+    }
     throw std::runtime_error("object is not a function");
 }
 
 object::type::Array object::getOwnPropertyNames() const
 {
     type::Array res;
-    res.reserve(_properties.size());
-    for (const auto &property : _properties)
+    res.reserve(_properties->size());
+    for (const auto &property : *_properties)
         res.push_back(makeObject(static_cast<std::string>(property.first)));
     if (_prototype)
         res.push_back(makeObject("prototype"s));
@@ -104,8 +113,8 @@ object::type::Array object::getOwnPropertyNames() const
 object::type::Array object::getOwnPropertyValues() const
 {
     type::Array res;
-    res.reserve(_properties.size());
-    for (const auto &property : _properties)
+    res.reserve(_properties->size());
+    for (const auto &property : *_properties)
         res.push_back(property.second);
     if (_prototype)
         res.push_back(_prototype);
@@ -118,8 +127,8 @@ object::objectPtr &object::read(const name &n)
     if (n == n::prototype)
         return _prototype;
     {
-        auto it = _properties.find(n);
-        if (it != _properties.end())
+        auto it = _properties->find(n);
+        if (it != _properties->end())
             return it->second;
     }
     if (_prototype && _prototype.get() != this)
@@ -133,8 +142,8 @@ const object::objectPtr &object::read(const name &n) const
     if (n == n::prototype)
         return _prototype;
     {
-        auto it = _properties.find(n);
-        if (it != _properties.end())
+        auto it = _properties->find(n);
+        if (it != _properties->end())
             return it->second;
     }
     if (_prototype && _prototype.get() != this)
@@ -149,7 +158,7 @@ std::string object::toJson() const
     return str;
 }
 
-void object::toJson(std::string &str, const int indentation) const
+void object::toJson(std::string &str, const size_t indentation) const
 {
     std::visit([this, indentation, &str](auto &&value) {
         std::string tabs(indentation, '\t');
@@ -162,7 +171,7 @@ void object::toJson(std::string &str, const int indentation) const
         else if constexpr (std::is_same_v<A, type::Array>)
         {
             str += "[";
-            for (int i = 0; i < value.size(); i++)
+            for (size_t i = 0; i < value.size(); i++)
             {
                 if (i)
                     str += ", ";
@@ -174,7 +183,7 @@ void object::toJson(std::string &str, const int indentation) const
             str += value ? "true"s : "false"s;
         else if constexpr (std::is_same_v<A, type::Promise>)
             str += "<promise>";
-        else if constexpr (std::is_same_v<A, type::Function> || std::is_same_v<A, type::NativeFunction>)
+        else if constexpr (std::is_same_v<A, type::Function> || std::is_same_v<A, type::NativeFunction> || std::is_same_v<A, type::ExternalFunction>)
             str += "<function>";
         else if constexpr (std::is_same_v<A, std::shared_ptr<file>>)
             str += "<file>";
@@ -186,13 +195,13 @@ void object::toJson(std::string &str, const int indentation) const
         {
             std::string tabs(indentation * 4, ' ');
             str += "{\n";
-            for (const auto &property : _properties)
+            for (const auto &property : *_properties)
             {
                 str += tabs + "\"" + static_cast<std::string>(property.first) + "\": ";
                 property.second->toJson(str, indentation + 1);
                 str += ",\n";
             }
-            if (!_properties.empty())
+            if (!_properties->empty())
             {
                 str.pop_back();
                 str.pop_back();
@@ -205,8 +214,7 @@ void object::toJson(std::string &str, const int indentation) const
 
 void object::clear()
 {
-    _properties.clear();
-    _capturedStack.reset();
+    _properties->clear();
     _value = nullptr;
     _flags.reset();
     _prototype = nullptr;

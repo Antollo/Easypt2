@@ -23,7 +23,6 @@ if (1+3 != 4) {
 
 ### Properties:
 
-- `classPrototype`
 - [`controlSequence`](console.controlSequence.md)
 - [`debug`](console.debug.md)
 - [`error`](console.error.md)

@@ -34,7 +34,3 @@ console.write(name, " ", port);
 http 80
 ```
 
-### Properties:
-
-
-

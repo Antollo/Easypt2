@@ -22,7 +22,3 @@ await console.writeAsync("seven: ", 7);
 seven: 7
 ```
 
-### Properties:
-
-
-

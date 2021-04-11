@@ -5,15 +5,11 @@
 #include <array>
 #include "console.h"
 
-template <int Size, int MaxLength = 160>
+template <size_t Size, size_t MaxLength = 256>
 class allocatorBuffer
 {
 public:
-    constexpr allocatorBuffer() : length(MaxLength), head(0), tail(0)
-    {
-        for (size_t i = 0; i < MaxLength; i++)
-            data[i] = &initialMemory[i];
-    }
+    constexpr allocatorBuffer() : length(0), head(0), tail(0) {}
     void *allocate()
     {
         if (length != 0)
@@ -35,15 +31,13 @@ public:
             if (head == MaxLength)
                 head = 0;
             length++;
-            return;
         }
-        if (ptr > &initialMemory[MaxLength - 1] || ptr < &initialMemory[0])
+        else
             std::free(ptr);
     }
 
 private:
-    int length, head, tail;
-    std::array<std::array<char, Size>, MaxLength> initialMemory;
+    size_t length, head, tail;
     std::array<void *, MaxLength> data;
 };
 
@@ -62,18 +56,16 @@ public:
     {
         if (n <= a)
             return static_cast<T *>(memoryA.allocate());
-
-        if (n <= b)
+        else if (n <= b)
             return static_cast<T *>(memoryB.allocate());
-
-        if (n <= c)
+        else if (n <= c)
             return static_cast<T *>(memoryC.allocate());
-
-        if (n <= d)
+        else if (n <= d)
             return static_cast<T *>(memoryD.allocate());
-
-        if (n <= e)
+        else if (n <= e)
             return static_cast<T *>(memoryE.allocate());
+        else if (n <= f)
+            return static_cast<T *>(memoryF.allocate());
 
         return static_cast<T *>(std::malloc(n * sizeof(T)));
     }
@@ -90,36 +82,26 @@ public:
             memoryD.deallocate(ptr);
         else if (n <= e)
             memoryE.deallocate(ptr);
+        else if (n <= f)
+            memoryF.deallocate(ptr);
         else
             std::free(ptr);
     }
 
 private:
-    constexpr static int a = 2;
-    constexpr static int b = 4;
-    constexpr static int c = 8;
-    constexpr static int d = 16;
-    constexpr static int e = 32;
-    static allocatorBuffer<a * sizeof(T)> memoryA;
-    static allocatorBuffer<b * sizeof(T)> memoryB;
-    static allocatorBuffer<c * sizeof(T)> memoryC;
-    static allocatorBuffer<d * sizeof(T)> memoryD;
-    static allocatorBuffer<e * sizeof(T)> memoryE;
+    constexpr static size_t a = 2;
+    constexpr static size_t b = 4;
+    constexpr static size_t c = 8;
+    constexpr static size_t d = 16;
+    constexpr static size_t e = 32;
+    constexpr static size_t f = 64;
+    constexpr static size_t MaxLength = 512;
+    static inline allocatorBuffer<a * sizeof(T), MaxLength / a> memoryA;
+    static inline allocatorBuffer<b * sizeof(T), MaxLength / b> memoryB;
+    static inline allocatorBuffer<c * sizeof(T), MaxLength / c> memoryC;
+    static inline allocatorBuffer<d * sizeof(T), MaxLength / d> memoryD;
+    static inline allocatorBuffer<e * sizeof(T), MaxLength / e> memoryE;
+    static inline allocatorBuffer<f * sizeof(T), MaxLength / f> memoryF;
 };
-
-template <class T>
-allocatorBuffer<allocator<T>::a * sizeof(T)> allocator<T>::memoryA;
-
-template <class T>
-allocatorBuffer<allocator<T>::b * sizeof(T)> allocator<T>::memoryB;
-
-template <class T>
-allocatorBuffer<allocator<T>::c * sizeof(T)> allocator<T>::memoryC;
-
-template <class T>
-allocatorBuffer<allocator<T>::d * sizeof(T)> allocator<T>::memoryD;
-
-template <class T>
-allocatorBuffer<allocator<T>::e * sizeof(T)> allocator<T>::memoryE;
 
 #endif /* !ALLOCATOR_H_ */

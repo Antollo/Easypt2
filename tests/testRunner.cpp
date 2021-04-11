@@ -1,4 +1,5 @@
 #include <fstream>
+#include <algorithm>
 #include "utils.h"
 #include "core.h"
 #include "console.h"
@@ -33,6 +34,7 @@ int main(int argc, char **argv)
 
             runtime::fini(&globalStack);
         });
+        out.erase(std::remove(out.begin(), out.end(), '\r'), out.end());
 
         for (int i = 0; i < argc; i++)
         {
@@ -41,6 +43,7 @@ int main(int argc, char **argv)
                 std::ifstream f(argv[++i]);
                 std::string str((std::istreambuf_iterator<char>(f)),
                                 std::istreambuf_iterator<char>());
+                str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
                 if (str == out)
                 {
                     console::write("ok");
@@ -59,7 +62,7 @@ int main(int argc, char **argv)
         auto obj = e.getPtr();
         console::stackTrace();
         if (obj->isConvertible<std::string>())
-            console::error(obj.getConverted<std::string>());
+            console::error(obj.getConverted<object::type::String>());
         else
             console::error((std::string)e.what());
         runtime::fini(&globalStack);

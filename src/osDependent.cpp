@@ -174,7 +174,7 @@ void initializeThread()
 #endif
 }
 
-unsigned int dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
+size_t dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
 {
 #ifdef _WIN32
     libraryType library = LoadLibraryA(filePath.string().c_str());
@@ -192,7 +192,7 @@ unsigned int dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
     return libraries.size() - 1;
 }
 
-void *dynamicLibrary::getFunction(unsigned int i, const std::string &functionName)
+void *dynamicLibrary::getFunction(size_t i, const std::string &functionName)
 {
     if (i >= libraries.size())
         throw std::runtime_error("library does not exist");

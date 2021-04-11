@@ -18,7 +18,7 @@ endif()
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 
-add_library(opengl SHARED Opengl.cpp)
+add_library(opengl SHARED Opengl.cpp ../number.cpp)
 SET_TARGET_PROPERTIES(opengl PROPERTIES PREFIX "")
 target_link_libraries(opengl PUBLIC OpenGL::GL)
 target_link_libraries(opengl PUBLIC glfw)

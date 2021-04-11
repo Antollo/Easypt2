@@ -15,7 +15,3 @@ Writes the new line character or characters sequence
 console.newLine();
 ```
 
-### Properties:
-
-
-

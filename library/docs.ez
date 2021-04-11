@@ -1,4 +1,4 @@
-let sort = import("algorithm").sort;
+...import("algorithm");
 
 function returns {
     args[0].addProperty("returns", args[1]);
@@ -78,6 +78,9 @@ function help {
         printPair("Parameters:", args[0].parameters);
     if (args[0].hasOwnProperty("returns"))
         printPair("Return value:", args[0].returns);
+    else
+        if (args[0] instanceOf Function)
+            printPair("Return value:", "this");
     if (args[0].hasOwnProperty("description"))
         printPair("Description:", args[0].description);
     if (args[0].hasOwnProperty("example"))
@@ -88,7 +91,9 @@ function help {
         printPair("Members:", listProperties(args[0].classPrototype));
         printPair("Inherited members:", listProperties(args[0].classPrototype.prototype));
     }
-    printPair("Properties:", listProperties(args[0]));
+    let properties <- listProperties(args[0]);
+    if (properties.length())
+        printPair("Properties:", properties);
 };
 
 function testExample (object, name) {
@@ -171,6 +176,9 @@ function doc {
         file.writeLine("#### Parameters: `", args[0].parameters, "`\n");
     if (args[0].hasOwnProperty("returns"))
         file.writeLine("#### Return value: `", args[0].returns, "`\n");
+    else
+        if (args[0] instanceOf Function)
+            file.writeLine("#### Return value: `this`\n");
     if (args[0].hasOwnProperty("description"))
         file.writeLine("### Description:\n\n", args[0].description, "\n");
     if (args[0].hasOwnProperty("example"))
@@ -181,7 +189,9 @@ function doc {
         file.writeLine("#### Members:\n\n", mdListProperties(args[0].classPrototype, args[1] + ".classPrototype"), "\n");
         file.writeLine("#### Inherited members:\n\n", mdListProperties(args[0].classPrototype.prototype, baseClassName + ".classPrototype"), "\n");
     }
-    file.writeLine("### Properties:\n\n", mdListProperties(args[0], args[1]), "\n");
+    let properties <- mdListProperties(args[0], args[1]);
+    if (properties.length())
+        file.writeLine("### Properties:\n\n", properties, "\n");
     file.close();
 };
 
@@ -216,9 +226,10 @@ function makeDocs(path) {
     file.create(prefix + "index.md");
     file.writeLine("# Easypt reference\n");
     file.writeLine("## Language\n");
-    file.writeLine("See the [grammar](grammar.md).\n");
-    file.writeLine("See the [expressions reference](expressions.md).\n");
-    file.writeLine("See the [statements reference](statements.md).\n");
+    file.writeLine("- [Grammar](grammar.md).\n");
+    file.writeLine("- [Expressions reference](expressions.md).\n");
+    file.writeLine("- [Statements reference](statements.md).\n");
+    file.writeLine("- [Type conversion](type_conversion.md).\n");
     file.writeLine("## Built-in objects functions and classes\n");
 
     file.writeLine("- " + mdCodeLink("module", "module"));
@@ -232,7 +243,6 @@ function makeDocs(path) {
                 file.writeLine("- " + mdCodeLink(names[i], names[i]));
         }
     file.writeLine("\n");
-    //file.writeLine("## Tutorial\n\n`TODO`\n");
 };
 
 import("docsData.ez");

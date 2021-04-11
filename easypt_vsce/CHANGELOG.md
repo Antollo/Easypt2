@@ -1,5 +1,13 @@
 # Change Log
 
+### 3.0.7
+
+- Fix encoding issue, change windows download link.
+
+### 3.0.6
+
+- Change highlights colors.
+
 ### 3.0.5 - 3.0.2
 
 - Fix number highlights.

@@ -4,6 +4,8 @@
 
 #### Parameters: `position /*Number*/, [length = array.length() /*Number*/]`
 
+#### Return value: `this`
+
 ### Description:
 
 Erases elements from range [position, position + length).
@@ -21,8 +23,4 @@ console.write(arr[0], arr[1]);
 ```
 13
 ```
-
-### Properties:
-
-
 

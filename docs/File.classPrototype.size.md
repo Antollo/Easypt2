@@ -24,7 +24,3 @@ file.close();
 7
 ```
 
-### Properties:
-
-
-

@@ -4,6 +4,8 @@
 
 #### Parameters: `...`
 
+#### Return value: `/*Array*/`
+
 ### Description:
 
 Static read operator ([1, "A"]) constructs new Array.
@@ -21,8 +23,4 @@ console.write(arr[1]);
 ```
 Harry
 ```
-
-### Properties:
-
-
 

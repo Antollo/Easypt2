@@ -17,7 +17,3 @@ let writer = console.readLine();
 console.writeLine("I like books written by ", writer, " too.");
 ```
 
-### Properties:
-
-
-

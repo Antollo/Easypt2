@@ -4,6 +4,8 @@
 
 #### Parameters: `position /*Number*/`
 
+#### Return value: `/*Object*/`
+
 ### Description:
 
 Read operator (arrayInstance[n]) returns element at given position.
@@ -21,8 +23,4 @@ console.write(arr[1]);
 ```
 Harry
 ```
-
-### Properties:
-
-
 

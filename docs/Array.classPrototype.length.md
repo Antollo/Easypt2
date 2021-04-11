@@ -21,7 +21,3 @@ console.write(arr.length());
 3
 ```
 
-### Properties:
-
-
-

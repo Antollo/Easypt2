@@ -45,12 +45,12 @@ void File::init(stack *st)
 
     addFunctionL(filePrototype, "readBytes"_n, {
         argsConvertibleGuard<number>(args);
-        return object::makeObject(thisObj->get<std::shared_ptr<file>>()->readBytes(static_cast<int>(args[0].getConverted<number>())));
+        return object::makeObject(thisObj->get<std::shared_ptr<file>>()->readBytes(static_cast<size_t>(args[0].getConverted<number>())));
     });
 
     addFunctionL(filePrototype, "readBytesAsync"_n, {
         argsConvertibleGuard<number>(args);
-        int n = static_cast<int>(args[0].getConverted<number>());
+        size_t n = static_cast<size_t>(args[0].getConverted<number>());
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, n]() {
             auto f = std::async(std::launch::async, [&thisObj, n]() mutable {
                 return thisObj->get<std::shared_ptr<file>>()->readBytes(n);
@@ -80,7 +80,7 @@ void File::init(stack *st)
 
     addFunctionL(filePrototype, "write"_n, {
         for (auto &el : args)
-            thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<std::string>());
+            thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<object::type::String>());
         return thisObj;
     });
 
@@ -88,7 +88,7 @@ void File::init(stack *st)
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
             auto f = std::async(std::launch::async, [&thisObj, &args]() {
                 for (auto &el : args)
-                    thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<std::string>());
+                    thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<object::type::String>());
             });
             await f;
             return thisObj;
@@ -97,7 +97,7 @@ void File::init(stack *st)
 
     addFunctionL(filePrototype, "writeLine"_n, {
         for (auto &el : args)
-            thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<std::string>());
+            thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<object::type::String>());
         thisObj->get<std::shared_ptr<file>>()->newLine();
         return thisObj;
     });
@@ -106,7 +106,7 @@ void File::init(stack *st)
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
             auto f = std::async(std::launch::async, [&thisObj, &args]() {
                 for (auto &el : args)
-                    thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<std::string>());
+                    thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<object::type::String>());
                 thisObj->get<std::shared_ptr<file>>()->newLine();
             });
             await f;
@@ -147,13 +147,13 @@ void File::init(stack *st)
 
     addFunctionL(filePrototype, "setReadPosition"_n, {
         argsConvertibleGuard<number>(args);
-        thisObj->get<std::shared_ptr<file>>()->setReadPosition(static_cast<int>(args[0].getConverted<number>()));
+        thisObj->get<std::shared_ptr<file>>()->setReadPosition(static_cast<size_t>(args[0].getConverted<number>()));
         return thisObj;
     });
 
     addFunctionL(filePrototype, "setWritePosition"_n, {
         argsConvertibleGuard<number>(args);
-        thisObj->get<std::shared_ptr<file>>()->setWritePosition(static_cast<int>(args[0].getConverted<number>()));
+        thisObj->get<std::shared_ptr<file>>()->setWritePosition(static_cast<size_t>(args[0].getConverted<number>()));
         return thisObj;
     });
 

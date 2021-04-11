@@ -12,7 +12,7 @@ Highlights keywords, comments, strings and numeric literals in Easypt scripts (`
 
 Add easypt interpreter (`easypt.exe` - Windows or `easypt` - Linux) to PATH. You can get latest interpreter here:
 
-- [For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win32.exe?branch=master&job=Image%3A%20Visual%20Studio%202019)
+- [For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win64.exe?branch=master&job=Image%3A%20Visual%20Studio%202019)
 
 - [For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu)
 

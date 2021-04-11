@@ -19,9 +19,6 @@ int main(int argc, char **argv)
         initialize();
         runtime::init(&globalStack);
 
-        //auto opengl = dynamicLibrary::loadLibrary("./opengl.so");
-        //auto fun = reinterpret_cast<void(*)()>(dynamicLibrary::getFunction(opengl, "fun"));
-        //fun();
 
         auto st = &globalStack;
         insertObject(n::argv, object::type::Array());
@@ -95,7 +92,7 @@ int main(int argc, char **argv)
         auto obj = e.getPtr();
         console::stackTrace();
         if (obj->isConvertible<std::string>())
-            console::error(obj.getConverted<std::string>());
+            console::error(obj.getConverted<object::type::String>());
         else
             console::error((std::string)e.what());
         runtime::fini(&globalStack);

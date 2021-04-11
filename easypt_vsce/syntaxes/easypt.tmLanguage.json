@@ -29,10 +29,20 @@
 	],
 	"repository": {
 		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.easypt",
-				"match": "\\b(if|else|while|for|let|throw|try|return|function|catch|class|extends|instanceOf|await|delete|break)\\b"
-			}]
+			"patterns": [
+				{
+					"name": "keyword.control.easypt",
+					"match": "\\b(if|else|while|for|throw|try|return|catch|await|break)\\b"
+				},
+				{
+					"name": "keyword.other.easypt",
+					"match": "\\b(extends|instanceOf|delete)\\b"
+				},
+				{
+					"name": "storage.type.easypt",
+					"match": "\\b(let|function|class)\\b"
+				}
+			]
 		},
 		"strings": {
 			"name": "string.quoted.double.easypt",
@@ -70,9 +80,8 @@
 			"match": "\/\/[^\n]*\n",
 			"patterns": []
 		},
-		"punctuation":
-		{
-			"patterns":[
+		"punctuation": {
+			"patterns": [
 				{
 					"name": "markup.bold.easypt",
 					"match": "[;]"
@@ -80,10 +89,14 @@
 			]
 		},
 		"literals": {
-			"patterns":[
+			"patterns": [
 				{
 					"name": "constant.numeric.easypt",
 					"match": "[-]?(([0-9]+[.][0-9]+([eE]-?[0-9]+)?)|([1-9][0-9]*)|(0[xX][0-9a-fA-F]+)|(0[0-7]+)|0)"
+				},
+				{
+					"name": "constant.language.easypt",
+					"match": "\\b(true|false)\\b"
 				}
 			]
 		},
@@ -95,15 +108,23 @@
 		"entities": {
 			"patterns": [
 				{
-					"name": "variable.name",
-					"match": "\\b[a-z]+[A-Za-z0-9]*\\b(?!\\s*\\()"
+					"name": "variable.name.easypt",
+					"match": "\\b[a-z]+[A-Za-z0-9_]*\\b(?!\\s*\\()"
 				},
 				{
-					"name": "entity.name.class",
-					"match": "\\b[A-Z][A-Za-z0-9]*\\b"
+					"name": "variable.language.easypt",
+					"match": "\\b(this|super)\\b"
 				},
 				{
-					"name": "entity.name.function",
+					"name": "entity.name.class.easypt",
+					"match": "\\b[A-Z][A-Z0-9_]*[a-z][A-Za-z0-9_]*\\b"
+				},
+				{
+					"name": "constant.language.easypt",
+					"match": "\\b[A-Z][A-Z_]+\\b"
+				},
+				{
+					"name": "entity.name.function.easypt",
 					"match": "[a-z]+[A-Za-z0-9]*(?=\\s*\\()"
 				}
 			]

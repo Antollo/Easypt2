@@ -4,23 +4,29 @@
 #include <limits>
 #include "number.h"
 
-number::number(const int &n) : v(n){};
 number::number(const double &n)
 {
-    if (std::trunc(n) == n && n >= std::numeric_limits<int>::min() && n <= std::numeric_limits<int>::max())
-        v = static_cast<int>(n);
+    if (std::trunc(n) == n && n >= std::numeric_limits<intType>::min() && n <= std::numeric_limits<intType>::max())
+    {
+        index = intIndex;
+        i = static_cast<intType>(n);
+    }
     else
-        v = n;
+    {
+        index = floatIndex;
+        f = n;
+    }
 };
-number::number(const unsigned int &n) : v(static_cast<int>(n)){};
-number::number(const unsigned long &n) : v(static_cast<int>(n)){};
-number::number(const unsigned long long &n) : v(static_cast<int>(n)){};
+
 number::number(const std::string &n)
 {
     try
     {
         if (n.find('.') == std::string::npos)
-            v = std::stoi(n, 0, 0);
+        {
+            index = intIndex;
+            i = std::stoll(n, 0, 0);
+        }
         else
             *this = number(std::stod(n));
     }
@@ -33,20 +39,36 @@ number::number(const std::string &n)
         throw std::runtime_error("cannon convert \"" + n + "\" to number, converted value would overflow the number");
     }
 };
-number::number(const char *n) : number(std::string(n)){};
-number::number(const bool &n) : v(static_cast<int>(n)){};
 
 number &number::operator+=(const number &x)
 {
-    return *this = *this + x;
+    if (index == intIndex && x.index == intIndex)
+    {
+        i += x.i;
+        return *this;
+    }
+    else
+        return *this = *this * x;
 }
 number &number::operator-=(const number &x)
 {
-    return *this = *this - x;
+    if (index == intIndex && x.index == intIndex)
+    {
+        i -= x.i;
+        return *this;
+    }
+    else
+        return *this = *this * x;
 }
 number &number::operator*=(const number &x)
 {
-    return *this = *this * x;
+    if (index == intIndex && x.index == intIndex)
+    {
+        i *= x.i;
+        return *this;
+    }
+    else
+        return *this = *this * x;
 }
 number &number::operator/=(const number &x)
 {
@@ -54,110 +76,211 @@ number &number::operator/=(const number &x)
 }
 number &number::operator%=(const number &x)
 {
+    if (index == intIndex && x.index == intIndex)
+    {
+        i %= x.i;
+        return *this;
+    }
+    else
     return *this = *this % x;
 }
 
 number number::operator+(const number &x) const
 {
-    return std::visit([](auto &&t, auto &&x) -> number { return t + x; }, v, x.v);
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return i + x.i;
+        else
+            return static_cast<floatType>(i) + x.f;
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return f + static_cast<floatType>(x.i);
+        else
+            return f + x.f;
+    }
 }
 number number::operator-(const number &x) const
 {
-    return std::visit([](auto &&t, auto &&x) -> number { return t - x; }, v, x.v);
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return i - x.i;
+        else
+            return static_cast<floatType>(i) - x.f;
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return f - static_cast<floatType>(x.i);
+        else
+            return f - x.f;
+    }
 }
 
 number number::operator*(const number &x) const
 {
-    return std::visit([](auto &&t, auto &&x) -> number { return t * x; }, v, x.v);
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return i * x.i;
+        else
+            return static_cast<floatType>(i) * x.f;
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return f * static_cast<floatType>(x.i);
+        else
+            return f * static_cast<floatType>(x.f);
+    }
 }
 number number::operator/(const number &x) const
 {
-    if (static_cast<double>(x) == 0.0)
+    if ((index == intIndex && x.i == 0) || (index == floatIndex && x.f == 0.f))
         throw std::runtime_error("division by zero");
-    return std::visit([](auto &&t, auto &&x) -> number { return static_cast<double>(t) / static_cast<double>(x); }, v, x.v);
+
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return static_cast<floatType>(i) / static_cast<floatType>(x.i);
+        else
+            return static_cast<floatType>(i) / x.f;
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return f / static_cast<floatType>(x.i);
+        else
+            return f / x.f;
+    }
 }
 number number::operator%(const number &x) const
 {
-    if (static_cast<int>(x) == 0)
+    if ((index == intIndex && x.i == 0) || (index == floatIndex && x.f == 0.f))
         throw std::runtime_error("modulo by zero");
-    return std::visit([](auto &&t, auto &&x) -> number { return static_cast<int>(t) % static_cast<int>(x); }, v, x.v);
+
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return i % x.i;
+        else
+            return i % static_cast<intType>(x.f);
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return static_cast<intType>(f) % x.i;
+        else
+            return static_cast<intType>(f) % static_cast<intType>(x.f);
+    }
 }
 
 bool number::operator==(const number &x) const
 {
-    return std::visit([](auto &&t, auto &&x) -> bool { return t == x; }, v, x.v);
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return i == x.i;
+        else
+            return i == x.f;
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return f == x.i;
+        else
+            return f == x.f;
+    }
 }
 bool number::operator<(const number &x) const
 {
-    return std::visit([](auto &&t, auto &&x) -> bool { return t < x; }, v, x.v);
+    if (index == intIndex)
+    {
+        if (x.index == intIndex)
+            return i < x.i;
+        else
+            return i < x.f;
+    }
+    else
+    {
+        if (x.index == intIndex)
+            return f < x.i;
+        else
+            return f < x.f;
+    }
 }
 
 number number::operator++(int)
 {
     number res = *this;
-    std::visit([](auto &&t) { t++; }, v);
+    if (index == intIndex)
+        i++;
+    else
+        f++;
     return res;
 }
 number number::operator--(int)
 {
     number res = *this;
-    std::visit([](auto &&t) { t--; }, v);
+    if (index == intIndex)
+        i--;
+    else
+        f--;
     return res;
 }
 number &number::operator++()
 {
-    std::visit([](auto &&t) { t++; }, v);
+    if (index == intIndex)
+        i++;
+    else
+        f++;
     return *this;
 }
 number &number::operator--()
 {
-    std::visit([](auto &&t) { t--; }, v);
+    if (index == intIndex)
+        i--;
+    else
+        f--;
     return *this;
-}
-
-number::operator double() const
-{
-    return std::visit([](auto &&t) -> double { return t; }, v);
-}
-number::operator int() const
-{
-    return std::visit([](auto &&t) -> int { return static_cast<int>(t); }, v);
-}
-number::operator std::string() const
-{
-    return std::visit([](auto &&t) { return std::to_string(t); }, v);
-}
-number::operator bool() const
-{
-    return std::visit([](auto &&t) -> bool { return t; }, v);
 }
 
 number number::toInteger() const
 {
-    return static_cast<int>(*this);
+    return static_cast<intType>(*this);
 }
 
 number number::toFloatingPoint() const
 {
     number n;
-    n.v = static_cast<double>(*this);
+    n.index = floatIndex;
+    n.f = static_cast<floatType>(*this);
     return n;
 }
 
 std::ostream &operator<<(std::ostream &s, const number &x)
 {
-    return std::visit([&s](auto &&x) -> std::ostream & { return s << x; }, x.v);
+    if (x.index == number::intIndex)
+        return s << x.i;
+    else
+        return s << x.f;
 }
 std::istream &operator>>(std::istream &s, number &x)
 {
-    return std::visit([&s](auto &&x) -> std::istream & { return s >> x; }, x.v);
+    if (x.index == number::intIndex)
+        return s >> x.i;
+    else
+        return s >> x.f;
 }
 
 number operator"" _n(unsigned long long n)
 {
-    return number(static_cast<int>(n));
+    return number(static_cast<number::intType>(n));
 }
 number operator"" _n(long double n)
 {
-    return number(static_cast<double>(n));
+    return number(static_cast<number::floatType>(n));
 }

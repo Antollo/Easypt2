@@ -4,6 +4,8 @@
 
 #### Parameters: `/*Number*/`
 
+#### Return value: `this`
+
 ### Description:
 
 Input operation. 
@@ -33,8 +35,4 @@ console.write(file.getWritePosition());
 ```
 abba 5 0
 ```
-
-### Properties:
-
-
 

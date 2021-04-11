@@ -16,7 +16,3 @@ let name = console.read();
 console.writeLine("Welcome ", name);
 ```
 
-### Properties:
-
-
-

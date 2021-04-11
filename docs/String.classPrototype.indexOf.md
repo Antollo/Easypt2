@@ -28,7 +28,3 @@ console.write(a, " ", b, " ", c);
 6 23 -1
 ```
 
-### Properties:
-
-
-

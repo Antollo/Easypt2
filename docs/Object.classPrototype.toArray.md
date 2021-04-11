@@ -2,6 +2,8 @@
 
 #### Instance of: [`Function`](Function.md)
 
+#### Return value: `/*Array*/`
+
 ### Description:
 
 Converts object to number:
@@ -26,8 +28,4 @@ console.write("abc".toArray(), " ", true.toArray());
 ```
 ["abc"] [true]
 ```
-
-### Properties:
-
-
 
