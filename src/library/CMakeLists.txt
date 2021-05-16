@@ -23,3 +23,5 @@ SET_TARGET_PROPERTIES(opengl PROPERTIES PREFIX "")
 target_link_libraries(opengl PUBLIC OpenGL::GL)
 target_link_libraries(opengl PUBLIC glfw)
 target_link_libraries(opengl PUBLIC glew)
+
+install(TARGETS opengl RUNTIME DESTINATION bin COMPONENT binaries)

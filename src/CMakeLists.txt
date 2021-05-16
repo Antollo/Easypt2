@@ -16,11 +16,23 @@ target_include_directories(libeasypt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_include_directories(libeasypt SYSTEM PUBLIC parser/fix)
 else ()
-    target_link_libraries(libeasypt ${CMAKE_DL_LIBS})
+    target_link_libraries(libeasypt PUBLIC ${CMAKE_DL_LIBS})
 endif ()
 
 find_package(Threads REQUIRED)
-target_link_libraries(libeasypt Threads::Threads)
+target_link_libraries(libeasypt PUBLIC Threads::Threads)
+
+set(OPENSSL_USE_STATIC_LIBS TRUE)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(OPENSSL_MSVC_STATIC_RT TRUE)
+endif ()
+
+find_package(OpenSSL 1.1.1 REQUIRED)
+
+target_link_libraries(libeasypt PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_link_libraries(libeasypt PUBLIC crypt32.lib)
+endif ()
 
 add_executable(easypt main.cpp)
 target_link_libraries(easypt libeasypt)

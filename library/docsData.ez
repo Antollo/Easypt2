@@ -815,16 +815,16 @@ class MyClass extends MyBaseClass {
         console.write(\"method \");
     },
     function destructor {
-        // TODO: auto base class destructor calling
-        this.prototype.prototype.destructor();
         console.write(\"destructor \");
+        // TODO: auto base class destructor calling
+        this.prototype.prototype.destructor.call(this);
     }
 };
 let obj <- MyClass();
 obj.method();
 ";
 Class @expectedOutput@
-"baseConstructor baseDestructor | baseConstructor constructor method baseDestructor destructor ";
+"baseConstructor baseDestructor | baseConstructor constructor method destructor baseDestructor ";
 
 Time @description@
 "Singleton object that has properties 

@@ -35,9 +35,9 @@ class MyClass extends MyBaseClass {
         console.write("method ");
     },
     function destructor {
-        // TODO: auto base class destructor calling
-        this.prototype.prototype.destructor();
         console.write("destructor ");
+        // TODO: auto base class destructor calling
+        this.prototype.prototype.destructor.call(this);
     }
 };
 let obj <- MyClass();

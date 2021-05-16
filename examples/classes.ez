@@ -1,0 +1,42 @@
+class Base {
+    function constructor {
+        console.write("Base constructor");
+        this.printSmile(3);
+    },
+    function printSmile(count) {
+        for (let i = 0; i < count; i++)
+            console.write(" :)");
+        console.newLine();
+    },
+    function destructor {
+        console.write("Base destructor");
+        this.printSmile(2);
+    }
+};
+
+class Child extends Base {
+    function constructor {
+        this.super();
+        console.write("Child constructor");
+        this.printSmile(3);
+    },
+    function printSmile(count) {
+        for (let i = 0; i < count; i++)
+            console.write(" :D");
+        console.newLine();
+    },
+    function destructor {
+        console.write("Child destructor");
+        this.printSmile(2);
+        // TODO: automatic base class destructor calling
+        this.prototype.prototype.destructor.call(this);
+    }
+};
+
+{
+    let a <- Base();
+}
+console.writeLine("--------");
+{
+    let b <- Child();
+}

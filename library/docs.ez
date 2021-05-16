@@ -123,7 +123,7 @@ function recursiveTestExample (object, name) {
     let ok = testExample(object, name);
     let names <- object.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++)
-        if (names[i] != "prototype")
+        if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
             ok = ok && recursiveTestExample(Object.readOperator.call(object, names[i]), name + "." + names[i]);
     return ok;
 };
@@ -133,7 +133,7 @@ function testAllExamples {
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++)
-        if (names[i] != "prototype")
+        if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
             ok = ok && recursiveTestExample(Object.readOperator.call(stack, names[i]), names[i]);
     return ok;
 };
@@ -200,14 +200,14 @@ function recursiveDoc {
         doc(args[0], args[1]);
         let names <- args[0].getOwnPropertyNames();
         for (let i = 0; i < names.length(); i++) {
-            if (names[i] != "prototype")
+            if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
                 recursiveDoc(Object.readOperator.call(args[0], names[i]), args[1] + "." + names[i]);
         }
         
         if (args[0].hasOwnProperty("classPrototype")) {
             names <- args[0].classPrototype.getOwnPropertyNames();
             for (let i = 0; i < names.length(); i++)
-                if (names[i] != "prototype")
+                if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
                     recursiveDoc(Object.readOperator.call(args[0].classPrototype, names[i]), args[1] + ".classPrototype." + names[i]);
         }
         
@@ -237,7 +237,7 @@ function makeDocs(path) {
     let stack <- getStack();
     let names <- sort(stack.getOwnPropertyNames());
     for (let i = 0; i < names.length(); i++)
-        if (names[i] != "prototype")
+        if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
         {
             if (recursiveDoc(Object.readOperator.call(stack, names[i]), names[i]))
                 file.writeLine("- " + mdCodeLink(names[i], names[i]));
