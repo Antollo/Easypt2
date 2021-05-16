@@ -51,7 +51,7 @@ public:
         return std::equal(begin(), end(), rhs.begin(), rhs.end());
     }
     template <class U>
-    void push_back(U element)
+    void push_back(U &&element)
     {
         T *temp = new T[_size + 1];
         if (_data)

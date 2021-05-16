@@ -69,7 +69,7 @@ object::objectPtr externalFunction::operator()(object::objectPtr thisObj, object
     switch (returnType)
     {
     case bufferType:
-        console::warn("Buffer is not currently unpported as return value from external function");
+        console::warn("Buffer is not currently supported as return value from external function");
         return thisObj;
 
     case pointerAsBufferType:

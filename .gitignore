@@ -1,3 +1,7 @@
+VTune Profiler Results/
+cert.key
+cert.pem
+req.cnf
 protocols.txt
 *.json
 !easypt_vsce/*.json

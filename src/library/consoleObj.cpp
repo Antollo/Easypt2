@@ -11,7 +11,8 @@ void consoleObj::init(stack *st)
     });
     addFunctionL(consoleObj, "writeAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
-            auto f = std::async(std::launch::async, [&args]() mutable{
+            auto f = std::async(std::launch::async, [&args]() mutable {
+                coroutineEvent post;
                 for (auto &el : args)
                     console::write(el.getConverted<object::type::String>());
             });
@@ -55,7 +56,8 @@ void consoleObj::init(stack *st)
     });
     addFunctionL(consoleObj, "writeLineAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
-            auto f = std::async(std::launch::async, [&args]() mutable{
+            auto f = std::async(std::launch::async, [&args]() mutable {
+                coroutineEvent post;
                 for (auto &el : args)
                     console::write(el.getConverted<object::type::String>());
                 console::newLine();
@@ -76,6 +78,7 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "readAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([]() {
             auto f = std::async(std::launch::async, []() {
+                coroutineEvent post;
                 std::string temp;
                 console::read(temp);
                 return temp;
@@ -91,6 +94,7 @@ void consoleObj::init(stack *st)
     addFunctionL(consoleObj, "readLineAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([]() {
             auto f = std::async(std::launch::async, []() {
+                coroutineEvent post;
                 std::string temp;
                 console::readLine(temp);
                 return temp;

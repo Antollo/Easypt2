@@ -24,6 +24,7 @@ void File::init(stack *st)
     addFunctionL(filePrototype, "readAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj]() {
             auto f = std::async(std::launch::async, [&thisObj]() {
+                coroutineEvent post;
                 return thisObj->get<std::shared_ptr<file>>()->read();
             });
             return object::makeObject(await f);
@@ -37,6 +38,7 @@ void File::init(stack *st)
     addFunctionL(filePrototype, "readLineAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj]() {
             auto f = std::async(std::launch::async, [&thisObj]() {
+                coroutineEvent post;
                 return thisObj->get<std::shared_ptr<file>>()->readLine();
             });
             return object::makeObject(await f);
@@ -53,6 +55,7 @@ void File::init(stack *st)
         size_t n = static_cast<size_t>(args[0].getConverted<number>());
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, n]() {
             auto f = std::async(std::launch::async, [&thisObj, n]() mutable {
+                coroutineEvent post;
                 return thisObj->get<std::shared_ptr<file>>()->readBytes(n);
             });
             return object::makeObject(await f);
@@ -72,6 +75,7 @@ void File::init(stack *st)
         assert(c.size(), "string empty");
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, c]() {
             auto f = std::async(std::launch::async, [&thisObj, c(std::move(c))]() {
+                coroutineEvent post;
                 return thisObj->get<std::shared_ptr<file>>()->readTo(c[0]);
             });
             return object::makeObject(await f);
@@ -87,6 +91,7 @@ void File::init(stack *st)
     addFunctionL(filePrototype, "writeAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
             auto f = std::async(std::launch::async, [&thisObj, &args]() {
+                coroutineEvent post;
                 for (auto &el : args)
                     thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<object::type::String>());
             });
@@ -105,6 +110,7 @@ void File::init(stack *st)
     addFunctionL(filePrototype, "writeLineAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
             auto f = std::async(std::launch::async, [&thisObj, &args]() {
+                coroutineEvent post;
                 for (auto &el : args)
                     thisObj->get<std::shared_ptr<file>>()->write(el.getConverted<object::type::String>());
                 thisObj->get<std::shared_ptr<file>>()->newLine();

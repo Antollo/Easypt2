@@ -84,6 +84,7 @@ public:
         codeToNameMap[toArrayCode] = "toArray"s;
         codeToNameMap[toBooleanCode] = "toBoolean"s;
         codeToNameMap[BufferCode] = "Buffer"s;
+        codeToNameMap[__clientCode] = "__client"s;
         
         nameToCodeMap["prototype"s] = prototypeCode;
         nameToCodeMap["args"s] = argsCode;
@@ -136,6 +137,7 @@ public:
         nameToCodeMap["toArray"s] = toArrayCode;
         nameToCodeMap["toBoolean"s] = toBooleanCode;
         nameToCodeMap["Buffer"s] = BufferCode;
+        nameToCodeMap["__client"s] = __clientCode;
     }
 
 private:
@@ -193,6 +195,7 @@ private:
     static constexpr codeType toArrayCode = 50;
     static constexpr codeType toBooleanCode = 51;
     static constexpr codeType BufferCode = 52;
+    static constexpr codeType __clientCode = 53;
 
     codeType code;
     constexpr name(codeType i) : code(i) {}
@@ -250,8 +253,8 @@ struct n
     static constexpr name subtraction = name::subtractionCode;
     static constexpr name division = name::divisionCode;
     static constexpr name modulus = name::modulusCode;
-    static constexpr name and = name::andCode;
-    static constexpr name or = name::orCode;
+    static constexpr name andOp = name::andCode;
+    static constexpr name orOp = name::orCode;
     static constexpr name bitwiseAnd = name::bitwiseAndCode;
     static constexpr name bitwiseOr = name::bitwiseOrCode;
     static constexpr name shiftLeft = name::shiftLeftCode;
@@ -264,13 +267,14 @@ struct n
     static constexpr name greaterEqual = name::greaterEqualCode;
     static constexpr name increment = name::incrementCode;
     static constexpr name decrement = name::decrementCode;
-    static constexpr name not = name::notCode;
+    static constexpr name notOp = name::notCode;
     static constexpr name complement = name::complementCode;
     static constexpr name toNumber = name::toNumberCode;
     static constexpr name toString = name::toStringCode;
     static constexpr name toArray = name::toArrayCode;
     static constexpr name toBoolean = name::toBooleanCode;
     static constexpr name Buffer = name::BufferCode;
+    static constexpr name __client = name::__clientCode;
 };
 
 #endif // NAME_H

@@ -12,12 +12,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Mswsock.lib")
 #pragma comment(lib, "AdvApi32.lib")
 
 #define lastError WSAGetLastError()
+
+#include <openssl/applink.c>
 
 #else
 
@@ -34,39 +35,127 @@
 
 #endif
 
-class network
+#define ERROR -1
+
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+class tcpSocket
 {
-#ifdef _WIN32
-protected:
-    network()
+public:
+    virtual void close()
     {
-        if (i == 0)
+        closesocket(socket);
+        socket = INVALID_SOCKET;
+    }
+
+protected:
+    tcpSocket(SOCKET newSocket) : tcpSocket() {
+        socket = newSocket;
+    }
+    constexpr static size_t bufferSize = 8192;
+    SOCKET socket = INVALID_SOCKET;
+#ifdef _WIN32
+public:
+    tcpSocket()
+    {
+        if (counter == 0)
         {
             WSADATA wsaData;
-            code = WSAStartup(MAKEWORD(2, 2), &wsaData);
+            int code = WSAStartup(MAKEWORD(2, 2), &wsaData);
+            //console::warn("WSAStartup");
             if (code != 0)
                 console::error("WSAStartup failed with error: ", code);
         }
-        i++;
+        //console::warn("tcpSocket");
+        counter++;
     }
 
-    ~network()
+    virtual ~tcpSocket()
     {
-        i--;
-        if (i == 0)
+        counter--;
+        if (counter == 0)
+        {
             WSACleanup();
+            //console::warn("WSACleanup");
+        }
+        if (socket != INVALID_SOCKET)
+            close();
+        //console::warn("~~tcpSocket");
     }
 
 private:
-    static inline int code = 0, i = 0;
+    static inline size_t counter = 0;
+#else
+public:
+    tcpSocket() = default;
+    virtual ~tcpSocket()
+    {
+        if (socket != INVALID_SOCKET)
+            close();
+    }
 #endif
 };
 
-class tcpClient : public network
+class sslSocket
+{
+protected:
+    sslSocket()
+    {
+        if (!sslInitialized)
+        {
+            SSL_library_init();
+            SSL_load_error_strings();
+            OpenSSL_add_all_algorithms();
+            sslInitialized = true;
+        }
+    }
+
+    sslSocket(std::shared_ptr<SSL_CTX> newSslContext, std::shared_ptr<SSL> newSsl) : sslSocket()
+    {
+        sslContext = newSslContext;
+        ssl = newSsl;
+    }
+
+    std::string getSslError()
+    {
+        BIO *bio = BIO_new(BIO_s_mem());
+        ERR_print_errors(bio);
+        char *buf;
+        size_t len = BIO_get_mem_data(bio, &buf);
+        std::string ret(buf, len);
+        BIO_free(bio);
+        return ret;
+    }
+
+    static void freeSslContext(SSL_CTX *sslContext)
+    {
+        //console::warn("SSL_CTX_free(sslContext)");
+        SSL_CTX_free(sslContext);
+    }
+
+    static void freeSsl(SSL *ssl)
+    {
+        //console::warn("SSL_free(ssl)");
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+    }
+
+    std::shared_ptr<SSL_CTX> sslContext;
+    std::shared_ptr<SSL> ssl;
+
+private:
+    static inline bool sslInitialized = false;
+};
+
+class tcpClient : public tcpSocket
 {
 public:
-    tcpClient() = default;
-    void connect(const std::string &adress, unsigned short port)
+    tcpClient() : tcpSocket() {
+        //console::warn("tcpClient");
+    }
+    virtual void connect(const std::string &adress, unsigned short port)
     {
         struct addrinfo *result = nullptr,
                         *ptr = nullptr,
@@ -77,26 +166,26 @@ public:
         hints.ai_socktype = SOCK_STREAM;
         hints.ai_protocol = IPPROTO_TCP;
 
-        code = getaddrinfo(adress.c_str(), std::to_string(port).c_str(), &hints, &result);
+        int code = getaddrinfo(adress.c_str(), std::to_string(port).c_str(), &hints, &result);
         if (code != 0)
             throw std::runtime_error("getaddrinfo failed with error: " + std::to_string(code));
 
         for (ptr = result; ptr != nullptr; ptr = ptr->ai_next)
         {
 
-            clientSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+            socket = ::socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
 
-            if (clientSocket == INVALID_SOCKET)
+            if (socket == INVALID_SOCKET)
             {
                 code = lastError;
                 throw std::runtime_error("socket failed with error: " + std::to_string(code));
             }
 
-            code = ::connect(clientSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+            code = ::connect(socket, ptr->ai_addr, (int)ptr->ai_addrlen);
             if (code == SOCKET_ERROR)
             {
-                closesocket(clientSocket);
-                clientSocket = INVALID_SOCKET;
+                closesocket(socket);
+                socket = INVALID_SOCKET;
                 continue;
             }
             break;
@@ -104,21 +193,20 @@ public:
 
         freeaddrinfo(result);
 
-        if (clientSocket == INVALID_SOCKET)
+        if (socket == INVALID_SOCKET)
             throw std::runtime_error("unable to connect to server");
     }
 
-    void send(const std::string &message)
+    virtual void send(const std::string &message)
     {
         size_t length = 0;
         size_t totalLength = 0;
         while (totalLength != message.size())
         {
-            code = length = ::send(clientSocket, message.c_str() + totalLength, message.size() - totalLength, 0);
+            int code = length = ::send(socket, message.c_str() + totalLength, message.size() - totalLength, 0);
             if (code == SOCKET_ERROR)
             {
                 code = lastError;
-                closesocket(clientSocket);
                 throw std::runtime_error("send failed with error: " + std::to_string(code));
             }
             else
@@ -126,65 +214,144 @@ public:
         }
     }
 
-    std::string receive()
+    virtual std::string receive()
     {
-        std::string message(8192, 0);
-        code = recv(clientSocket, message.data(), message.size(), 0);
+        std::string message(bufferSize, 0);
+        int code = recv(socket, message.data(), message.size(), 0);
         if (code >= 0)
         {
             //console::log("Bytes received: ", code);
             message.resize(code);
         }
         else
+        {
+            code = lastError;
             throw std::runtime_error("recv failed with error: " + std::to_string(code));
+        }
         return message;
     }
 
-    void receive(std::string &message)
+    virtual void receive(std::string &message)
     {
-        message.resize(8192, 0);
-        code = recv(clientSocket, message.data(), message.size(), 0);
+        message.resize(bufferSize, 0);
+        int code = recv(socket, message.data(), message.size(), 0);
         if (code >= 0)
         {
             //console::log("Bytes received: ", code);
             message.resize(code);
         }
         else
-            throw std::runtime_error("recv failed with error: " + std::to_string(code));
-    }
-
-    void close()
-    {
-        code = shutdown(clientSocket, SD_SEND);
-        if (code == SOCKET_ERROR)
         {
             code = lastError;
-            closesocket(clientSocket);
+            throw std::runtime_error("recv failed with error: " + std::to_string(code));
         }
-        std::string temp(4096, 0);
-        do
-        {
-            code = recv(clientSocket, temp.data(), temp.size(), 0);
-        } while (code > 0);
-        clientSocket = INVALID_SOCKET;
     }
 
-    ~tcpClient()
+    virtual void close() override
     {
-        if (clientSocket != INVALID_SOCKET)
+        int code = shutdown(socket, SD_SEND);
+        if (code == SOCKET_ERROR)
+            closesocket(socket);
+        else
+        {
+            std::string temp(bufferSize, 0);
+            do
+            {
+                code = recv(socket, temp.data(), temp.size(), 0);
+            } while (code > 0);
+        }
+        socket = INVALID_SOCKET;
+    }
+
+    virtual ~tcpClient()
+    {
+        if (socket != INVALID_SOCKET)
             close();
     }
 
-private:
-    tcpClient(SOCKET socket) : clientSocket(socket) {}
+protected:
+    tcpClient(SOCKET socket) : tcpSocket(socket) {}
     friend class tcpServer;
-    SOCKET clientSocket = INVALID_SOCKET;
-    int code;
+    friend class sslClient;
 };
 
-class tcpServer : public network
+class sslClient : public sslSocket, public tcpClient
 {
 public:
+    sslClient() : tcpClient()
+    {
+        //console::warn("sslClient");
+    }
+    void connect(const std::string &adress, unsigned short port) override
+    {
+        tcpClient::connect(adress, port);
+        sslContext = std::shared_ptr<SSL_CTX>(SSL_CTX_new(TLS_client_method()), freeSslContext);
+        if (sslContext == nullptr)
+            throw std::runtime_error("SSL_CTX_new failed with error: " + getSslError());
+        ssl = std::shared_ptr<SSL>(SSL_new(sslContext.get()), freeSsl);
+        if (ssl == nullptr)
+            throw std::runtime_error("SSL_new failed with error: " + getSslError());
+        int code = SSL_set_fd(ssl.get(), socket);
+        if (code <= 0)
+            throw std::runtime_error("SSL_set_fd failed with error: " + std::to_string(code) + " " + getSslError());
+        code = SSL_connect(ssl.get());
+        if (code <= 0)
+            throw std::runtime_error("SSL_connect failed with error: " + std::to_string(code) + " " + getSslError());
+    }
+
+    void send(const std::string &message) override
+    {
+        if (sslContext == nullptr || ssl == nullptr)
+            throw std::runtime_error("SSL socket is not initialized");
+
+        int code = SSL_write(ssl.get(), message.c_str(), message.size());
+        if (code <= 0)
+            throw std::runtime_error("SSL_write failed with error: " + std::to_string(code) + " " + getSslError());
+    }
+
+    std::string receive() override
+    {
+        if (sslContext == nullptr || ssl == nullptr)
+            throw std::runtime_error("SSL socket is not initialized");
+
+        std::string message(8192, 0);
+        int code = SSL_read(ssl.get(), message.data(), message.size());
+        if (code >= 0)
+        {
+            //console::log("Bytes received: ", code);
+            message.resize(code);
+        }
+        else
+            throw std::runtime_error("SSL_read failed with error: " + std::to_string(code));
+        return message;
+    }
+
+    void receive(std::string &message) override
+    {
+        if (sslContext == nullptr || ssl == nullptr)
+            throw std::runtime_error("SSL socket is not initialized");
+
+        message.resize(8192, 0);
+        int code = SSL_read(ssl.get(), message.data(), message.size());
+        if (code >= 0)
+        {
+            //console::log("Bytes received: ", code);
+            message.resize(code);
+        }
+        else
+            throw std::runtime_error("SSL_read failed with error: " + std::to_string(code));
+    }
+
+private:
+    friend class sslServer;
+    sslClient(SOCKET socket, std::shared_ptr<SSL_CTX> newSslContext, std::shared_ptr<SSL> newSsl)
+        : tcpClient(socket), sslSocket(newSslContext, newSsl) {}
+};
+
+class tcpServer : public tcpSocket
+{
+public:
+    tcpServer() : tcpSocket() {}
     void bind(unsigned short port)
     {
         struct addrinfo *result = nullptr,
@@ -196,12 +363,12 @@ public:
         hints.ai_protocol = IPPROTO_TCP;
         hints.ai_flags = AI_PASSIVE;
 
-        code = getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &result);
+        int code = getaddrinfo(nullptr, std::to_string(port).c_str(), &hints, &result);
         if (code != 0)
             throw std::runtime_error("getaddrinfo failed with error: " + std::to_string(code));
 
-        serverSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-        if (serverSocket == INVALID_SOCKET)
+        socket = ::socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+        if (socket == INVALID_SOCKET)
         {
             code = lastError;
             freeaddrinfo(result);
@@ -210,54 +377,81 @@ public:
 
         //console::log(result->ai_addr->sa_data);
 
-        code = ::bind(serverSocket, result->ai_addr, (int)result->ai_addrlen);
+        code = ::bind(socket, result->ai_addr, (int)result->ai_addrlen);
         if (code == SOCKET_ERROR)
         {
             code = lastError;
             freeaddrinfo(result);
-            closesocket(serverSocket);
+            closesocket(socket);
             throw std::runtime_error("bind failed with error: " + std::to_string(code));
         }
 
         freeaddrinfo(result);
 
-        code = ::listen(serverSocket, SOMAXCONN);
+        code = ::listen(socket, SOMAXCONN);
         if (code == SOCKET_ERROR)
         {
             code = lastError;
-            closesocket(serverSocket);
+            closesocket(socket);
             throw std::runtime_error("listen failed with error: " + std::to_string(code));
         }
     }
 
-    std::shared_ptr<tcpClient> listen()
+    virtual std::shared_ptr<tcpClient> listen()
     {
-        SOCKET clientSocket = accept(serverSocket, nullptr, nullptr);
+        return std::shared_ptr<tcpClient>(new tcpClient(accept()));
+    }
+
+protected:
+    SOCKET accept()
+    {
+        SOCKET clientSocket = ::accept(socket, nullptr, nullptr);
         if (clientSocket == INVALID_SOCKET)
         {
-            code = lastError;
-            closesocket(serverSocket);
+            int code = lastError;
+            close();
             throw std::runtime_error("accept failed with error: " + std::to_string(code));
         }
 
-        return std::shared_ptr<tcpClient>(new tcpClient(clientSocket));
+        return clientSocket;
     }
+};
 
-    void close()
+class sslServer : public sslSocket, public tcpServer
+{
+public:
+    sslServer(const std::string &key, const std::string &cert) : tcpServer()
     {
-        closesocket(serverSocket);
-        serverSocket = INVALID_SOCKET;
-    }
+        sslContext = std::shared_ptr<SSL_CTX>(SSL_CTX_new(TLS_server_method()), freeSslContext);
+        if (sslContext == nullptr)
+            throw std::runtime_error("SSL_CTX_new failed with error: " + getSslError());
 
-    ~tcpServer()
+        int code = SSL_CTX_use_certificate_file(sslContext.get(), "cert.pem", SSL_FILETYPE_PEM);
+        if (code <= 0)
+            throw std::runtime_error("SSL_CTX_use_certificate_file failed with error: " + std::to_string(code) + " " + getSslError());
+        code = SSL_CTX_use_PrivateKey_file(sslContext.get(), "cert.key", SSL_FILETYPE_PEM);
+        if (code <= 0)
+            throw std::runtime_error("SSL_CTX_use_PrivateKey_file failed with error: " + std::to_string(code) + " " + getSslError());
+    }
+    std::shared_ptr<tcpClient> listen() override
     {
-        if (serverSocket != INVALID_SOCKET)
-            close();
-    }
+        if (sslContext == nullptr)
+            throw std::runtime_error("SSL socket is not initialized");
 
-private:
-    SOCKET serverSocket = INVALID_SOCKET;
-    int code;
+        SOCKET clientSocket = accept();
+
+        std::shared_ptr<SSL> ssl = std::shared_ptr<SSL>(SSL_new(sslContext.get()), freeSsl);
+        if (ssl == nullptr)
+            throw std::runtime_error("SSL_new failed with error: " + getSslError());
+        int code = SSL_set_fd(ssl.get(), clientSocket);
+        if (code <= 0)
+            throw std::runtime_error("SSL_set_fd failed with error: " + std::to_string(code) + " " + getSslError());
+        code = SSL_accept(ssl.get());
+        if (code <= 0)
+            throw std::runtime_error("SSL_accept failed with error: " + std::to_string(code) + " " + getSslError());
+
+        return std::shared_ptr<tcpClient>(new sslClient(clientSocket, sslContext, ssl));
+    }
 };
 
 #endif /* !TCP_H_ */

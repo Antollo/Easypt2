@@ -8,12 +8,13 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <limits>
 
 #if __GNUC__ == 7
 #include <experimental/filesystem>
 namespace std
 {
-namespace filesystem = std::experimental::filesystem;
+    namespace filesystem = std::experimental::filesystem;
 };
 #else
 #include <filesystem>
@@ -48,6 +49,7 @@ using libraryType = HMODULE;
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <semaphore.h>
 using libraryType = void *;
 #else
 #pragma message("OS not fully supported")
@@ -74,5 +76,51 @@ std::wstring utf8Decode(const std::string &str);
 const bool isAttyInput();
 const bool isAttyOutput();
 #endif
+
+class semaphore
+{
+public:
+    semaphore()
+    {
+        #ifdef _WIN32
+        handle = CreateSemaphore(nullptr, 0, std::numeric_limits<int>::max(), nullptr);
+        #else
+        sem_init(&handle, 0, 0);
+        #endif
+    }
+    void acquire()
+    {
+        #ifdef _WIN32
+        WaitForSingleObject(handle, INFINITE);
+        #else
+        sem_wait(&handle);
+        #endif
+    }
+    void release(unsigned int n = 1)
+    {
+        #ifdef _WIN32
+        ReleaseSemaphore(handle, n, nullptr);
+        #else
+        while (n--)
+            sem_post(&handle);
+        #endif
+    }
+
+    ~semaphore()
+    {
+        #ifdef _WIN32
+        CloseHandle(handle);
+        #else
+        sem_destroy(&handle);
+        #endif
+    }
+
+private:
+    #ifdef _WIN32
+    HANDLE handle;
+    #else
+    sem_t handle;
+    #endif
+};
 
 #endif // OSDEPENDENT_H

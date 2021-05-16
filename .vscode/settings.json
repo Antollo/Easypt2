@@ -91,7 +91,10 @@
         "cassert": "cpp",
         "random": "cpp",
         "compare": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "coroutine": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,

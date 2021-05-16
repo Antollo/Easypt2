@@ -19,7 +19,6 @@ int main(int argc, char **argv)
         initialize();
         runtime::init(&globalStack);
 
-
         auto st = &globalStack;
         insertObject(n::argv, object::type::Array());
         insertObject(n::argc, 0_n);

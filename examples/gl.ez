@@ -33,8 +33,21 @@ gl.bindBuffer(GL.ARRAY_BUFFER, vertexbuffer);
 gl.bufferData(GL.ARRAY_BUFFER, g_vertex_buffer_data.size(), g_vertex_buffer_data, GL.STATIC_DRAW);
 
 gl.clearColor(1.0, 0.0, 0.4, 0.0);
+let time = Time.sinceEpoch.asFloatingPoint();
+let newTime = Time.sinceEpoch.asFloatingPoint();
+let fps = 60;
+let counter = 100;
 while (!glfw.windowShouldClose(window))
 {
+    newTime = Time.sinceEpoch.asFloatingPoint();
+    fps = (fps * 19 + 1 / (newTime - time)) / 20;
+    time = newTime;
+    if (!counter--)
+    {
+        counter = 100;
+        console.writeLine(fps * 1000);
+    }
+    
     gl.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
     gl.enableVertexAttribArray(0);
     gl.bindBuffer(GL.ARRAY_BUFFER, vertexbuffer);

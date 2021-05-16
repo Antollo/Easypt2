@@ -13,7 +13,7 @@ before_build:
     - ps: ./init.ps1
 build_script:
     - sh: cmake .
-    - cmd: cmake -A x64 -B . -DPGO=GENPROFILE
+    - cmd: cmake -A x64 -B . -DPGO=GENPROFILE -DOPENSSL_ROOT_DIR="c:\OpenSSL-v111-Win64"
     - ps: cmake --build . --config Release
     - ps: .\run_pgo.bat
     - cmd: cmake -A x64 -B . -DPGO=USEPROFILE

@@ -783,7 +783,7 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n::and])(a, {b}, &st);
+        return (*(*a)[n::andOp])(a, {b}, &st);
     })
 
     caseUnary(OR,
@@ -800,7 +800,7 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n:: or ])(a, {b}, &st);
+        return (*(*a)[n::orOp])(a, {b}, &st);
     })
 
     caseBinary(BITWISE_AND,
@@ -974,7 +974,7 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 1);
         if (a->isConvertible<bool>())
             return object::makeObject(!a.getConverted<bool>());
-        return (*(*a)[n::not ])(a, {}, &st);
+        return (*(*a)[n::notOp])(a, {}, &st);
     })
 
     caseUnary(COMPLEMENT,
@@ -1533,7 +1533,7 @@ void Node::evaluateVoid(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        (*(*a)[n::and])(a, {b}, &st);
+        (*(*a)[n::andOp])(a, {b}, &st);
         return;
     })
 
@@ -1551,7 +1551,7 @@ void Node::evaluateVoid(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        (*(*a)[n:: or ])(a, {b}, &st);
+        (*(*a)[n::orOp])(a, {b}, &st);
         return;
     })
 
@@ -1709,7 +1709,7 @@ void Node::evaluateVoid(stack &st) const
         assert(_children.size() == 1);
         if (a->isConvertible<bool>())
             return;
-        (*(*a)[n::not ])(a, {}, &st);
+        (*(*a)[n::notOp])(a, {}, &st);
         return;
     })
 
@@ -1812,7 +1812,7 @@ bool Node::evaluateBoolean(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n::and])(a, {b}, &st).getConverted<bool>();
+        return (*(*a)[n::andOp])(a, {b}, &st).getConverted<bool>();
     })
 
     caseUnary(OR,
@@ -1829,7 +1829,7 @@ bool Node::evaluateBoolean(stack &st) const
         }
         else
             b = _children[1].evaluate(st);
-        return (*(*a)[n:: or ])(a, {b}, &st).getConverted<bool>();
+        return (*(*a)[n::orOp])(a, {b}, &st).getConverted<bool>();
     })
 
     caseBinary(EQUAL,
@@ -1947,7 +1947,7 @@ bool Node::evaluateBoolean(stack &st) const
         assert(_children.size() == 1);
         if (a->isConvertible<bool>())
             return !a.getConverted<bool>();
-        return (*(*a)[n::not ])(a, {}, &st).getConverted<bool>();
+        return (*(*a)[n::notOp])(a, {}, &st).getConverted<bool>();
     })
 
     case CONDITIONAL:
