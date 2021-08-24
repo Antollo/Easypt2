@@ -860,12 +860,18 @@ Time.sinceEpoch.asInteger @example@
 File @description@
 "File class provides file input and output operations.";
 File @example@
-"console.write(\"1+3 is \", 1+3);
-if (1+3 != 4) {
-    console.warn(\"1+3 is not 4!\");
-}";
+"let file = File();
+file.create(\"protocols.txt\");
+file.writeLine(\"http\").write(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, \" \", port);";
 File @expectedOutput@
-"1+3 is 4";
+"http 80";
 
 File.classPrototype.write @parameters@
 "/*any number of convertible to String parameters*/";

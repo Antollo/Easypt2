@@ -14,20 +14,20 @@ void ChildProcess::init(stack *st)
         std::string cwd;
 
         if (args.size() > 2 && args[2]->isConvertible<object::type::String>())
-            cwd = args[2].getConverted<object::type::String>();
+            cwd = args[2]->getConverted<object::type::String>();
         else
             cwd = std::filesystem::absolute(std::filesystem::current_path()).string();
 
-        object::type::Array argsIn= args[1].getConverted<object::type::Array>();
+        object::type::Array argsIn= args[1]->getConverted<object::type::Array>();
         std::vector<std::string> argsV(argsIn.size());
 
         for (size_t i = 0; i < argsIn.size(); i++)
-            argsV[i] = argsIn[i].getConverted<object::type::String>();
+            argsV[i] = argsIn[i]->getConverted<object::type::String>();
         
 
         thisObj->setType<object::type::ChildProcess>();
         auto &_childProcess = (thisObj->get<object::type::ChildProcess>() = std::make_shared<childProcess>(
-            args[0].getConverted<object::type::String>(),
+            args[0]->getConverted<object::type::String>(),
             argsV,
             cwd
         ));

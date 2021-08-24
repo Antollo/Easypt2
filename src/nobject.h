@@ -83,6 +83,7 @@ public:
             objects.tail = 0;
         objects.length--;
         ptr->_value = std::forward<T>(t);
+        ptr->_refCount = 0;
 
         if constexpr (std::is_same_v<std::decay_t<T>, type::NativeFunction>)
             ptr->init<T>(t == constructorCaller);
@@ -140,9 +141,25 @@ public:
     }
 
     object(object &&) = default;
-    object &operator=(object &&) = default;
+    object &operator=(object &&rhs)
+    {
+        _value = std::move(rhs._value);
+        _prototype = std::move(rhs._prototype);
+        _properties = std::move(rhs._properties);
+        _flags = std::move(rhs._flags);
+        // no _refCount
+        return *this;
+    }
     object(const object &) = default;
-    object &operator=(const object &rhs) = default;
+    object &operator=(const object &rhs)
+    {
+        _value = rhs._value;
+        _prototype = rhs._prototype;
+        _properties = rhs._properties;
+        _flags = rhs._flags;
+        // no _refCount
+        return *this;
+    }
 
     object &operator=(const objectPtr &rhs)
     {
@@ -232,7 +249,7 @@ public:
     }
 
     template <class T>
-    T getConverted(const objectPtr &thisObj)
+    T getConverted()
     {
         if constexpr (std::is_same_v<T, type::Number>)
         {
@@ -251,7 +268,7 @@ public:
             {
                 auto toNumberMethod = read(n::toNumber);
                 if (toNumberMethod && toNumberMethod != toNumber)
-                    return (*toNumberMethod)(thisObj, {}, nullptr)->get<const type::Number>();
+                    return (*toNumberMethod)(ptrFromThis(), {}, nullptr)->get<const type::Number>();
                 else
                     return static_cast<type::Number>(_properties->size());
             }
@@ -274,7 +291,7 @@ public:
             {
                 auto toStringMethod = read(n::toString);
                 if (toStringMethod && toStringMethod != toString)
-                    return (*toStringMethod)(thisObj, {}, nullptr)->get<const type::String>();
+                    return (*toStringMethod)(ptrFromThis(), {}, nullptr)->get<const type::String>();
                 else
                     return toJson();
             }
@@ -288,9 +305,9 @@ public:
             {
                 auto toArrayMethod = read(n::toArray);
                 if (toArrayMethod && toArrayMethod != toArray)
-                    return (*toArrayMethod)(thisObj, {}, nullptr)->get<const type::Array>();
+                    return (*toArrayMethod)(ptrFromThis(), {}, nullptr)->get<const type::Array>();
                 else
-                    return type::Array{thisObj};
+                    return type::Array{ptrFromThis()};
             }
         }
         else if constexpr (std::is_same_v<T, type::Boolean>)
@@ -310,7 +327,7 @@ public:
             {
                 auto toBooleanMethod = read(n::toBoolean);
                 if (toBooleanMethod && toBooleanMethod != toBoolean)
-                    return (*toBooleanMethod)(thisObj, {}, nullptr)->get<const type::Boolean>();
+                    return (*toBooleanMethod)(ptrFromThis(), {}, nullptr)->get<const type::Boolean>();
                 else
                     return _properties->size() != 0;
             }
@@ -387,6 +404,7 @@ private:
 
     objectPtr _prototype;
     copyPtr<propertiesType> _properties;
+    uint32_t _refCount;
     std::bitset<4> _flags;
     static constexpr size_t _const = 0;
     static constexpr size_t _accessible = 1;
@@ -412,15 +430,18 @@ private:
         return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
     }
     void toJson(std::string &str, const size_t indentation = 1) const;
+
+    objectPtr ptrFromThis()
+    {
+        objectPtr ptr;
+        ptr._obj = this;
+        _refCount++;
+        return ptr;
+    }
 };
 
 extern allocatorBuffer<sizeof(object)> objectMemoryBuffer;
 
-template <class T>
-remove_cref_t<T> objectPtrImpl::getConverted() const
-{
-    return _obj->getConverted<T>(*this);
-}
 
 class objectException : public std::exception
 {

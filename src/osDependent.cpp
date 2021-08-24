@@ -127,6 +127,7 @@ void initialize()
     initializeThread();
 #ifdef _WIN32
     setlocale(LC_ALL, ".UTF8");
+    setlocale(LC_NUMERIC, "en_US.UTF8");
 
     if (isAttyInput())
         _setmode(_fileno(stdin), _O_WTEXT);

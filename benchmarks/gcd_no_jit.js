@@ -8,6 +8,8 @@ function gcd(a, b) {
     return a
 }
 
+%NeverOptimizeFunction(gcd)
+
 let iterations = 100
 let mean = 0
 let time

@@ -314,7 +314,7 @@ public:
         if (sslContext == nullptr || ssl == nullptr)
             throw std::runtime_error("SSL socket is not initialized");
 
-        std::string message(8192, 0);
+        std::string message(bufferSize, 0);
         int code = SSL_read(ssl.get(), message.data(), message.size());
         if (code >= 0)
         {
@@ -331,7 +331,7 @@ public:
         if (sslContext == nullptr || ssl == nullptr)
             throw std::runtime_error("SSL socket is not initialized");
 
-        message.resize(8192, 0);
+        message.resize(bufferSize, 0);
         int code = SSL_read(ssl.get(), message.data(), message.size());
         if (code >= 0)
         {

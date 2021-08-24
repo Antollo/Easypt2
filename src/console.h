@@ -20,25 +20,25 @@ class console
 {
 public:
     template <class... Ts>
-    static void debug(const Ts &... args)
+    static void debug(const Ts &...args)
     {
         writeLine("\033[95m"s, now() + " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
-    static void log(const Ts &... args)
+    static void log(const Ts &...args)
     {
         writeLine("\033[96m"s, now() + " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
-    static void warn(const Ts &... args)
+    static void warn(const Ts &...args)
     {
         writeLine("\033[93m\033[1m"s, now() + " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
-    static void error(const Ts &... args)
+    static void error(const Ts &...args)
     {
         writeLineError("\033[91m\033[1m"s, now() + " ", args..., "\033[0m"s);
     }
@@ -53,7 +53,7 @@ public:
 
 #ifdef _WIN32
     template <class T, class... Ts>
-    static void WIO(read)(T &t, Ts &... args)
+    static void WIO(read)(T &t, Ts &...args)
     {
         lastFormattedInputFunction = true;
         if constexpr (std::is_same_v<T, std::string>)
@@ -70,7 +70,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void WIO(readLine)(T &t, Ts &... args)
+    static void WIO(readLine)(T &t, Ts &...args)
     {
         if constexpr (std::is_same_v<T, std::string>)
         {
@@ -90,7 +90,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void WIO(write)(const T &t, const Ts &... args)
+    static void WIO(write)(const T &t, const Ts &...args)
     {
         if constexpr (std::is_same_v<T, std::string>)
             std::wcout << utf8Decode(t);
@@ -101,7 +101,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void WIO(writeLine)(const T &t, const Ts &... args)
+    static void WIO(writeLine)(const T &t, const Ts &...args)
     {
         if constexpr (std::is_same_v<T, std::string>)
             std::wcout << utf8Decode(t);
@@ -118,7 +118,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void WIO(writeLineError)(const T &t, const Ts &... args)
+    static void WIO(writeLineError)(const T &t, const Ts &...args)
     {
         if constexpr (std::is_same_v<T, std::string>)
             std::wcerr << utf8Decode(t);
@@ -173,7 +173,7 @@ public:
 #endif
 
     template <class T, class... Ts>
-    static void CIO(read)(T &t, Ts &... args)
+    static void CIO(read)(T &t, Ts &...args)
     {
         lastFormattedInputFunction = true;
         std::cin >> t;
@@ -182,7 +182,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void CIO(readLine)(T &t, Ts &... args)
+    static void CIO(readLine)(T &t, Ts &...args)
     {
         std::string temp;
         std::getline(lastFormattedInputFunction ? std::cin >> std::ws : std::cin, temp);
@@ -193,7 +193,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void CIO(write)(const T &t, const Ts &... args)
+    static void CIO(write)(const T &t, const Ts &...args)
     {
         std::cout << t;
         if constexpr (sizeof...(args))
@@ -201,7 +201,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void CIO(writeLine)(const T &t, const Ts &... args)
+    static void CIO(writeLine)(const T &t, const Ts &...args)
     {
         std::cout << t;
         if constexpr (sizeof...(args))
@@ -215,7 +215,7 @@ public:
     }
 
     template <class T, class... Ts>
-    static void CIO(writeLineError)(const T &t, const Ts &... args)
+    static void CIO(writeLineError)(const T &t, const Ts &...args)
     {
         std::cerr << t;
         if constexpr (sizeof...(args))
@@ -266,7 +266,7 @@ public:
 
 #ifdef _WIN32
     template <class... Ts>
-    static inline void IO(read)(Ts &&... args)
+    static inline void IO(read)(Ts &&...args)
     {
         if (isAttyInput())
             WIO(read)
@@ -275,7 +275,7 @@ public:
     }
 
     template <class... Ts>
-    static inline void IO(readLine)(Ts &&... args)
+    static inline void IO(readLine)(Ts &&...args)
     {
         if (isAttyInput())
             WIO(readLine)
@@ -284,7 +284,7 @@ public:
     }
 
     template <class... Ts>
-    static inline void IO(write)(Ts &&... args)
+    static inline void IO(write)(Ts &&...args)
     {
         if (isAttyOutput())
             WIO(write)
@@ -293,7 +293,7 @@ public:
     }
 
     template <class... Ts>
-    static inline void IO(writeLine)(Ts &&... args)
+    static inline void IO(writeLine)(Ts &&...args)
     {
         if (isAttyOutput())
             WIO(writeLine)
@@ -310,7 +310,7 @@ public:
     }
 
     template <class... Ts>
-    static inline void IO(writeLineError)(Ts &&... args)
+    static inline void IO(writeLineError)(Ts &&...args)
     {
         if (isAttyOutput())
             WIO(writeLineError)

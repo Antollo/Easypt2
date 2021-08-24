@@ -1,7 +1,8 @@
 let docs = import("../library/docs");
 
-console.getOutput(() => {
-    let i = 100;
-    while (i--)
-        docs.testAllExamples();
-});
+
+for (let i = 0; i < 50; i++)
+{
+    console.writeLine(i);
+    console.getOutput(docs.testAllExamples);
+}

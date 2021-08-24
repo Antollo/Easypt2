@@ -14,7 +14,8 @@ class objectPtrImpl
 {
 
 public:
-    objectPtrImpl(object *obj = nullptr);
+    objectPtrImpl() : _obj(nullptr) {}
+    objectPtrImpl(object *obj);
     objectPtrImpl(const objectPtrImpl &ptr);
     objectPtrImpl &operator=(const objectPtrImpl &ptr);
     objectPtrImpl(objectPtrImpl &&ptr);
@@ -36,14 +37,10 @@ public:
     object *get() { return _obj; }
     const object *get() const { return _obj; }
 
-    template <class T>
-    remove_cref_t<T> getConverted() const; // defined in "nobject.h"
-
 private:
-    using refCountType = uint_fast16_t;
-    static inline allocatorBuffer<sizeof(refCountType)> memory;
+    void deleter();
     object *_obj;
-    refCountType *_refCount;
+    friend class object;
 };
 
 #endif /* !OBJECTPTRIMPL_H_ */

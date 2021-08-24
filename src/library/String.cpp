@@ -16,7 +16,7 @@ void String::init(stack *st)
 
     addFunctionL(object::stringPrototype, n::readOperator, {
         argsConvertibleGuard<number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const std::string &me = thisObj->get<const std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
@@ -25,7 +25,7 @@ void String::init(stack *st)
 
     addFunctionL(object::stringPrototype, "getByteAt"_n, {
         argsConvertibleGuard<number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const std::string &me = thisObj->get<const std::string>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
@@ -34,8 +34,8 @@ void String::init(stack *st)
 
     addFunctionL(object::stringPrototype, "setByteAt"_n, {
         argsConvertibleGuard<number, number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
-        unsigned char byte = static_cast<unsigned char>(args[1].getConverted<number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        unsigned char byte = static_cast<unsigned char>(args[1]->getConverted<object::type::Number>());
         std::string &me = thisObj->get<object::type::String>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
@@ -51,18 +51,18 @@ void String::init(stack *st)
         argsConvertibleGuard<number, std::string>(args);
         std::string &dest = thisObj->get<object::type::String>();
         const std::string &src = args[1]->get<const std::string>();
-        size_t destPos= static_cast<size_t>(args[0].getConverted<number>());
+        size_t destPos= static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         size_t srcPos = 0;
         size_t srcLength = src.size();
         if (args.size() > 2)
         {
             argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
-            srcPos = static_cast<size_t>(args[2].getConverted<number>());
+            srcPos = static_cast<size_t>(args[2]->getConverted<object::type::Number>());
             srcLength = srcLength - srcPos;
             if (args.size() > 3)
             {
                 argsConvertibleGuard<nullptr_t, nullptr_t, number, number>(args);
-                srcLength = std::min(srcLength, static_cast<size_t>(args[3].getConverted<number>()));
+                srcLength = std::min(srcLength, static_cast<size_t>(args[3]->getConverted<object::type::Number>()));
             }
         }
         assert<std::greater_equal>(destPos, 0);
@@ -83,12 +83,12 @@ void String::init(stack *st)
         if (args.size() > 1)
         {
             argsConvertibleGuard<nullptr_t, number>(args);
-            srcPos = static_cast<size_t>(args[1].getConverted<number>());
+            srcPos = static_cast<size_t>(args[1]->getConverted<object::type::Number>());
             srcLength = srcLength - srcPos;
             if (args.size() > 2)
             {
                 argsConvertibleGuard<nullptr_t, number, number>(args);
-                srcLength = std::min(srcLength, static_cast<size_t>(args[2].getConverted<number>()));
+                srcLength = std::min(srcLength, static_cast<size_t>(args[2]->getConverted<object::type::Number>()));
             }
         }
         assert<std::greater_equal>(srcPos, 0);
@@ -101,12 +101,12 @@ void String::init(stack *st)
     addFunctionL(object::stringPrototype, "substring"_n, {
         argsConvertibleGuard<number>(args);
         const std::string &me = thisObj->get<const std::string>();
-        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         size_t length = me.size() - pos;
         if (args.size() > 1)
         {
             argsConvertibleGuard<nullptr_t, number>(args);
-            length = std::min(length, static_cast<size_t>(args[1].getConverted<number>()));
+            length = std::min(length, static_cast<size_t>(args[1]->getConverted<object::type::Number>()));
         }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
@@ -117,12 +117,12 @@ void String::init(stack *st)
     addFunctionL(object::stringPrototype, "erase"_n, {
         argsConvertibleGuard<number>(args);
         std::string &me = thisObj->get<object::type::String>();
-        size_t pos = static_cast<size_t>(args[0].getConverted<number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         size_t length = me.size() - pos;
         if (args.size() > 1)
         {
             argsConvertibleGuard<nullptr_t, number>(args);
-            length = std::min(length, static_cast<size_t>(args[1].getConverted<number>()));
+            length = std::min(length, static_cast<size_t>(args[1]->getConverted<object::type::Number>()));
         }
         assert<std::greater_equal>(pos, 0);
         assert<std::greater_equal>(length, 0);
@@ -134,7 +134,7 @@ void String::init(stack *st)
     addFunctionL(object::stringPrototype, "split"_n, {
         argsConvertibleGuard<std::string>(args);
         const std::string &me = thisObj->get<const std::string>();
-        const std::string &delim = args[0].getConverted<std::string>();
+        const std::string &delim = args[0]->getConverted<object::type::String>();
         size_t begin = 0, end, delimSize = delim.size();
 
         object::type::Array res;
@@ -151,10 +151,10 @@ void String::init(stack *st)
     addFunctionL(object::stringPrototype, "indexOf"_n, {
         argsConvertibleGuard<std::string>(args);
         std::string &me = thisObj->get<object::type::String>();
-        std::string key = args[0].getConverted<std::string>();
+        std::string key = args[0]->getConverted<object::type::String>();
         size_t pos = 0;
         if (args.size() >= 2)
-            pos = static_cast<size_t>(args[1].getConverted<number>());
+            pos = static_cast<size_t>(args[1]->getConverted<object::type::Number>());
         assert<std::greater_equal>(pos, 0);
         assert<std::less_equal>(pos, me.size());
         return object::makeObject(static_cast<number>(me.find(key, pos)));
@@ -163,15 +163,15 @@ void String::init(stack *st)
     addFunctionL(object::stringPrototype, "search"_n, {
         argsConvertibleGuard<std::string>(args);
         const std::string &me = thisObj->get<const std::string>();
-        std::regex regex(args[0].getConverted<std::string>());
+        std::regex regex(args[0]->getConverted<object::type::String>());
         std::smatch matchResults;
         size_t pos = 0;
         size_t length = me.size();
 
         if (args.size() >= 2)
-            pos = static_cast<size_t>(args[1].getConverted<number>());
+            pos = static_cast<size_t>(args[1]->getConverted<object::type::Number>());
         if (args.size() >= 3)
-            length = static_cast<size_t>(args[2].getConverted<number>());
+            length = static_cast<size_t>(args[2]->getConverted<object::type::Number>());
 
         std::regex_search(me.begin() + pos, me.begin() + pos + length, matchResults, regex);
         object::type::Array array(matchResults.size());
@@ -187,14 +187,14 @@ void String::init(stack *st)
     addFunctionL(object::stringPrototype, "searchAll"_n, {
         argsConvertibleGuard<std::string>(args);
         const std::string &me = thisObj->get<const std::string>();
-        std::regex regex(args[0].getConverted<std::string>());
+        std::regex regex(args[0]->getConverted<object::type::String>());
         size_t pos = 0;
         size_t length = me.size();
 
         if (args.size() >= 2)
-            pos = static_cast<size_t>(args[1].getConverted<number>());
+            pos = static_cast<size_t>(args[1]->getConverted<object::type::Number>());
         if (args.size() >= 3)
-            length = static_cast<size_t>(args[2].getConverted<number>());
+            length = static_cast<size_t>(args[2]->getConverted<object::type::Number>());
 
         auto begin = std::sregex_iterator(me.begin() + pos, me.begin() + pos + length, regex);
         auto end = std::sregex_iterator();

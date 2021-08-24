@@ -16,7 +16,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "getInt8"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const object::type::Buffer &me = thisObj->get<const object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int8_t>(pos);
@@ -25,7 +25,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "getInt16"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const object::type::Buffer &me = thisObj->get<const object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int16_t>(pos);
@@ -34,7 +34,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "getInt32"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const object::type::Buffer &me = thisObj->get<const object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int32_t>(pos);
@@ -43,7 +43,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "getInt64"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const object::type::Buffer &me = thisObj->get<const object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int64_t>(pos);
@@ -52,7 +52,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "getFloat"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const object::type::Buffer &me = thisObj->get<const object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<float>(pos);
@@ -61,7 +61,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "getDouble"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const object::type::Buffer &me = thisObj->get<const object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<double>(pos);
@@ -70,61 +70,61 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "setInt8"_n, {
         argsConvertibleGuard<object::type::Number, object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int8_t>(pos);
-        me->get<int8_t>(pos) = static_cast<int8_t>(args[1].getConverted<object::type::Number>());
+        me->get<int8_t>(pos) = static_cast<int8_t>(args[1]->getConverted<object::type::Number>());
         return thisObj;
     });
 
     addFunctionL(bufferPrototype, "setInt16"_n, {
         argsConvertibleGuard<object::type::Number, object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int16_t>(pos);
-        me->get<int16_t>(pos) = static_cast<int16_t>(args[1].getConverted<object::type::Number>());
+        me->get<int16_t>(pos) = static_cast<int16_t>(args[1]->getConverted<object::type::Number>());
         return thisObj;
     });
 
     addFunctionL(bufferPrototype, "setInt32"_n, {
         argsConvertibleGuard<object::type::Number, object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int32_t>(pos);
-        me->get<int32_t>(pos) = static_cast<int32_t>(args[1].getConverted<object::type::Number>());
+        me->get<int32_t>(pos) = static_cast<int32_t>(args[1]->getConverted<object::type::Number>());
         return thisObj;
     });
 
     addFunctionL(bufferPrototype, "setInt64"_n, {
         argsConvertibleGuard<object::type::Number, object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<int64_t>(pos);
-        me->get<int64_t>(pos) = static_cast<int64_t>(args[1].getConverted<object::type::Number>());
+        me->get<int64_t>(pos) = static_cast<int64_t>(args[1]->getConverted<object::type::Number>());
         return thisObj;
     });
 
     addFunctionL(bufferPrototype, "setFloat"_n, {
         argsConvertibleGuard<object::type::Number, object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<float>(pos);
-        me->get<float>(pos) = static_cast<float>(args[1].getConverted<object::type::Number>());
+        me->get<float>(pos) = static_cast<float>(args[1]->getConverted<object::type::Number>());
         return thisObj;
     });
 
     addFunctionL(bufferPrototype, "setDouble"_n, {
         argsConvertibleGuard<object::type::Number, object::type::Number>(args);
-        size_t pos = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         assert<std::greater_equal>(pos, 0);
         me->assert<double>(pos);
-        me->get<double>(pos) = static_cast<double>(args[1].getConverted<object::type::Number>());
+        me->get<double>(pos) = static_cast<double>(args[1]->getConverted<object::type::Number>());
         return thisObj;
     });
 
@@ -180,7 +180,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "allocateInt8"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<int8_t>(size);
         return thisObj;
@@ -188,7 +188,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "allocateInt16"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<int16_t>(size);
         return thisObj;
@@ -196,7 +196,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "allocateInt32"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<int32_t>(size);
         return thisObj;
@@ -204,7 +204,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "allocateInt64"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<int64_t>(size);
         return thisObj;
@@ -212,7 +212,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "allocateFloat"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<float>(size);
         return thisObj;
@@ -220,7 +220,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "allocateDouble"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<double>(size);
         return thisObj;
@@ -228,7 +228,7 @@ void Buffer::init(stack *st)
 
     addFunctionL(bufferPrototype, "reallocate"_n, {
         argsConvertibleGuard<object::type::Number>(args);
-        size_t size = static_cast<size_t>(args[0].getConverted<object::type::Number>());
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->reallocate(size);
         return thisObj;
@@ -256,7 +256,7 @@ void Buffer::init(stack *st)
         argsConvertibleGuard<object::type::Array>(args);
         auto Buffer = (*st)[n::Buffer];
         auto newObj = (*Buffer)(Buffer, {}, st);
-        auto  arr = args[0].getConverted<object::type::Array>();
+        auto  arr = args[0]->getConverted<object::type::Array>();
         buffer b;
         b.allocate<int8_t>(arr.size());
         for (size_t i = 0; i < arr.size(); i++)
@@ -272,7 +272,7 @@ void Buffer::init(stack *st)
         argsConvertibleGuard<object::type::Array>(args);
         auto Buffer = (*st)[n::Buffer];
         auto newObj = (*Buffer)(Buffer, {}, st);
-        auto  arr = args[0].getConverted<object::type::Array>();
+        auto  arr = args[0]->getConverted<object::type::Array>();
         buffer b;
         b.allocate<int16_t>(arr.size());
         for (size_t i = 0; i < arr.size(); i++)
@@ -288,7 +288,7 @@ void Buffer::init(stack *st)
         argsConvertibleGuard<object::type::Array>(args);
         auto Buffer = (*st)[n::Buffer];
         auto newObj = (*Buffer)(Buffer, {}, st);
-        auto  arr = args[0].getConverted<object::type::Array>();
+        auto  arr = args[0]->getConverted<object::type::Array>();
         buffer b;
         b.allocate<int32_t>(arr.size());
         for (size_t i = 0; i < arr.size(); i++)
@@ -304,7 +304,7 @@ void Buffer::init(stack *st)
         argsConvertibleGuard<object::type::Array>(args);
         auto Buffer = (*st)[n::Buffer];
         auto newObj = (*Buffer)(Buffer, {}, st);
-        auto  arr = args[0].getConverted<object::type::Array>();
+        auto  arr = args[0]->getConverted<object::type::Array>();
         buffer b;
         b.allocate<int64_t>(arr.size());
         for (size_t i = 0; i < arr.size(); i++)
@@ -320,7 +320,7 @@ void Buffer::init(stack *st)
         argsConvertibleGuard<object::type::Array>(args);
         auto Buffer = (*st)[n::Buffer];
         auto newObj = (*Buffer)(Buffer, {}, st);
-        auto  arr = args[0].getConverted<object::type::Array>();
+        auto  arr = args[0]->getConverted<object::type::Array>();
         buffer b;
         b.allocate<float>(arr.size());
         for (size_t i = 0; i < arr.size(); i++)
@@ -333,7 +333,7 @@ void Buffer::init(stack *st)
         argsConvertibleGuard<object::type::Array>(args);
         auto Buffer = (*st)[n::Buffer];
         auto newObj = (*Buffer)(Buffer, {}, st);
-        auto  arr = args[0].getConverted<object::type::Array>();
+        auto  arr = args[0]->getConverted<object::type::Array>();
         buffer b;
         b.allocate<double>(arr.size());
         for (size_t i = 0; i < arr.size(); i++)

@@ -5,7 +5,7 @@ function parseHttpMessage(msg) {
     if (idx != -1)
     {
         headersArray <- msg.substring(0, idx).split("\r\n");
-        obj.body <-  msg.substring(idx + 4, msg.length() - idx - 4);
+        obj.body <- msg.substring(idx + 4, msg.length() - idx - 4);
     }
     else
         headersArray <- msg.split("\r\n");

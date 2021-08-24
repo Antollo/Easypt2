@@ -67,7 +67,7 @@ int main(int argc, char **argv)
             }
             else if (isFlag(argv[i], "version"))
             {
-                console::writeLine("Version from "s + __DATE__);
+                console::writeLine("Easypt version from "s + __DATE__);
             }
             else if (isFlag(argv[i], "help"))
             {
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
         auto obj = e.getPtr();
         console::stackTrace();
         if (obj->isConvertible<std::string>())
-            console::error(obj.getConverted<object::type::String>());
+            console::error(obj->getConverted<object::type::String>());
         else
             console::error((std::string)e.what());
         runtime::fini(&globalStack);

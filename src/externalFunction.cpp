@@ -33,7 +33,7 @@ object::objectPtr externalFunction::operator()(object::objectPtr thisObj, object
 
         case numberType:
         {
-            numbers.push_back(args[i].getConverted<object::type::Number>());
+            numbers.push_back(args[i]->getConverted<object::type::Number>());
             //console::debug(static_cast<int64_t>(numbers.back()));
             ptrArgs.push_back(&numbers.back());
             break;
@@ -42,7 +42,7 @@ object::objectPtr externalFunction::operator()(object::objectPtr thisObj, object
         case arrayType:
         {
             buffers.emplace_back();
-            auto array = args[i].getConverted<object::type::Array>();
+            auto array = args[i]->getConverted<object::type::Array>();
             buffers.back().allocate<void*>(array.size());
             for (size_t i = 0; i < array.size(); i++)
             {

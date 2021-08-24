@@ -17,8 +17,28 @@ function mergeSort(array) {
     return merge(mergeSort(array.subarray(0, pivot)), mergeSort(array.subarray(pivot)));
 };
 
-return {
-    sort: mergeSort,
-    mergeSort: mergeSort,
-    merge: merge
-};
+
+let file = File();
+file.open("numbers.txt");
+let line = file.readLine();
+let array = [];
+while (line.length() > 0) {
+    array.insert(array.length(), line.toNumber());
+    line = file.readLine();
+}
+
+
+let iterations = 100;
+let mean = 0;
+let time;
+
+
+for (let i = 0; i < iterations; i++) {
+    time = Time.sinceEpoch.asFloatingPoint();
+    mergeSort(array);
+    mean = mean + Time.sinceEpoch.asFloatingPoint() - time;
+    console.write("\r--- ", (i / iterations * 100 + 1).toInteger(), "% ---");
+}
+
+mean = mean / iterations;
+console.writeLine("\nMean time: ", mean, " ms");

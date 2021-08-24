@@ -17,8 +17,8 @@ void Tcp::init(stack *st)
     addFunctionL(tcpClientPrototype, "connect"_n, {
         argsConvertibleGuard<std::string, number>(args);
 
-        std::string adress = args[0].getConverted<std::string>();
-        int port = static_cast<int>(args[1].getConverted<number>());
+        std::string adress = args[0]->getConverted<object::type::String>();
+        int port = static_cast<int>(args[1]->getConverted<object::type::Number>());
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([adress, port, thisObj]() {
             auto t = thisObj->get<std::shared_ptr<tcpClient>>();
@@ -47,7 +47,7 @@ void Tcp::init(stack *st)
     addFunctionL(tcpClientPrototype, "send"_n, {
         argsConvertibleGuard<std::string>(args);
 
-        std::string str = args[0].getConverted<std::string>();
+        std::string str = args[0]->getConverted<object::type::String>();
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([str, thisObj]() {
             auto t = thisObj->get<std::shared_ptr<tcpClient>>();
@@ -97,7 +97,7 @@ void Tcp::init(stack *st)
     addFunctionL(tcpServerPrototype, "bind"_n, {
         argsConvertibleGuard<number>(args);
 
-        int port = static_cast<int>(args[0].getConverted<number>());
+        int port = static_cast<int>(args[0]->getConverted<object::type::Number>());
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([port, thisObj]() {
             auto t = thisObj->get<std::shared_ptr<tcpServer>>();
@@ -154,7 +154,7 @@ void Tcp::init(stack *st)
         argsConvertibleGuard<std::string, std::string>(args);
 
         thisObj->setType<std::shared_ptr<tcpServer>>();
-        thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<sslServer>(args[0].getConverted<std::string>(), args[1].getConverted<std::string>());
+        thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<sslServer>(args[0]->getConverted<object::type::String>(), args[1]->getConverted<object::type::String>());
         return thisObj;
     });
 }

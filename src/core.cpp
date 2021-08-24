@@ -116,7 +116,7 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
 object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::string>(args);
-    std::string temp = args[0].getConverted<std::string>();
+    std::string temp = args[0]->getConverted<object::type::String>();
     object::type::Function root = object::makeFunction();
     treeParser::parseString(temp, *root.first);
     return object::makeObject(root);
@@ -125,7 +125,7 @@ object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args
 object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::string>(args);
-    std::string temp = args[0].getConverted<std::string>();
+    std::string temp = args[0]->getConverted<object::type::String>();
     object::type::Function root = object::makeFunction();
     treeParser::parseString(temp, *root.first);
     try

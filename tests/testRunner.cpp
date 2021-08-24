@@ -62,7 +62,7 @@ int main(int argc, char **argv)
         auto obj = e.getPtr();
         console::stackTrace();
         if (obj->isConvertible<std::string>())
-            console::error(obj.getConverted<object::type::String>());
+            console::error(obj->getConverted<object::type::String>());
         else
             console::error((std::string)e.what());
         runtime::fini(&globalStack);
