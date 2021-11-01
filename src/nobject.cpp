@@ -70,8 +70,11 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
             // referenceToFather->captureStack(capturedStack);
             localStack.keepAlive(capturedStack);
         }
-        for (size_t i = 0; i < node->names().size() && i < args.size(); i++)
-            localStack.insert(node->names()[i], args[i]);
+        auto &names = node->names();
+        const size_t toInsert = std::min(names.size(), args.size());
+        localStack.reserve(toInsert + 1 + (bool)thisObj);
+        for (size_t i = 0; i < toInsert; i++)
+            localStack.insert(names[i], args[i]);
         localStack.insert(n::args, makeObject(std::move(args)));
         if (thisObj)
             localStack.insert(n::thisObj, thisObj);

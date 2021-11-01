@@ -35,17 +35,19 @@
         auto &b = _evaluateIdentifier(1);     \
         __VA_ARGS__                           \
     }                                         \
-    case TOKEN | AB_IDENTIFIER: \
+    case TOKEN | AB_IDENTIFIER:               \
     {                                         \
         auto &a = _evaluateIdentifier(0);     \
         auto &b = _evaluateIdentifier(1);     \
         __VA_ARGS__                           \
     }
+    
 #define allCases(TOKEN)                       \
     case TOKEN:                               \
     case TOKEN | A_IDENTIFIER:                \
     case TOKEN | B_IDENTIFIER:                \
     case TOKEN | AB_IDENTIFIER:               \
+
 
 std::string Node::parseString(const std::string &source)
 {
@@ -228,12 +230,8 @@ bool Node::numberAssignmentOptimization(object::objectPtr &a, object::objectPtr 
     return false;
 }
 
-#define _evaluate(i) _children[i].evaluate(st)
-#define _evaluateIdentifier(i) st[_children[i]._text]
-
 object::objectPtr Node::evaluate(stack &st) const
 {
-
     switch (_token)
     {
     case COMPOUND_STATEMENT:
@@ -626,7 +624,7 @@ object::objectPtr Node::evaluate(stack &st) const
     {
         stack localJsonStack(&st);
         for (auto &child : _children)
-            child.evaluate(localJsonStack);
+            child.evaluateVoid(localJsonStack);
 
         auto obj = object::makeEmptyObject();
         localJsonStack.copyToObject(obj);
@@ -835,116 +833,9 @@ object::objectPtr Node::evaluate(stack &st) const
         return (*(*a)[n::shiftRight])(a, {b}, &st);
     })
 
-    caseBinary(EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() == b->getConverted<object::type::Number>()));
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() == b->getConverted<object::type::String>()));
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() == b->getConverted<object::type::Array>()));
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() == b->getConverted<object::type::Boolean>()));
-
-        else if (a->isOfType<nullptr_t>() && b->isOfType<nullptr_t>())
-            return object::makeObject(*a == *b);
-
-        return (*(*a)[n::equal])(a, {b}, &st);
-    })
-
-    caseBinary(NOT_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() != b->getConverted<object::type::Number>()));
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() != b->getConverted<object::type::String>()));
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() != b->getConverted<object::type::Array>()));
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() != b->getConverted<object::type::Boolean>()));
-
-        return (*(*a)[n::lessEqual])(a, {b}, &st);
-    })
-
-    caseBinary(LESS,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() < b->getConverted<object::type::Number>()));
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() < b->getConverted<object::type::String>()));
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() < b->getConverted<object::type::Array>()));
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() < b->getConverted<object::type::Boolean>()));
-
-        return (*(*a)[n::less])(a, {b}, &st);
-    })
-
-    caseBinary(GREATER,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() > b->getConverted<object::type::Number>()));
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() > b->getConverted<object::type::String>()));
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() > b->getConverted<object::type::Array>()));
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() > b->getConverted<object::type::Boolean>()));
-
-        return (*(*a)[n::greater])(a, {b}, &st);
-    })
-
-    caseBinary(LESS_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() <= b->getConverted<object::type::Number>()));
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() <= b->getConverted<object::type::String>()));
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() <= b->getConverted<object::type::Array>()));
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() <= b->getConverted<object::type::Boolean>()));
-
-        return (*(*a)[n::lessEqual])(a, {b}, &st);
-    })
-
-    caseBinary(GREATER_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const number>() >= b->getConverted<object::type::Number>()));
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const std::string>() >= b->getConverted<object::type::String>()));
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const object::type::Array>() >= b->getConverted<object::type::Array>()));
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return object::makeObject(static_cast<bool>(a->uncheckedGet<const bool>() >= b->getConverted<object::type::Boolean>()));
-
-        return (*(*a)[n::greaterEqual])(a, {b}, &st);
-    })
+    #define objectReturn(...) return __VA_ARGS__
+    #define valueReturn(...) return object::makeObject(__VA_ARGS__)
+    forCompareOperator(compareNode);
 
     caseUnary(INCREMENT,
     {
@@ -999,8 +890,7 @@ object::objectPtr Node::evaluate(stack &st) const
         return _value;
 
     default:
-        for (auto &child : _children)
-            console::warn(LLgetSymbol(child._token));
+        console::error(toName() + " missing implementation"s);
         break;
     }
     return object::makeEmptyObject();
@@ -1008,7 +898,6 @@ object::objectPtr Node::evaluate(stack &st) const
 
 void Node::evaluateVoid(stack &st) const
 {
-
     switch (_token)
     {
     case COMPOUND_STATEMENT:
@@ -1053,6 +942,7 @@ void Node::evaluateVoid(stack &st) const
         }
         return;
     }
+
     case IF:
         assert(_children.size() == 2);
         if (_children[0].evaluateBoolean(st))
@@ -1591,94 +1481,9 @@ void Node::evaluateVoid(stack &st) const
         return;
     })
 
-    caseBinary(EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return;
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return;
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return;
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return;
-        (*(*a)[n::equal])(a, {b}, &st);
-        return;
-    })
-
-    caseBinary(NOT_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return;
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return;
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return;
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return;
-        (*(*a)[n::lessEqual])(a, {b}, &st);
-        return;
-    })
-
-    caseBinary(LESS,
-    {
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return;
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return;
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return;
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return;
-        (*(*a)[n::less])(a, {b}, &st);
-        return;
-    })
-
-    caseBinary(GREATER,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return;
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return;
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return;
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return;
-        (*(*a)[n::greater])(a, {b}, &st);
-        return;
-    })
-
-    caseBinary(LESS_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return;
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return;
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return;
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return;
-        (*(*a)[n::lessEqual])(a, {b}, &st);
-        return;
-    })
-
-    caseBinary(GREATER_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return;
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return;
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return;
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return;
-        (*(*a)[n::greaterEqual])(a, {b}, &st);
-        return;
-    })
+    #define objectReturn(...) __VA_ARGS__; return
+    #define valueReturn(...) return
+    forCompareOperator(compareNode);
 
     caseUnary(INCREMENT,
     {
@@ -1734,15 +1539,15 @@ void Node::evaluateVoid(stack &st) const
         return;
 
     default:
-        for (auto &child : _children)
-            console::warn(LLgetSymbol(child._token));
+        if (LLgetSymbol(_token))
+            console::warn(toName() + " fallbacks to evaluate"s);
+        evaluate(st);
         break;
     }
 }
 
 number Node::evaluateNumber(stack &st) const
 {
-
     switch (_token)
     {
 
@@ -1832,115 +1637,9 @@ bool Node::evaluateBoolean(stack &st) const
         return (*(*a)[n::orOp])(a, {b}, &st)->getConverted<object::type::Boolean>();
     })
 
-    caseBinary(EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->uncheckedGet<const number>() == b->getConverted<object::type::Number>();
-
-        if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->uncheckedGet<const std::string>() == b->getConverted<object::type::String>();
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->uncheckedGet<const object::type::Array>() == b->getConverted<object::type::Array>();
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->uncheckedGet<const bool>() == b->getConverted<object::type::Boolean>();
-
-        else if (a->isOfType<nullptr_t>() && b->isOfType<nullptr_t>())
-            return object::makeObject(*a == *b);
-
-        return (*(*a)[n::equal])(a, {b}, &st)->getConverted<object::type::Boolean>();
-    })
-
-    caseBinary(NOT_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->uncheckedGet<const number>() != b->getConverted<object::type::Number>();
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->uncheckedGet<const std::string>() != b->getConverted<object::type::String>();
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->uncheckedGet<const object::type::Array>() != b->getConverted<object::type::Array>();
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->uncheckedGet<const bool>() != b->getConverted<object::type::Boolean>();
-
-        return (*(*a)[n::lessEqual])(a, {b}, &st)->getConverted<object::type::Boolean>();
-    })
-
-    caseBinary(LESS,
-    {
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->uncheckedGet<const number>() < b->getConverted<object::type::Number>();
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->uncheckedGet<const std::string>() < b->getConverted<object::type::String>();
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->uncheckedGet<const object::type::Array>() < b->getConverted<object::type::Array>();
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->uncheckedGet<const bool>() < b->getConverted<object::type::Boolean>();
-
-        return (*(*a)[n::less])(a, {b}, &st)->getConverted<object::type::Boolean>();
-    })
-
-    caseBinary(GREATER,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->uncheckedGet<const number>() > b->getConverted<object::type::Number>();
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->uncheckedGet<const std::string>() > b->getConverted<object::type::String>();
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->uncheckedGet<const object::type::Array>() > b->getConverted<object::type::Array>();
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->uncheckedGet<const bool>() > b->getConverted<object::type::Boolean>();
-
-        return (*(*a)[n::greater])(a, {b}, &st)->getConverted<object::type::Boolean>();
-    })
-
-    caseBinary(LESS_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->uncheckedGet<const number>() <= b->getConverted<object::type::Number>();
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->uncheckedGet<const std::string>() <= b->getConverted<object::type::String>();
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->uncheckedGet<const object::type::Array>() <= b->getConverted<object::type::Array>();
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->uncheckedGet<const bool>() <= b->getConverted<object::type::Boolean>();
-
-        return (*(*a)[n::lessEqual])(a, {b}, &st)->getConverted<object::type::Boolean>();
-    })
-
-    caseBinary(GREATER_EQUAL,
-    {
-        assert(_children.size() == 2);
-        if (a->isOfType<number>() && b->isConvertible<number>())
-            return a->uncheckedGet<const number>() >= b->getConverted<object::type::Number>();
-
-        else if (a->isOfType<std::string>() && b->isConvertible<std::string>())
-            return a->uncheckedGet<const std::string>() >= b->getConverted<object::type::String>();
-
-        else if (a->isOfType<object::type::Array>() && b->isConvertible<object::type::Array>())
-            return a->uncheckedGet<const object::type::Array>() >= b->getConverted<object::type::Array>();
-
-        else if (a->isOfType<bool>() && b->isConvertible<bool>())
-            return a->uncheckedGet<const bool>() >= b->getConverted<object::type::Boolean>();
-
-        return (*(*a)[n::greaterEqual])(a, {b}, &st)->getConverted<object::type::Boolean>();
-    })
+    #define objectReturn(...) return (__VA_ARGS__)->getConverted<object::type::Boolean>()
+    #define valueReturn(...) return __VA_ARGS__
+    forCompareOperator(compareNode);
 
     caseUnary(NOT,
     {

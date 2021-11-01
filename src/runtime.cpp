@@ -41,6 +41,10 @@ void runtime::init(stack *st)
         return (*thisObj)(thisArg, std::move(args), st);
     });
 
+    addFunctionL(object::functionPrototype, "__explain"_n, {
+        return object::makeObject(thisObj->get<object::type::Function>().first->explain());
+    });
+
     object::objectPtr Function = insertObject("Function"_n, constructorCaller);
     (*Function)[n::classPrototype] = object::functionPrototype;
 

@@ -352,6 +352,7 @@ factorBase(Node& me)  { Node b(INI); } :
         EXTENDS
         IDENTIFIER { b.token(IDENTIFIER); b.text(treeParser::text); }
     |
+        { b.init(INI); b.token(IDENTIFIER); b.text("Object"); }
     ]
     BRACES_OPEN
     jsonStatements(me) { me.token(CLASS); me.addChild(b); }

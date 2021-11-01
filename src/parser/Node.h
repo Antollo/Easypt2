@@ -11,6 +11,59 @@
 #include "number.h"
 #include "smallVector.h"
 
+#define _evaluate(i) _children[i].evaluate(st)
+#define _evaluateIdentifier(i) st[_children[i]._text]
+
+#define _evaluate2(i, j) _children[i]._children[j].evaluate(st)
+#define _evaluateIdentifier2(i, j) st[_children[i]._children[j]._text]
+
+#define allCases(TOKEN)        \
+    case TOKEN:                \
+    case TOKEN | A_IDENTIFIER: \
+    case TOKEN | B_IDENTIFIER: \
+    case TOKEN | AB_IDENTIFIER:
+
+#define compareObjects(a, b, opName, op, objectReturn, valueReturn)                                                  \
+    switch (a->getTypeIndex())                                                                                       \
+    {                                                                                                                \
+    case object::typeIndex::Number:                                                                                  \
+        if (b->isConvertible<object::type::Number>())                                                                \
+            valueReturn(a->uncheckedGet<const object::type::Number>() op b->getConverted<object::type::Number>());   \
+        else                                                                                                         \
+            break;                                                                                                   \
+    case object::typeIndex::String:                                                                                  \
+        if (b->isConvertible<object::type::String>())                                                                \
+            valueReturn(a->uncheckedGet<const object::type::String>() op b->getConverted<object::type::String>());   \
+        else                                                                                                         \
+            break;                                                                                                   \
+    case object::typeIndex::Array:                                                                                   \
+        if (b->isConvertible<object::type::Array>())                                                                 \
+            valueReturn(a->uncheckedGet<const object::type::Array>() op b->getConverted<object::type::Array>());     \
+        else                                                                                                         \
+            break;                                                                                                   \
+    case object::typeIndex::Boolean:                                                                                 \
+        if (b->isConvertible<object::type::Boolean>())                                                               \
+            valueReturn(a->uncheckedGet<const object::type::Boolean>() op b->getConverted<object::type::Boolean>()); \
+        else                                                                                                         \
+            break;                                                                                                   \
+    }                                                                                                                \
+    objectReturn((*(*a)[opName])(a, {b}, &st));
+
+#define forCompareOperator(macro)        \
+    macro(EQUAL, n::equal, ==);          \
+    macro(NOT_EQUAL, n::notEqual, !=);   \
+    macro(LESS, n::less, <);             \
+    macro(LESS_EQUAL, n::lessEqual, <=); \
+    macro(GREATER, n::greater, >);       \
+    macro(GREATER_EQUAL, n::greaterEqual, >=);
+
+#define compareNode(nodeName, opName, op)                                       \
+    caseBinary(nodeName,                                                        \
+               {                                                                \
+                   assert(_children.size() == 2);                               \
+                   compareObjects(a, b, opName, op, objectReturn, valueReturn); \
+               })
+
 class Node
 {
 public:
@@ -29,8 +82,7 @@ public:
         _names = std::move(node._names);
         _value = std::move(node._value);
 
-        debugInfo[this]._line = debugInfo[&node]._line;
-        debugInfo[this]._fileIndex = debugInfo[&node]._fileIndex;
+        debugInfo[this] = debugInfo[&node];
         debugInfo.erase(&node);
     }
 
@@ -44,8 +96,7 @@ public:
         _names = std::move(node._names);
         _value = std::move(node._value);
 
-        debugInfo[this]._line = debugInfo[&node]._line;
-        debugInfo[this]._fileIndex = debugInfo[&node]._fileIndex;
+        debugInfo[this] = debugInfo[&node];
         debugInfo.erase(&node);
         return *this;
     }
@@ -226,6 +277,15 @@ public:
         }
     }
 
+    std::string explain(size_t indentation = 0) const
+    {
+        std::stringstream result;
+        result << std::string(indentation, '\t') << toName() << '\n';
+        for (const auto &child : _children)
+            result << child.explain(indentation + 1);
+        return result.str();
+    }
+
 private:
     friend class console;
 
@@ -241,9 +301,10 @@ private:
         static constexpr int8_t hasNoStack = 2;
     };
 
-    static constexpr int A_IDENTIFIER = 1 << 16;
-    static constexpr int B_IDENTIFIER = 1 << 17;
+    static constexpr int A_IDENTIFIER = 1 << 13;
+    static constexpr int B_IDENTIFIER = 1 << 14;
     static constexpr int AB_IDENTIFIER = A_IDENTIFIER | B_IDENTIFIER;
+    static constexpr int AB_MASK = 0xFFF;
 
     int _token;
     mutable int8_t _optimizations;
@@ -252,11 +313,38 @@ private:
     smallVector<name> _names;
     objectPtrImpl _value;
 
+    static std::string getSymbol(int token)
+    {
+        const auto symbol = LLgetSymbol(token);
+        if (symbol)
+            return symbol;
+        else
+            return std::to_string(token);
+    }
+
     std::string toName() const
     {
+        std::stringstream result;
         if (_token == IDENTIFIER)
-            return static_cast<std::string>(_text);
-        return tokenToName(_token);
+        {
+            result << getSymbol(_token) << " \"" << static_cast<std::string>(_text) << "\"";
+            return result.str();
+        }
+        result << getSymbol(_token & AB_MASK);
+        if (_token & A_IDENTIFIER)
+            result << " a";
+        if (_token & B_IDENTIFIER)
+            result << " b";
+        const auto tokenLeftPart = _token >> 16;
+        if (tokenLeftPart != 0)
+        {
+            result << " | " << getSymbol(tokenLeftPart & AB_MASK);
+            if (tokenLeftPart & A_IDENTIFIER)
+                result << " a";
+            if (tokenLeftPart & B_IDENTIFIER)
+                result << " b";
+        }
+        return result.str();
     }
     bool shouldHaveStackHelper() const
     {
@@ -272,9 +360,8 @@ private:
     static size_t getFileIndex(const std::string &file)
     {
         size_t fileIndex;
-        auto fileIterator = std::find_if(files.begin(), files.end(), [&file](const auto &entry) {
-            return entry == file;
-        });
+        auto fileIterator = std::find_if(files.begin(), files.end(), [&file](const auto &entry)
+                                         { return entry == file; });
         if (fileIterator == files.end())
         {
             fileIndex = files.size();

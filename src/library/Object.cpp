@@ -74,6 +74,11 @@ void Object::init(stack *st)
         return object::makeObject(thisObj->getConverted<object::type::Boolean>());
     });
 
+    addFunctionL(object::objectPrototype, n::equal, {
+        argsGuard<std::nullptr_t>(args);
+        return object::makeObject(*thisObj == *args[0]);
+    });
+
     object::toNumber = (*object::objectPrototype)[n::toNumber];
     object::toString = (*object::objectPrototype)[n::toString];
     object::toArray = (*object::objectPrototype)[n::toArray];
