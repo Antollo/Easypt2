@@ -11,16 +11,22 @@ File class provides file input and output operations.
 #### Example:
 
 ```js
-console.write("1+3 is ", 1+3);
-if (1+3 != 4) {
-    console.warn("1+3 is not 4!");
-}
+let file = File();
+file.create("protocols.txt");
+file.writeLine("http").write(80);
+file.setReadPosition(0);
+
+let name = file.readLine();
+let port = file.read();
+file.close();
+
+console.write(name, " ", port);
 ```
 
 ##### Expected output:
 
 ```
-1+3 is 4
+http 80
 ```
 
 #### Members:
@@ -52,6 +58,7 @@ if (1+3 != 4) {
 
 #### Inherited members:
 
+- `==`
 - [`addProperty`](Object.classPrototype.addProperty.md)
 - [`getId`](Object.classPrototype.getId.md)
 - [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)

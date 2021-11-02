@@ -2,7 +2,7 @@
 
 #### Instance of: [`Function`](Function.md)
 
-#### Parameters: `str /*String*/, [position = 0 /*Number*/, length = string.length() /*Number*/]`
+#### Parameters: `str /*String*/, [position = 0 /*Number*/, length = str.length() /*Number*/]`
 
 #### Return value: `this`
 

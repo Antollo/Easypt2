@@ -6,8 +6,8 @@ function merge(left, right) {
         array.insert(array.length(),
             left[leftIndex] < right[rightIndex] ? left[leftIndex++ - 1] : right[rightIndex++ - 1]);
     return array
-        .insertFrom(array.length(), left, leftIndex)
-        .insertFrom(array.length(), right, rightIndex);
+        .append(left, leftIndex)
+        .append(right, rightIndex);
 };
 
 function mergeSort(array) {

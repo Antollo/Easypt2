@@ -25,6 +25,7 @@ void init(stack *st);
 namespace Array
 {
 void init(stack *st);
+void fini();
 };
 
 namespace String

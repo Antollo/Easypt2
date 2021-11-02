@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.h": "cpp",
         "*.hpp": "cpp",
         "*.ez": "easypt",
         "codecvt": "cpp",
@@ -94,7 +95,11 @@
         "bit": "cpp",
         "coroutine": "cpp",
         "semaphore": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "span": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,

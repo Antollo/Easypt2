@@ -130,8 +130,15 @@ object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args,
     treeParser::parseString(temp, *root.first);
     try
     {
-        for (auto &child : root.first->children())
-            child.evaluate(*st);
+        auto &children = root.first->children();
+
+        if (!children.empty())
+        {
+            const size_t size = children.size() - 1;
+            for (size_t i = 0; i < size; i++)
+                children[i].evaluateVoid(*st);
+            return children.back().evaluate(*st);
+        }
     }
     catch (const object::objectPtr &ret)
     {

@@ -26,6 +26,7 @@ arr.forEach(function {
 
 #### Members:
 
+- [`append`](Array.classPrototype.append.md)
 - `constructor`
 - [`erase`](Array.classPrototype.erase.md)
 - [`forEach`](Array.classPrototype.forEach.md)
@@ -34,10 +35,12 @@ arr.forEach(function {
 - [`length`](Array.classPrototype.length.md)
 - [`readOperator`](Array.classPrototype.readOperator.md)
 - [`subarray`](Array.classPrototype.subarray.md)
+- `subarrayView`
 
 
 #### Inherited members:
 
+- `==`
 - [`addProperty`](Object.classPrototype.addProperty.md)
 - [`getId`](Object.classPrototype.getId.md)
 - [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)

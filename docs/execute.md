@@ -30,8 +30,3 @@ console.write(result, " ", z);
 24 24
 ```
 
-### Properties:
-
-- `classPrototype`
-
-

@@ -85,6 +85,7 @@ void runtime::fini(stack *st)
     Import::fini();
     object::setGlobalStack(nullptr);
     st->clear();
+    Array::fini();
     object::numberPrototype = nullptr;
     object::stringPrototype = nullptr;
     object::booleanPrototype = nullptr;

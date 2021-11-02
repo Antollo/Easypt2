@@ -87,7 +87,7 @@ void String::init(stack *st)
             srcLength = srcLength - srcPos;
             if (args.size() > 2)
             {
-                argsConvertibleGuard<nullptr_t, number, number>(args);
+                argsConvertibleGuard<nullptr_t, nullptr_t, number>(args);
                 srcLength = std::min(srcLength, static_cast<size_t>(args[2]->getConverted<object::type::Number>()));
             }
         }

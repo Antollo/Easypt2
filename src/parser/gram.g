@@ -88,6 +88,8 @@
 
 %token SPREAD_OPERATOR;
 
+%token RETURN_LAST;
+
 %start parse, input;
 
 input { Node a(INI); }

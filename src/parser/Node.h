@@ -179,13 +179,15 @@ public:
         }
     }
 
-    void optimize()
+    void optimize(bool topLevel = true)
     {
         switch (_token)
         {
         case COMPOUND_STATEMENT:
             if (!shouldHaveStack())
                 _token = COMPOUND_STATEMENT_STACKLESS;
+            if (topLevel && !_children.empty() && _children.back()._token == RETURN)
+                _children.back()._token = RETURN_LAST;
             break;
 
         case WHILE:
@@ -273,7 +275,7 @@ public:
                 auto temp = std::move(child._children[0]);
                 child = std::move(temp);
             }
-            child.optimize();
+            child.optimize(false);
         }
     }
 

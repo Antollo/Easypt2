@@ -296,6 +296,20 @@ arr.forEach(function {
 Array @expectedOutput@
 "36.600000 is element with index 0, Harry is element with index 1, true is element with index 2, ";
 
+Array.classPrototype.append @parameters@
+"arr /*Array*/, [position = 0 /*Number*/, length = arr.length() /*Number*/]";
+Array.classPrototype.append @description@
+"Appends arr to this array (or optionally 
+subarray starting from given position 
+and of given length).";
+Array.classPrototype.append @example@
+"let arr = [1, 2, 3];
+let arr2 = [4, 5, 6];
+arr.append(arr2);
+console.write(arr);";
+Array.classPrototype.append @expectedOutput@
+"[1, 2, 3, 4, 5, 6]";
+
 Array.classPrototype.forEach @parameters@
 "callback /*Function*/";
 Array.classPrototype.forEach @description@
@@ -711,7 +725,7 @@ String.classPrototype.indexOf @expectedOutput@
 "6 23 -1";
 
 String.classPrototype.append @parameters@
-"str /*String*/, [position = 0 /*Number*/, length = string.length() /*Number*/]";
+"str /*String*/, [position = 0 /*Number*/, length = str.length() /*Number*/]";
 String.classPrototype.append @description@
 "Appends str to this string (or optionally 
 substring starting from given position 

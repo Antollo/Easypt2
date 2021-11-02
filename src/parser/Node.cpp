@@ -240,8 +240,14 @@ object::objectPtr Node::evaluate(stack &st) const
         stack localStack(&st);
         try
         {
-            for (; i < _children.size(); i++)
-                _children[i].evaluateVoid(localStack);
+            if (!_children.empty())
+            {
+                const size_t size = _children.size() - 1;
+                for (; i < size; i++)
+                    _children[i].evaluateVoid(localStack);
+                i++;
+                return _children.back().evaluate(localStack);
+            }
         }
         catch (objectException &e)
         {
@@ -261,8 +267,14 @@ object::objectPtr Node::evaluate(stack &st) const
         size_t i = 0;
         try
         {
-            for (; i < _children.size(); i++)
-                _children[i].evaluateVoid(st);
+            if (!_children.empty())
+            {
+                const size_t size = _children.size() - 1;
+                for (; i < size; i++)
+                    _children[i].evaluateVoid(st);
+                i++;
+                return _children.back().evaluate(st);
+            }
         }
         catch (objectException &e)
         {
@@ -645,6 +657,12 @@ object::objectPtr Node::evaluate(stack &st) const
     {
         assert(_children.size() == 1);
         throw a;
+    })
+
+    caseUnary(RETURN_LAST,
+    {
+        assert(_children.size() == 1);
+        return a;
     })
 
     caseUnary(THROW,

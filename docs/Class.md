@@ -48,7 +48,7 @@ obj.method();
 ##### Expected output:
 
 ```
-baseConstructor baseDestructor | baseConstructor constructor method baseDestructor destructor 
+baseConstructor baseDestructor | baseConstructor constructor method destructor baseDestructor 
 ```
 
 #### Members:

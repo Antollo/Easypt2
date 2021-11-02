@@ -57,7 +57,7 @@ function findObjectClassNameByClassPrototype {
 function listProperties {
     let list = "";
     sort(args[0].getOwnPropertyNames()).forEach(function {
-        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0) {
+        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype|__").length() == 0) {
             list.append(args[0]);
             list.append("\n");
         }
@@ -150,7 +150,7 @@ function mdCodeLink (name, link) {
 function mdListProperties (object, name) {
     let list = "";
     sort(object.getOwnPropertyNames()).forEach(function {
-        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0) {
+        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype|__").length() == 0) {
             if (Object.classPrototype.readOperator.call(object, args[0]).hasOwnProperty("description"))
                 list.append("- " + mdCodeLink(args[0], name + "." + args[0]));
             else
@@ -214,7 +214,7 @@ function recursiveDoc {
         return true;
     }
     else {
-        if (args[1].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0)
+        if (args[1].search("classPrototype$").length() == 0 && args[1].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0)
             console.warn(args[1]);
     }
     return false;

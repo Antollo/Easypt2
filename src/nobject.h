@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <array>
 #include <bitset>
+#include <span>
+#include <functional>
 #include "objectPtrImpl.h"
 #include "name.h"
 #include "stack.h"
@@ -20,6 +22,14 @@
 #include "externalFunction.h"
 #include "copyPtr.h"
 
+namespace std
+{
+    inline bool operator==(const span<objectPtrImpl, dynamic_extent> &lhs, const span<objectPtrImpl, dynamic_extent> &rhs) // comparison operator for ArrayView
+    {
+        return equal(begin(lhs), end(lhs), begin(rhs), end(rhs));
+    }
+};
+
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
 
 class tcpClient;
@@ -31,6 +41,8 @@ public:
     using objectPtr = objectPtrImpl;
     using propertiesType = std::unordered_map<name, objectPtr, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtr>>>;
 
+    using ArrayLike = std::span<objectPtr, std::dynamic_extent>;
+
     struct type
     {
         using Object = nullptr_t;
@@ -38,6 +50,7 @@ public:
         using Number = number;
         using String = std::string;
         using Array = std::vector<objectPtr, allocator<objectPtr>>;
+        using ArrayView = std::span<objectPtr, std::dynamic_extent>;
         using Promise = std::shared_ptr<coroutine<objectPtr>>;
         using Function = std::pair<std::shared_ptr<Node>, std::shared_ptr<stack>>;
         using NativeFunction = objectPtr (*)(objectPtr, Array &&, stack *);
@@ -56,6 +69,7 @@ public:
         Number,
         String,
         Array,
+        ArrayView,
         Promise,
         Function,
         NativeFunction,
@@ -178,10 +192,11 @@ public:
     {
 
         return _value == rhs._value && _properties->size() == rhs._properties->size() &&
-               std::all_of(_properties->begin(), _properties->end(), [&rhs](const propertiesType::value_type &x) {
-                   auto it = rhs._properties->find(x.first);
-                   return it != rhs._properties->end() && *it->second == *x.second;
-               });
+               std::all_of(_properties->begin(), _properties->end(), [&rhs](const propertiesType::value_type &x)
+                           {
+                               auto it = rhs._properties->find(x.first);
+                               return it != rhs._properties->end() && *it->second == *x.second;
+                           });
     }
 
     template <class T>
@@ -262,6 +277,8 @@ public:
                 return static_cast<type::Number>(uncheckedGet<type::String>());
             case typeIndex::Array:
                 return static_cast<type::Number>(uncheckedGet<type::Array>().size());
+            case typeIndex::ArrayView:
+                return static_cast<type::Number>(uncheckedGet<type::ArrayView>().size());
             case typeIndex::Boolean:
                 return static_cast<type::Number>(uncheckedGet<type::Boolean>());
             default:
@@ -285,6 +302,8 @@ public:
                 return static_cast<type::String>(uncheckedGet<type::Number>());
             case typeIndex::Array:
                 return toJson();
+            case typeIndex::ArrayView:
+                return toJson();
             case typeIndex::Boolean:
                 return uncheckedGet<type::Boolean>() ? "true"s : "false"s;
             default:
@@ -299,15 +318,23 @@ public:
         }
         else if constexpr (std::is_same_v<T, type::Array>)
         {
-            if (getTypeIndex() == typeIndex::Array)
+            switch (getTypeIndex())
+            {
+            case typeIndex::Array:
                 return uncheckedGet<type::Array>();
-            else
+            case typeIndex::ArrayView:
+            {
+                auto &arrayView = uncheckedGet<type::ArrayView>();
+                return type::Array(arrayView.begin(), arrayView.end());
+            }
+            default:
             {
                 auto toArrayMethod = read(n::toArray);
                 if (toArrayMethod && toArrayMethod != toArray)
                     return (*toArrayMethod)(ptrFromThis(), {}, nullptr)->get<const type::Array>();
                 else
                     return type::Array{ptrFromThis()};
+            }
             }
         }
         else if constexpr (std::is_same_v<T, type::Boolean>)
@@ -323,6 +350,8 @@ public:
                 return static_cast<type::Boolean>(uncheckedGet<type::String>().size());
             case typeIndex::Array:
                 return static_cast<type::Boolean>(uncheckedGet<type::Array>().size());
+            case typeIndex::ArrayView:
+                return static_cast<type::Boolean>(uncheckedGet<type::Array>().size());
             default:
             {
                 auto toBooleanMethod = read(n::toBoolean);
@@ -335,6 +364,50 @@ public:
         }
         else
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
+    }
+
+    bool isArrayLike() const
+    {
+        switch (getTypeIndex())
+        {
+        case typeIndex::Array:
+        case typeIndex::ArrayView:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    ArrayLike getArrayLike()
+    {
+        switch (getTypeIndex())
+        {
+        case typeIndex::Array:
+        {
+            auto &array = uncheckedGet<object::type::Array>();
+            return {array.begin(), array.end()};
+        }
+        case typeIndex::ArrayView:
+            return uncheckedGet<object::type::ArrayView>();
+        default:
+            throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(ArrayLike).name());
+        }
+    }
+
+    ArrayLike getArrayLike() const
+    {
+        switch (getTypeIndex())
+        {
+        case typeIndex::Array:
+        {
+            auto &array = const_cast<object *>(this)->uncheckedGet<object::type::Array>();
+            return {array.begin(), array.end()};
+        }
+        case typeIndex::ArrayView:
+            return uncheckedGet<object::type::ArrayView>();
+        default:
+            throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(ArrayLike).name());
+        }
     }
 
     void setConst(bool v = true) { _flags[_const] = v; }
@@ -398,7 +471,7 @@ private:
     friend class objectPtrImpl;
     friend class Import;
 
-    std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::Promise, type::Function, type::NativeFunction,
+    std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::ArrayView, type::Promise, type::Function, type::NativeFunction,
                  type::File, type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer, type::ExternalFunction>
         _value;
 
@@ -427,7 +500,9 @@ private:
     const objectPtr &read(const name &n) const;
     const char *getTypeName() const
     {
-        return std::visit([](auto &&v) { return typeid(v).name(); }, _value);
+        return std::visit([](auto &&v)
+                          { return typeid(v).name(); },
+                          _value);
     }
     void toJson(std::string &str, const size_t indentation = 1) const;
 
@@ -441,7 +516,6 @@ private:
 };
 
 extern allocatorBuffer<sizeof(object)> objectMemoryBuffer;
-
 
 class objectException : public std::exception
 {

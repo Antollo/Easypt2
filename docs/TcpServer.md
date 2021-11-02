@@ -51,6 +51,7 @@ abcd
 
 #### Inherited members:
 
+- `==`
 - [`addProperty`](Object.classPrototype.addProperty.md)
 - [`getId`](Object.classPrototype.getId.md)
 - [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)

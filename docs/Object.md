@@ -30,6 +30,7 @@ else
 
 #### Members:
 
+- `==`
 - [`addProperty`](Object.classPrototype.addProperty.md)
 - [`getId`](Object.classPrototype.getId.md)
 - [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)
@@ -44,6 +45,7 @@ else
 
 #### Inherited members:
 
+- `==`
 - [`addProperty`](Object.classPrototype.addProperty.md)
 - [`getId`](Object.classPrototype.getId.md)
 - [`getOwnPropertyNames`](Object.classPrototype.getOwnPropertyNames.md)

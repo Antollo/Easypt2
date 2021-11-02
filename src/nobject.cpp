@@ -171,7 +171,7 @@ void object::toJson(std::string &str, const size_t indentation) const
             str += "\"" + value + "\"";
         else if constexpr (std::is_same_v<A, number>)
             str += static_cast<std::string>(value);
-        else if constexpr (std::is_same_v<A, type::Array>)
+        else if constexpr (std::is_same_v<A, type::Array> || std::is_same_v<A, type::ArrayView>)
         {
             str += "[";
             for (size_t i = 0; i < value.size(); i++)
