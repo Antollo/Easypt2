@@ -77,9 +77,9 @@ Run `easypt -help` to see other options.
 
 ### Platform:
 
-  - System: Microsoft Windows [Version 10.0.19041.630]
-  - Processor: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz
-  - RAM: 8GB DDR4 2133MHz
+  - System: Microsoft Windows [Version 10.0.19042.1288]
+  - Processor: Intel(R) Core(TM) i7-11700KF @ 3.60GHz
+  - RAM: 16GB DDR4 3200MHz
 
 Easypt:
 
@@ -133,10 +133,10 @@ The full code of the benchmark can be found in `/benchmarks`.
 
 ![Alt text](benchmarks/test.svg?raw=true "Title")
 
-1. Easypt (local compilation from 15.11.2020)
-1. Python (version 3.9.0)
-1. Node.js¹ (version v15.0.1, JIT compilation disabled - `%NeverOptimizeFunction(gcd)`) 
-1. Node.js² (version v15.0.1) 
+1. Easypt (local compilation from 02.11.2021)
+1. Python (version 3.9.7)
+1. Node.js¹ (version v16.10.0, JIT compilation disabled - `%NeverOptimizeFunction(gcd)`) 
+1. Node.js² (version v16.10.0) 
 
 ## Documentation
 
