@@ -1,45 +1,33 @@
 #include "../library.h"
 
-object::objectPtr arrayViewPrototype;
-
-void Array::fini()
-{
-    arrayViewPrototype = nullptr;
-}
-
 void Array::init(stack *st)
 {
     object::objectPtr Array = insertObject("Array"_n, constructorCaller);
     (*Array)[n::classPrototype] = object::arrayPrototype;
 
-
-    object::objectPtr ArrayView = insertObject(n::ArrayView, constructorCaller);
-    arrayViewPrototype = object::makeEmptyObject();
-    (*ArrayView)[n::classPrototype] = arrayViewPrototype;
-
-    addFunctionL(Array, n::readOperator, {
+    Array->addFunctionL(n::readOperator, {
         return object::makeObject(args);
     });
 
-    addFunctionL(object::arrayPrototype, n::constructor, {
+    object::arrayPrototype->addFunctionL(n::constructor, {
         thisObj->setType<object::type::Array>();
         return thisObj;
     });
 
-    addFunctionL2(object::arrayPrototype, arrayViewPrototype, n::readOperator, {
+    object::arrayPrototype->addFunctionL(n::readOperator, {
         argsConvertibleGuard<number>(args);
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
-        object::ArrayLike me = thisObj->getArrayLike();
+        object::type::Array &me = thisObj->get<object::type::Array>();
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         return me[pos];
     });
 
-    addFunctionL2(object::arrayPrototype, arrayViewPrototype, "length"_n, {
-        return object::makeObject(static_cast<number>(thisObj->getArrayLike().size()));
+    object::arrayPrototype->addFunctionL("length"_n, {
+        return object::makeObject(static_cast<number>(thisObj->get<object::type::Array>().size()));
     });
 
-    addFunctionL(object::arrayPrototype, "insert"_n, {
+    object::arrayPrototype->addFunctionL("insert"_n, {
         argsConvertibleGuard<number, nullptr_t>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
         size_t destPos= static_cast<size_t>(args[0]->getConverted<object::type::Number>());
@@ -49,11 +37,11 @@ void Array::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::arrayPrototype, "insertFrom"_n, {
-        argsConvertibleGuard<number, object::ArrayLike>(args);
+    object::arrayPrototype->addFunctionL("insertFrom"_n, {
+        argsConvertibleGuard<number, object::type::Array>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
-        object::ArrayLike src = args[1]->getArrayLike();
-        size_t destPos= static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        const object::type::Array &src = args[1]->get<const object::type::Array>();
+        size_t destPos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         size_t srcPos = 0;
         size_t srcLength = src.size();
         if (args.size() > 2)
@@ -76,10 +64,10 @@ void Array::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::arrayPrototype, "append"_n, {
-        argsConvertibleGuard<object::ArrayLike>(args);
+    object::arrayPrototype->addFunctionL("append"_n, {
+        argsConvertibleGuard<object::type::Array>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
-        object::ArrayLike src = args[0]->getArrayLike();
+        const object::type::Array &src = args[0]->get<const object::type::Array>();
         size_t srcPos = 0;
         size_t srcLength = src.size();
         if (args.size() > 1)
@@ -100,9 +88,9 @@ void Array::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL2(object::arrayPrototype, arrayViewPrototype, "subarray"_n, {
+    object::arrayPrototype->addFunctionL("subarray"_n, {
         argsConvertibleGuard<number>(args);
-        object::ArrayLike me = thisObj->getArrayLike();
+        object::type::Array &me = thisObj->get<object::type::Array>();
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         size_t length = me.size() - pos;
         if (args.size() > 1)
@@ -116,30 +104,7 @@ void Array::init(stack *st)
         return object::makeObject(object::type::Array(me.begin() + pos, me.begin() + pos + length));
     });
 
-    addFunctionL2(object::arrayPrototype, arrayViewPrototype, "subarrayView"_n, {
-        argsConvertibleGuard<number>(args);
-        object::ArrayLike me = thisObj->getArrayLike();
-        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
-        size_t length = me.size() - pos;
-        if (args.size() > 1)
-        {
-            argsConvertibleGuard<nullptr_t, number>(args);
-            length = std::min(length, static_cast<size_t>(args[1]->getConverted<object::type::Number>()));
-        }
-        assert<std::greater_equal>(pos, 0);
-        assert<std::greater_equal>(length, 0);
-        assert<std::less_equal>(pos + length, me.size());
-
-        auto newObj = object::makeEmptyObject();
-        newObj->setType<object::type::ArrayView>();
-        (*newObj)[n::prototype] = arrayViewPrototype;
-        newObj->get<object::type::ArrayView>() = object::type::ArrayView(me.begin() + pos, me.begin() + pos + length);
-        newObj->addProperty(n::__view, thisObj);
-
-        return newObj;
-    });
-
-    addFunctionL(object::arrayPrototype, "erase"_n, {
+    object::arrayPrototype->addFunctionL("erase"_n, {
         argsConvertibleGuard<number>(args);
         object::type::Array &me = thisObj->get<object::type::Array>();
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
@@ -156,20 +121,11 @@ void Array::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL2(object::arrayPrototype, arrayViewPrototype, "forEach"_n, {
+    object::arrayPrototype->addFunctionL("forEach"_n, {
         argsConvertibleGuard<nullptr_t>(args);
-        object::ArrayLike me = thisObj->getArrayLike();
+        object::type::Array &me = thisObj->get<object::type::Array>();
         for (size_t i = 0; i < me.size(); i++)
             (*args[0])(args[0], {me[i], object::makeObject(static_cast<number>(i)), thisObj}, st);
-        return thisObj;
-    });
-
-    addFunctionL(arrayViewPrototype, n::constructor, {
-        argsConvertibleGuard<object::type::Array>(args);
-        object::type::Array &src = args[0]->get<object::type::Array>();
-        thisObj->setType<object::type::ArrayView>();
-        thisObj->get<object::type::ArrayView>() = object::type::ArrayView(src.begin(), src.end());
-        thisObj->addProperty(n::__view, args[0]);
         return thisObj;
     });
 }

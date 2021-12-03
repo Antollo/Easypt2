@@ -14,8 +14,8 @@
 #include <system_error>
 
 #include "coroutineEvent.h"
-#include "console.h"
 #include "objectPtrImpl.h"
+#include "console.h"
 
 // Common interface for fiber api and ucontext api
 
@@ -64,7 +64,7 @@ using stackType = emptyType;
     {               \
     }
 // Initialize new context
-// c -new context, m - main context, s - stack
+// c - new context, m - main context, s - stack
 #define initCurrentContext(c, m, s)                                               \
     {                                                                             \
         getcontext(&c);                                                           \
@@ -145,7 +145,8 @@ public:
 
         // Set ready predicate
         if (currentCoroutine)
-            currentCoroutine->ready = [&f]() {
+            currentCoroutine->ready = [&f]()
+            {
                 return f.valid() && f.wait_for(std::chrono::milliseconds::zero()) == std::future_status::ready;
             };
         // Swap to main context
@@ -200,13 +201,13 @@ public:
                 handleException(std::current_exception());
             }
         }
-        //console::log("d: ", this);
         deleteContext(currentContext);
     }
     // Swap context to coroutine and provide it with yield and await
     void step() override
     {
-        coYield = [this]() { _yield(); };
+        coYield = [this]()
+        { _yield(); };
         currentCoroutine = this;
         swapContext(mainContext, currentContext);
         currentCoroutine = nullptr;
@@ -226,9 +227,8 @@ public:
 
     auto then(std::function<T(T)> callback)
     {
-        return makeCoroutine([this, callback]() {
-            return callback(coAwait(getFuture()));
-        });
+        return makeCoroutine([this, callback]()
+                             { return callback(coAwait(getFuture())); });
     }
 
 private:
@@ -243,7 +243,6 @@ private:
     void _yield()
     {
         coYield = _coYieldMain;
-        //console::warn("Main: ", mainContext);
         swapContext(currentContext, mainContext);
     }
     // "call" of this coroutine

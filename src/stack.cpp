@@ -24,7 +24,7 @@ object::objectPtr &stack::insert(const name &n, const object::objectPtr &obj)
 {
     if (immediateIndex < immediateStorage.size())
     {
-        for (uint8_t i = 0; i < immediateStorage.size(); i++)
+        for (uint8_t i = 0; i <= immediateIndex; i++)
         {
             if (immediateStorage[i].first == n)
                 return immediateStorage[i].second = obj;
@@ -49,7 +49,7 @@ void stack::erase(const name &n)
 {
     if (immediateIndex < immediateStorage.size())
     {
-        for (uint8_t i = 0; i < immediateStorage.size(); i++)
+        for (uint8_t i = 0; i <= immediateIndex; i++)
             if (immediateStorage[i].first == n)
             {
                 immediateStorage[i] = {n::empty, nullptr};
@@ -59,6 +59,20 @@ void stack::erase(const name &n)
     else
         storage.erase(n);
 }
+
+void stack::reserve(size_t count)
+    {
+        if (immediateIndex < immediateStorage.size())
+        {
+            if (count > immediateStorage.size())
+            {
+                moveToMap();
+                storage.reserve(count);
+            }
+        }
+        else
+            storage.reserve(count);
+    }
 
 void stack::copyToObject(object::objectPtr &obj, bool recursive)
 {

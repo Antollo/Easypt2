@@ -7,7 +7,7 @@ void Class::init(stack *st)
 
     (*Class)[n::classPrototype] = object::classPrototype;
 
-    addFunctionL(object::classPrototype, n::constructor, {
+    object::classPrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<nullptr_t>(args);
         thisObj->setType<object::type::NativeFunction>();
         thisObj->get<object::type::NativeFunction>() = constructorCaller;

@@ -1,8 +1,6 @@
 #ifndef TCP_H_
 #define TCP_H_
 
-#include "nobject.h"
-
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 
@@ -41,6 +39,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+/// Base class for TCP sockets
 class tcpSocket
 {
 public:
@@ -51,11 +50,14 @@ public:
     }
 
 protected:
-    tcpSocket(SOCKET newSocket) : tcpSocket() {
+    tcpSocket(SOCKET newSocket) : tcpSocket()
+    {
         socket = newSocket;
     }
+
     constexpr static size_t bufferSize = 8192;
     SOCKET socket = INVALID_SOCKET;
+
 #ifdef _WIN32
 public:
     tcpSocket()
@@ -64,11 +66,9 @@ public:
         {
             WSADATA wsaData;
             int code = WSAStartup(MAKEWORD(2, 2), &wsaData);
-            //console::warn("WSAStartup");
             if (code != 0)
                 console::error("WSAStartup failed with error: ", code);
         }
-        //console::warn("tcpSocket");
         counter++;
     }
 
@@ -78,11 +78,9 @@ public:
         if (counter == 0)
         {
             WSACleanup();
-            //console::warn("WSACleanup");
         }
         if (socket != INVALID_SOCKET)
             close();
-        //console::warn("~~tcpSocket");
     }
 
 private:
@@ -95,9 +93,11 @@ public:
         if (socket != INVALID_SOCKET)
             close();
     }
+
 #endif
 };
 
+/// Base class for SSL connections
 class sslSocket
 {
 protected:
@@ -131,13 +131,11 @@ protected:
 
     static void freeSslContext(SSL_CTX *sslContext)
     {
-        //console::warn("SSL_CTX_free(sslContext)");
         SSL_CTX_free(sslContext);
     }
 
     static void freeSsl(SSL *ssl)
     {
-        //console::warn("SSL_free(ssl)");
         SSL_shutdown(ssl);
         SSL_free(ssl);
     }
@@ -149,17 +147,15 @@ private:
     static inline bool sslInitialized = false;
 };
 
+/// TCP client
 class tcpClient : public tcpSocket
 {
 public:
-    tcpClient() : tcpSocket() {
-        //console::warn("tcpClient");
-    }
+    tcpClient() : tcpSocket() {}
+
     virtual void connect(const std::string &adress, unsigned short port)
     {
-        struct addrinfo *result = nullptr,
-                        *ptr = nullptr,
-                        hints;
+        struct addrinfo *result = nullptr, *ptr = nullptr, hints;
 
         std::memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
@@ -220,7 +216,6 @@ public:
         int code = recv(socket, message.data(), message.size(), 0);
         if (code >= 0)
         {
-            //console::log("Bytes received: ", code);
             message.resize(code);
         }
         else
@@ -237,7 +232,6 @@ public:
         int code = recv(socket, message.data(), message.size(), 0);
         if (code >= 0)
         {
-            //console::log("Bytes received: ", code);
             message.resize(code);
         }
         else
@@ -263,25 +257,17 @@ public:
         socket = INVALID_SOCKET;
     }
 
-    virtual ~tcpClient()
-    {
-        if (socket != INVALID_SOCKET)
-            close();
-    }
-
 protected:
     tcpClient(SOCKET socket) : tcpSocket(socket) {}
     friend class tcpServer;
-    friend class sslClient;
 };
 
+/// SSL client
 class sslClient : public sslSocket, public tcpClient
 {
 public:
-    sslClient() : tcpClient()
-    {
-        //console::warn("sslClient");
-    }
+    sslClient() : tcpClient() {}
+
     void connect(const std::string &adress, unsigned short port) override
     {
         tcpClient::connect(adress, port);
@@ -318,7 +304,6 @@ public:
         int code = SSL_read(ssl.get(), message.data(), message.size());
         if (code >= 0)
         {
-            //console::log("Bytes received: ", code);
             message.resize(code);
         }
         else
@@ -335,7 +320,6 @@ public:
         int code = SSL_read(ssl.get(), message.data(), message.size());
         if (code >= 0)
         {
-            //console::log("Bytes received: ", code);
             message.resize(code);
         }
         else
@@ -344,18 +328,20 @@ public:
 
 private:
     friend class sslServer;
+
     sslClient(SOCKET socket, std::shared_ptr<SSL_CTX> newSslContext, std::shared_ptr<SSL> newSsl)
         : tcpClient(socket), sslSocket(newSslContext, newSsl) {}
 };
 
+// TCP server socket
 class tcpServer : public tcpSocket
 {
 public:
     tcpServer() : tcpSocket() {}
+
     void bind(unsigned short port)
     {
-        struct addrinfo *result = nullptr,
-                        hints;
+        struct addrinfo *result = nullptr, hints;
 
         std::memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_INET;
@@ -374,8 +360,6 @@ public:
             freeaddrinfo(result);
             throw std::runtime_error("socket failed with error: " + std::to_string(code));
         }
-
-        //console::log(result->ai_addr->sa_data);
 
         code = ::bind(socket, result->ai_addr, (int)result->ai_addrlen);
         if (code == SOCKET_ERROR)
@@ -412,11 +396,11 @@ protected:
             close();
             throw std::runtime_error("accept failed with error: " + std::to_string(code));
         }
-
         return clientSocket;
     }
 };
 
+/// SSL server
 class sslServer : public sslSocket, public tcpServer
 {
 public:
@@ -433,6 +417,7 @@ public:
         if (code <= 0)
             throw std::runtime_error("SSL_CTX_use_PrivateKey_file failed with error: " + std::to_string(code) + " " + getSslError());
     }
+
     std::shared_ptr<tcpClient> listen() override
     {
         if (sslContext == nullptr)

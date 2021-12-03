@@ -100,11 +100,29 @@ std::string Node::parseString(const std::string &source)
             case '7':
             case '8':
             case '9':
+            {
                 if (i + 2 > length)
                     throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
-                ret.push_back((source[i] - '0') * 100 + (source[i + 1] - '0') * 10 + (source[i + 2] - '0'));
+                char temp = source[i+3];
+                char *tempPtr = const_cast<char*>(&source[i + 3]);
+                *tempPtr = '\0';
+                ret.push_back(std::strtol(&source[i], nullptr, 10));
+                *tempPtr = temp;
                 i += 2;
                 break;
+            }
+            case 'x':
+            {
+                if (i + 2 > length)
+                    throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
+                char temp = source[i+3];
+                char *tempPtr = const_cast<char*>(&source[i + 3]);
+                *tempPtr = '\0';
+                ret.push_back(std::strtol(&source[i]+1, nullptr, 16));
+                *tempPtr = temp;
+                i += 2;
+                break;
+            }
             }
         else
             throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");

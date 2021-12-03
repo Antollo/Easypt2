@@ -4,10 +4,7 @@
 
 #include <functional>
 #include "nobject.h"
-
-#ifdef assert
-#undef assert
-#endif
+#include "assert.h"
 
 template <class... Args>
 bool all(Args... args) { return (... && args); }
@@ -17,8 +14,7 @@ void argsGuardHelper(const object::type::Array &arr, std::index_sequence<Is...>)
 {
 	if (!all((
 			std::is_same_v<nullptr_t, Args> ||
-			arr[Is]->isOfType<Args>() ||
-			(std::is_same_v<object::ArrayLike, Args> && arr[Is]->isArrayLike()))...))
+			arr[Is]->isOfType<Args>())...))
 		throw std::runtime_error("wrong type of argument");
 }
 
@@ -33,9 +29,9 @@ void argsGuard(const object::type::Array &arr)
 template <class... Args, std::size_t... Is>
 void argsConvertibleGuardHelper(const object::type::Array &arr, std::index_sequence<Is...>)
 {
-	if (!all((std::is_same_v<nullptr_t, Args> ||
-			  arr[Is]->isConvertible<Args>() ||
-			  (std::is_same_v<object::ArrayLike, Args> && arr[Is]->isArrayLike()))...))
+	if (!all((
+			std::is_same_v<nullptr_t, Args> ||
+			arr[Is]->isConvertible<Args>())...))
 		throw std::runtime_error("wrong type of argument");
 }
 
@@ -45,35 +41,6 @@ void argsConvertibleGuard(const object::type::Array &arr)
 	if (arr.size() < sizeof...(Args))
 		throw std::runtime_error("wrong number of arguments");
 	argsConvertibleGuardHelper<Args...>(arr, std::index_sequence_for<Args...>());
-}
-
-template <class T>
-void assert(const T &a, const std::string &message = "assertion error")
-{
-	if (a)
-		return;
-	throw std::runtime_error(message);
-}
-
-template <template <class> class O, class T, class U>
-void assert(const T &a, const U &b, const std::string &message = "assertion error: ")
-{
-	if (O<T>()(a, b))
-		return;
-	if constexpr (std::is_same_v<O<T>, std::less<T>>)
-		throw std::runtime_error(message + " " + std::to_string(a) + " < " + std::to_string(b));
-	else if constexpr (std::is_same_v<O<T>, std::less_equal<T>>)
-		throw std::runtime_error(message + " " + std::to_string(a) + " <= " + std::to_string(b));
-	else if constexpr (std::is_same_v<O<T>, std::greater<T>>)
-		throw std::runtime_error(message + " " + std::to_string(a) + " > " + std::to_string(b));
-	else if constexpr (std::is_same_v<O<T>, std::greater_equal<T>>)
-		throw std::runtime_error(message + " " + std::to_string(a) + " >= " + std::to_string(b));
-	else if constexpr (std::is_same_v<O<T>, std::equal_to<T>>)
-		throw std::runtime_error(message + " " + std::to_string(a) + " == " + std::to_string(b));
-	else if constexpr (std::is_same_v<O<T>, std::not_equal_to<T>>)
-		throw std::runtime_error(message + " " + std::to_string(a) + " != " + std::to_string(b));
-	else
-		throw std::runtime_error(message + std::to_string(a) + " operator " + std::to_string(b));
 }
 
 #endif /* !COMMON_H_ */

@@ -5,23 +5,27 @@
 #include <type_traits>
 #include "allocator.h"
 
+/// Smart pointer that copies its content
 template <class T>
 class copyPtr
 {
 public:
     copyPtr() : _data(reinterpret_cast<T *>(memory.allocate()))
     {
-        new (_data) T(); 
+        new (_data) T();
     }
+    
     copyPtr(copyPtr &&rhs)
     {
         _data = rhs._data;
         rhs._data = nullptr;
     }
+
     copyPtr(const copyPtr &rhs) : _data(reinterpret_cast<T *>(memory.allocate()))
     {
         *_data = *rhs._data;
     }
+
     copyPtr &operator=(copyPtr &&rhs)
     {
         if (_data)
@@ -33,11 +37,13 @@ public:
         rhs._data = nullptr;
         return *this;
     }
+
     copyPtr &operator=(const copyPtr &rhs)
     {
         *_data = *rhs._data;
         return *this;
     }
+
     ~copyPtr()
     {
         if (_data)
@@ -47,8 +53,8 @@ public:
         }
     }
 
-    operator T&() { return *_data; }
-    operator const T&() const { return *_data; }
+    operator T &() { return *_data; }
+    operator const T &() const { return *_data; }
     operator bool() const { return _data; }
 
     T *operator->() { return _data; }

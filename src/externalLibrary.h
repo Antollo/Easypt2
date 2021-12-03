@@ -17,8 +17,8 @@ public:
         static_assert(std::is_same_v<registerFunctionType, decltype(&registerFunction)>);
         static_assert(std::is_same_v<registerIntegerConstantType, decltype(&registerIntegerConstant)>);
 
-        auto library = dynamicLibrary::loadLibrary(name.string());
-        auto initialize = reinterpret_cast<initializeType>(dynamicLibrary::getFunction(library, "initialize"));
+        auto library = osDependant::dynamicLibrary::loadLibrary(name.string());
+        auto initialize = reinterpret_cast<initializeType>(osDependant::dynamicLibrary::getFunction(library, "initialize"));
 
         temp = object::makeEmptyObject();
 

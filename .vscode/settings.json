@@ -99,15 +99,19 @@
         "charconv": "cpp",
         "format": "cpp",
         "forward_list": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "ranges": "cpp",
+        "*.tcc": "cpp",
+        "memory_resource": "cpp",
+        "cwctype": "cpp",
+        "numbers": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,
         "**/*.vcproj": true
     },
     "cSpell.words": [
-        "INSTANCEOF",
-        "STACKLESS",
+        "Easypt",
         "glew",
         "glfw",
         "sregex"

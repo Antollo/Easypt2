@@ -3,8 +3,8 @@
 
 #include <cstdlib>
 #include <array>
-#include "console.h"
 
+/// Circular buffer for memory allocations.
 template <size_t Size, size_t MaxLength = 256>
 class allocatorBuffer
 {
@@ -41,6 +41,7 @@ private:
     std::array<void *, MaxLength> data;
 };
 
+/// Allocator with memory buffering.
 template <class T>
 class allocator
 {

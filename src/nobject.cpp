@@ -1,5 +1,53 @@
+#include <iterator>
 #include "nobject.h"
 #include "Node.h"
+
+std::string escapeString(const std::string &str)
+{
+
+    std::string result;
+    result.reserve(str.size() + 2);
+
+    result.push_back('"');
+    for (char c : str)
+    {
+        if (' ' <= c and c <= '~' and c != '\\' and c != '"')
+        {
+            result.push_back(c);
+        }
+        else
+        {
+            result.push_back('\\');
+            switch (c)
+            {
+            case '"':
+                result.push_back('"');
+                break;
+            case '\\':
+                result.push_back('\\');
+                break;
+            case '\t':
+                result.push_back('t');
+                break;
+            case '\r':
+                result.push_back('r');
+                break;
+            case '\n':
+                result.push_back('n');
+                break;
+            default:
+            {
+                std::stringstream s;
+                s << 'x' << std::setfill('0') << std::setw(2) << std::hex << (int)(c & 0xff);
+                result.append(s.str());
+                break;
+            }
+            }
+        }
+    }
+    result.push_back('"');
+    return result;
+}
 
 allocatorBuffer<sizeof(object)> objectMemoryBuffer;
 
@@ -15,14 +63,13 @@ void object::operator delete(void *ptr)
 
 void object::reuse(object *ptr)
 {
-    if (objects.length == buffer::maxLength)
+    if (objects.length == objectBuffer::maxLength)
     {
-        //console::log("reuse full");
         delete ptr;
         return;
     }
     objects.data[objects.head++] = ptr;
-    if (objects.head == buffer::maxLength)
+    if (objects.head == objectBuffer::maxLength)
         objects.head = 0;
     objects.length++;
     ptr->clear();
@@ -50,26 +97,25 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
 {
     if (st == nullptr)
         st = globalStack;
-    if (isOfType<type::NativeFunction>())
+    switch (getTypeIndex())
+    {
+    case typeIndex::NativeFunction:
     {
         if (thisObj)
-            return get<type::NativeFunction>()(thisObj, std::move(args), st);
+            return uncheckedGet<type::NativeFunction>()(thisObj, std::move(args), st);
         throw std::runtime_error("invalid this");
+        break;
     }
-    else if (isOfType<type::Function>())
+
+    case typeIndex::Function:
     {
-        auto& [node, capturedStack] = get<type::Function>();
+        auto &node = uncheckedGet<type::Function>().first;
+        auto capturedStack = uncheckedGet<type::Function>().second;
 
         if (capturedStack != nullptr)
             st = capturedStack.get();
         stack localStack(st);
-        if (capturedStack != nullptr)
-        {
-            // IDK what is it, putting callee on the stack should have the same effect, need to implement something like shared_from_this
-            // auto referenceToFather = localStack.insert(n::__stack, makeObject(makeFunction()));
-            // referenceToFather->captureStack(capturedStack);
-            localStack.keepAlive(capturedStack);
-        }
+
         auto &names = node->names();
         const size_t toInsert = std::min(names.size(), args.size());
         localStack.reserve(toInsert + 1 + (bool)thisObj);
@@ -92,14 +138,20 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
             return thisObj;
         else
             return makeEmptyObject();
+        break;
     }
-    else if (isOfType<type::ExternalFunction>())
+
+    case typeIndex::ExternalFunction:
     {
         if (thisObj)
-            return get<type::ExternalFunction>()(thisObj, std::move(args), st);
+            return uncheckedGet<type::ExternalFunction>()(thisObj, std::move(args), st);
         throw std::runtime_error("invalid this");
+        break;
     }
-    throw std::runtime_error("object is not a function");
+
+    default:
+        throw std::runtime_error("object is not a function");
+    }
 }
 
 object::type::Array object::getOwnPropertyNames() const
@@ -156,62 +208,101 @@ const object::objectPtr &object::read(const name &n) const
 
 std::string object::toJson() const
 {
-    std::string str;
+    std::stringstream str;
+    str << std::boolalpha;
     toJson(str);
-    return str;
+    return str.str();
 }
 
-void object::toJson(std::string &str, const size_t indentation) const
+void object::toJson(std::stringstream &str, const size_t indentation) const
 {
-    std::visit([this, indentation, &str](auto &&value) {
-        std::string tabs(indentation, '\t');
-        using A = std::decay_t<decltype(value)>;
+    std::visit([this, indentation, &str](auto &&value)
+               {
+                   using A = std::decay_t<decltype(value)>;
 
-        if constexpr (std::is_same_v<A, std::string>)
-            str += "\"" + value + "\"";
-        else if constexpr (std::is_same_v<A, number>)
-            str += static_cast<std::string>(value);
-        else if constexpr (std::is_same_v<A, type::Array> || std::is_same_v<A, type::ArrayView>)
-        {
-            str += "[";
-            for (size_t i = 0; i < value.size(); i++)
-            {
-                if (i)
-                    str += ", ";
-                value[i]->toJson(str, indentation + 1);
-            }
-            str += "]";
-        }
-        else if constexpr (std::is_same_v<A, bool>)
-            str += value ? "true"s : "false"s;
-        else if constexpr (std::is_same_v<A, type::Promise>)
-            str += "<promise>";
-        else if constexpr (std::is_same_v<A, type::Function> || std::is_same_v<A, type::NativeFunction> || std::is_same_v<A, type::ExternalFunction>)
-            str += "<function>";
-        else if constexpr (std::is_same_v<A, std::shared_ptr<file>>)
-            str += "<file>";
-        else if constexpr (std::is_same_v<A, std::shared_ptr<tcpClient>>)
-            str += "<tcpClient>";
-        else if constexpr (std::is_same_v<A, std::shared_ptr<tcpServer>>)
-            str += "<tcpServer>";
-        else
-        {
-            std::string tabs(indentation * 4, ' ');
-            str += "{\n";
-            for (const auto &property : *_properties)
-            {
-                str += tabs + "\"" + static_cast<std::string>(property.first) + "\": ";
-                property.second->toJson(str, indentation + 1);
-                str += ",\n";
-            }
-            if (!_properties->empty())
-            {
-                str.pop_back();
-                str.pop_back();
-            }
-            str += "\n" + tabs.substr(4) + "}";
-        }
-    },
+                   if constexpr (std::is_same_v<A, std::string>)
+                       str << escapeString(value);
+                   else if constexpr (std::is_same_v<A, number>)
+                       str << static_cast<std::string>(value);
+                   else if constexpr (std::is_same_v<A, type::Array>)
+                   {
+                       str << '[';
+                       for (size_t i = 0; i < value.size(); i++)
+                       {
+                           if (i)
+                               str << ", ";
+                           value[i]->toJson(str, indentation + 1);
+                       }
+                       str << ']';
+                   }
+                   else if constexpr (std::is_same_v<A, type::Buffer>)
+                   {
+                       auto toJsonSpan = [&str]<typename T>(const T &span)
+                       {
+                           str << '[';
+                           for (size_t i = 0; i < span.size(); i++)
+                           {
+                               if (i)
+                                   str << ", ";
+                               str << static_cast<number>(span[i]);
+                           }
+                           str << ']';
+                       };
+                       const buffer &b = *value;
+                       switch (b.elementType())
+                       {
+                       default:
+                       case buffer::type::Int8:
+                           toJsonSpan(b.asSpan<int8_t>());
+                           break;
+                       case buffer::type::Int16:
+                           toJsonSpan(b.asSpan<int16_t>());
+                           break;
+                       case buffer::type::Int32:
+                           toJsonSpan(b.asSpan<int32_t>());
+                           break;
+                       case buffer::type::Int64:
+                           toJsonSpan(b.asSpan<int64_t>());
+                           break;
+                       case buffer::type::Float:
+                           toJsonSpan(b.asSpan<float>());
+                           break;
+                       case buffer::type::Double:
+                           toJsonSpan(b.asSpan<double>());
+                           break;
+                       }
+                   }
+                   else if constexpr (std::is_same_v<A, bool>)
+                       str << value ? "true"s : "false"s;
+                   else if constexpr (std::is_same_v<A, type::Promise>)
+                       str << "\"<promise>\"";
+                   else if constexpr (std::is_same_v<A, type::Function> || std::is_same_v<A, type::NativeFunction> || std::is_same_v<A, type::ExternalFunction>)
+                       str << "\"<function>\"";
+                   else if constexpr (std::is_same_v<A, type::File>)
+                       str << "\"<file>\"";
+                   else if constexpr (std::is_same_v<A, type::TcpClient>)
+                       str << "\"<tcpClient>\"";
+                   else if constexpr (std::is_same_v<A, type::TcpServer>)
+                       str << "\"<tcpServer>\"";
+                   else if constexpr (std::is_same_v<A, type::ChildProcess>)
+                       str << "\"<childProcess>\"";
+                   else
+                   {
+                       std::string tabs(indentation * 4, ' ');
+                       str << "{\n";
+                       for (const auto &property : *_properties)
+                       {
+                           str << tabs + "\"" << static_cast<std::string>(property.first) << "\": ";
+                           property.second->toJson(str, indentation + 1);
+                           str << ",\n";
+                       }
+                       if (!_properties->empty())
+                           str.seekp(-2, std::ios_base::end);
+
+                       str << '\n'
+                           << tabs.substr(4) << '}';
+                   }
+               },
                _value);
 }
 

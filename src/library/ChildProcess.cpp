@@ -9,7 +9,7 @@ void ChildProcess::init(stack *st)
 
     (*ChildProcess)[n::classPrototype] = childProcessPrototype;
 
-    addFunctionL(childProcessPrototype, n::constructor, {
+    childProcessPrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<object::type::String, object::type::Array>(args);
         std::string cwd;
 

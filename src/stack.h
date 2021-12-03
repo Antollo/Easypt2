@@ -6,10 +6,12 @@
 #include "objectPtrImpl.h"
 #include "allocator.h"
 
+/// Stack for Easypt runtime.
 class stack
 {
 public:
     using storageType = std::unordered_map<name, objectPtrImpl, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtrImpl>>>;
+    // Optimization: small stack is stored in array.
     static constexpr size_t immediateStorageSize = 8;
     using immediateStorageType = std::array<std::pair<name, objectPtrImpl>, immediateStorageSize>;
     using iterator = storageType::iterator;
@@ -22,30 +24,20 @@ public:
     stack(const stack &) = delete;
     stack &operator=(const stack &) = delete;
 
+    /// Access specified element. Throws if element not found.
     objectPtrImpl &operator[](const name &n);
+    /// Inserts specified element. Assigns if element already exists.
     objectPtrImpl &insert(const name &n, const objectPtrImpl &obj);
-
+    /// Copies stack elements to object properties
     void copyToObject(objectPtrImpl &obj, bool recursive = false);
+    /// Creates new stack containing elements from this stack and its ancestors.
     stack copyToFlatStack();
+    /// Clears the contents.
     void clear();
+    /// Erases specified element.
     void erase(const name &n);
-    void reserve(size_t count)
-    {
-        if (immediateIndex < immediateStorage.size())
-        {
-            if (count > immediateStorage.size())
-            {
-                moveToMap();
-                storage.reserve(count);
-            }
-        }
-        else
-            storage.reserve(count);
-    }
-    void keepAlive(const std::shared_ptr<stack> &st)
-    {
-        keepAlivePtr = st;
-    }
+    /// Reserve place for count elements
+    void reserve(size_t count);
 
 private:
     void copyToFlatStack(stack &st);
@@ -55,9 +47,9 @@ private:
         storage.erase(n::empty);
         immediateIndex = immediateStorage.size();
     }
-    storageType storage;
+    
     immediateStorageType immediateStorage;
-    std::shared_ptr<stack> keepAlivePtr;
+    storageType storage;
     stack *previous;
     uint8_t immediateIndex;
 };

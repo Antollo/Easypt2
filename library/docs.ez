@@ -1,30 +1,30 @@
 ...import("algorithm");
 
-function returns {
-    args[0].addProperty("returns", args[1]);
+function returns(obj, value) {
+    obj.addProperty("returns", value);
 };
 
-function parameters {
-    args[0].addProperty("parameters", args[1]);
+function parameters(obj, value) {
+    obj.addProperty("parameters", value);
 };
 
-function description {
-    args[0].addProperty("description", args[1]);
+function description(obj, value) {
+    obj.addProperty("description", value);
 };
 
-function example {
-    args[0].addProperty("example", args[1]);
+function example(obj, value) {
+    obj.addProperty("example", value);
 };
 
-function expectedOutput {
-    args[0].addProperty("expectedOutput", args[1]);
+function expectedOutput(obj, value) {
+    obj.addProperty("expectedOutput", value);
 };
 
-function printPair {
-    console.controlSequence("7m").write(args[0]).controlSequence("0m").writeLine("\n", args[1]);
+function printPair(a, b) {
+    console.controlSequence("7m").write(a).controlSequence("0m").writeLine("\n", b);
 };
 
-function findObjectName {
+function findObjectName() {
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++) {

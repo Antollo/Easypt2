@@ -1,7 +1,8 @@
-#ifndef CFD78E68_4D46_42A8_BDBD_F5C68657806A
-#define CFD78E68_4D46_42A8_BDBD_F5C68657806A
+#ifndef COROUTINEEVENT_H
+#define COROUTINEEVENT_H
 
-#include "osDependent.h"
+#include <semaphore>
+#include <limits>
 
 class coroutineEvent
 {
@@ -17,7 +18,7 @@ public:
 
 private:
     friend class coroutineBase;
-    static inline semaphore sem;
+    static inline std::counting_semaphore<std::numeric_limits<int>::max()> sem{0};
 };
 
-#endif /* CFD78E68_4D46_42A8_BDBD_F5C68657806A */
+#endif /* COROUTINEEVENT_H */

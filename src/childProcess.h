@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <vector>
 
+/// Represents child process. It corresponds to ChildProcess Easypt type.
 class childProcess
 {
 public:
@@ -59,7 +60,7 @@ private:
     void throwError(const std::string &op, const std::string &f);
 
 #ifdef _WIN32
-    void* hProcess;
+    void *hProcess;
 #else
     int pid = 0;
 #endif

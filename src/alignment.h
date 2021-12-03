@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <typeinfo>
-#include "console.h"
+#include <string>
 
 template <class... Args>
 struct isAlignmentOk
@@ -21,7 +21,7 @@ template <class... Args>
 inline constexpr bool isAlignmentOkV = isAlignmentOk<Args...>::value;
 
 template <class... Args>
-struct checkAlignment 
+struct checkAlignment
 {
     static inline std::string value = "";
 };

@@ -3,11 +3,11 @@ environment:
 version: 0.0.{build}
 image:
     - Ubuntu2004
-    - Visual Studio 2019
+    - Visual Studio 2022
 init:
     - sh: sudo apt update
-    - sh: sudo apt install -y cmake g++-10 xorg-dev libglu1-mesa-dev libgl1-mesa-dev
-    - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 700 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+    - sh: sudo apt install -y cmake g++-11 xorg-dev libglu1-mesa-dev libgl1-mesa-dev
+    - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 700 --slave /usr/bin/g++ g++ /usr/bin/g++-11
     - sh: cmake --version
     - sh: g++ --version
 before_build:

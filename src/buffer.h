@@ -7,11 +7,23 @@
 #include <cstring>
 #include <cstdlib>
 #include <stdexcept>
+#include <cstddef>
+#include <span>
 
+#ifdef assert
+#undef assert
+#endif
+
+#if __STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16
+#error "Default new alignment is less than 16"
+#endif
+
+/// Represents an array of bytes viewed as simple data types. It corresponds to Buffer Easypt type.
 class buffer
 {
 public:
-    enum class type {
+    enum class type
+    {
         Int8,
         Int16,
         Int32,
@@ -23,164 +35,195 @@ public:
 
     buffer() = default;
     buffer(const buffer &rhs) = delete;
-    buffer(const std::string &str)
-    {
-        allocate<char>(str.size());
-        std::memcpy(begin(), str.c_str(), str.size());
-    }
-    operator std::string() const
-    {
-        return std::string(reinterpret_cast<const char*>(begin()), reinterpret_cast<const char*>(end()));
-    }
     buffer(buffer &&rhs)
     {
         if (rhs._data)
         {
             _data = rhs._data;
-            _size = rhs._size;
+            _length = rhs._length;
             _t_size = rhs._t_size;
             _t = rhs._t;
             rhs._data = nullptr;
-            rhs._size = 0;
+            rhs._length = 0;
             rhs._t_size = 0;
             rhs._t = type::Unknown;
         }
         else
         {
             _data = nullptr;
-            _size = 0;
+            _length = 0;
             _t_size = 0;
             _t = type::Unknown;
         }
     }
+
     buffer &operator=(const buffer &rhs) = delete;
     buffer &operator=(buffer &&rhs)
     {
         if (_data)
-            std::free(_data);
+            delete[] _data;
         if (rhs._data)
         {
             _data = rhs._data;
-            _size = rhs._size;
+            _length = rhs._length;
             _t_size = rhs._t_size;
             _t = rhs._t;
             rhs._data = nullptr;
-            rhs._size = 0;
+            rhs._length = 0;
             rhs._t_size = 0;
             rhs._t = type::Unknown;
         }
         else
         {
             _data = nullptr;
-            _size = 0;
+            _length = 0;
             _t_size = 0;
             _t = type::Unknown;
         }
         return *this;
     }
+
+    buffer(const std::string &str)
+    {
+        allocate<char>(str.size());
+        std::memcpy(begin(), str.c_str(), str.size());
+    }
+
+    buffer(const char *str)
+    {
+        size_t _n_length = std::strlen(str);
+        allocate<char>(_n_length);
+        std::memcpy(begin(), str, _n_length);
+    }
+
     ~buffer()
     {
         if (_data)
-            std::free(_data);
+            delete[] _data;
     }
+
+    operator std::string() const
+    {
+        return std::string(reinterpret_cast<const char *>(begin()), reinterpret_cast<const char *>(end()));
+    }
+
     bool operator==(const buffer &rhs) const
     {
-        return std::equal(reinterpret_cast<const char*>(begin()), reinterpret_cast<const char*>(end()),
-                          reinterpret_cast<const char*>(rhs.begin()), reinterpret_cast<const char*>(rhs.end()));
+        return std::equal(reinterpret_cast<const char *>(begin()), reinterpret_cast<const char *>(end()),
+                          reinterpret_cast<const char *>(rhs.begin()), reinterpret_cast<const char *>(rhs.end()));
     }
-    template <class T>
-    void allocate(size_t _n_size)
+
+    template <class U>
+    void allocate(size_t _n_length)
     {
+        using T = std::remove_cv_t<U>;
         if (_data)
-            std::free(_data);
-        _size = _n_size;
+            delete[] _data;
+        _length = _n_length;
         _t_size = sizeof(T);
-        _data = std::calloc(_n_size * sizeof(T) + 15, 1);
-        if constexpr(std::is_same_v<T, int8_t> || std::is_same_v<T, uint8_t>)
+        _data = new std::byte[_n_length * _t_size]();
+
+        if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, uint8_t> || std::is_same_v<T, char> || std::is_same_v<T, std::byte>)
             _t = type::Int8;
-        else if constexpr(std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t>)
+        else if constexpr (std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t>)
             _t = type::Int16;
-        else if constexpr(std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
+        else if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
             _t = type::Int32;
-        else if constexpr(std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>)
+        else if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>)
             _t = type::Int64;
-        else if constexpr(std::is_same_v<T, float>)
+        else if constexpr (std::is_same_v<T, float>)
             _t = type::Float;
-        else if constexpr(std::is_same_v<T, double>)
+        else if constexpr (std::is_same_v<T, double>)
             _t = type::Double;
         else
             _t = type::Unknown;
     }
-    //template <class T>
-    void reallocate(size_t _n_size)
+
+    void reallocate(size_t _n_length)
     {
-        void *temp = std::calloc(_n_size * _t_size + 15, 1);
+        std::byte *temp = new std::byte[_n_length * _t_size]();
         if (_data)
         {
-            std::memcpy(temp, _data, std::min(_n_size * _t_size + 15, static_cast<size_t>(_size * _t_size + 15)));
-            std::free(_data);
+            std::memcpy(temp, _data, std::min(_n_length * _t_size, _length * _t_size));
+            delete[] _data;
         }
-        _size = _n_size;
-        //_t_size = sizeof(T);
+        _length = _n_length;
         _data = temp;
     }
+
     template <class T>
     void assert(size_t index)
     {
-        if ((index + 1) * sizeof(T) <= _size * _t_size)
+        if ((index + 1) * sizeof(T) <= _length * _t_size)
             return;
-        throw std::runtime_error(std::to_string((index + 1) * sizeof(T)) + " <= " + std::to_string(_size * _t_size));
+        throw std::runtime_error("buffer index out of bounds: " + std::to_string(index * sizeof(T)) + " >= " + std::to_string(_length * _t_size));
     }
+
     template <class T>
     T &get(size_t index)
     {
-        return *(reinterpret_cast<T *>(align(_data)) + index);
+        return *(reinterpret_cast<T *>(_data) + index);
     }
+
     template <class T>
     const T &get(size_t index) const
     {
-        return *(reinterpret_cast<const T *>(align(_data)) + index);
+        return *(reinterpret_cast<const T *>(_data) + index);
     }
+
     void clear()
     {
         if (_data)
         {
-            std::free(_data);
+            delete[] _data;
             _data = nullptr;
-            _size = 0;
+            _length = 0;
             _t_size = 0;
         }
     }
+
     void *begin()
     {
-        return align(_data);
+        return _data;
     }
+
     void *end()
     {
-        return reinterpret_cast<char*>(align(_data)) + _size * _t_size;
+        return reinterpret_cast<char *>(_data) + size();
     }
+
     const void *begin() const
     {
-        return align(_data);
+        return _data;
     }
+
     const void *end() const
     {
-        return reinterpret_cast<char*>(align(_data)) + _size * _t_size;
+        return reinterpret_cast<char *>(_data) + size();
     }
-    size_t size() const { return _size * _t_size; }
-    size_t length() const { return _size; }
+
+    template <class T>
+    auto asSpan()
+    {
+        return std::span<T, std::dynamic_extent>(reinterpret_cast<T *>(begin()), reinterpret_cast<T *>(end()));
+    }
+
+    template <class T>
+    auto asSpan() const
+    {
+        return std::span<const T, std::dynamic_extent>(reinterpret_cast<const T *>(begin()), reinterpret_cast<const T *>(end()));
+    }
+
+    size_t size() const { return _length * _t_size; }
+    size_t length() const { return _length; }
     type elementType() const { return _t; }
-    bool empty() const { return _size == 0; }
+    bool empty() const { return _length == 0; }
 
 private:
-    static void *align(const void *ptr)
-    {
-        return reinterpret_cast<void*>(((uintptr_t)ptr + 15) & ~(uintptr_t)0x0F);
-    }
-    void *_data = nullptr;
-    size_t _size = 0;
+    std::byte *_data = nullptr;
+    size_t _length = 0;
     uint8_t _t_size = 0;
-    type _t;
+    type _t = type::Unknown;
 };
 
 #endif

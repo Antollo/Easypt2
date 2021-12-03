@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     stack globalStack;
     try
     {
-        initialize();
+        osDependant::initialize();
         runtime::init(&globalStack);
 
         auto st = &globalStack;
@@ -28,6 +28,18 @@ int main(int argc, char **argv)
 
         for (int i = 0; i < argc; i++)
             globalStack[n::argv]->get<object::type::Array>()[i] = object::makeObject(std::string(argv[i]));
+
+        const char *help = "Easypt interpreter\n\n"
+                           "Usage\n\n"
+                           "    easypt [options]\n\n"
+                           "Options\n\n"
+                           "    -file <file-path>   Import file.\n"
+                           "    -repl               Starts interactive mode.\n"
+                           "    -help               Print help.\n"
+                           "    -doc <expression>   Print help on specified object.\n"
+                           "    -version            Print version.\n\n"
+                           "More help at: "
+                           "https://antollo.github.io/Easypt2/";
 
         for (int i = 0; i < argc; i++)
         {
@@ -52,12 +64,14 @@ int main(int argc, char **argv)
                 std::mutex m;
                 std::condition_variable cv;
                 bool done = false;
-                auto abort = std::async(std::launch::async, [&m, &cv, &done]() {
-                    std::unique_lock<std::mutex> lk(m);
-                    cv.wait_for(lk, std::chrono::milliseconds(500), [&done]() { return done; });
-                    if (!done)
-                        std::abort();
-                });
+                auto abort = std::async(std::launch::async, [&m, &cv, &done]()
+                                        {
+                                            std::unique_lock<std::mutex> lk(m);
+                                            cv.wait_for(lk, std::chrono::milliseconds(500), [&done]()
+                                                        { return done; });
+                                            if (!done)
+                                                std::abort();
+                                        });
                 (*help)(help, {(*execute)(execute, {object::makeObject("return " + std::string(argv[++i]) + ";")}, &globalStack)}, &globalStack);
                 {
                     std::unique_lock<std::mutex> lk(m);
@@ -67,23 +81,15 @@ int main(int argc, char **argv)
             }
             else if (isFlag(argv[i], "version"))
             {
-                console::writeLine("Easypt version from "s + __DATE__);
+                console::writeLine("Easypt version from ", __DATE__);
             }
             else if (isFlag(argv[i], "help"))
             {
-                console::writeLine("Easypt interpreter\n\n"
-                                   "Usage\n\n"
-                                   "    easypt [options]\n\n"
-                                   "Options\n\n"
-                                   "    -file <file-path>   Import file.\n"
-                                   "    -repl               Starts interactive mode.\n"
-                                   "    -help               Print help.\n"
-                                   "    -doc <expression>   Print help on specified object.\n"
-                                   "    -version            Print version.\n\n"
-                                   "More help at: "
-                                   "https://antollo.github.io/Easypt2/");
+                console::writeLine(help);
             }
         }
+        if (argc == 1)
+            console::writeLine(help);
         runtime::fini(&globalStack);
     }
     catch (objectException &e)

@@ -5,7 +5,7 @@
 #include "treeParser.h"
 #include "externalLibrary.h"
 
-object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::type::Array &&args, stack *st)
+object::objectPtr modules::getImportPaths(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     object::type::Array arr;
     arr.resize(importPaths.size());
@@ -14,7 +14,7 @@ object::objectPtr Import::getImportPaths(object::objectPtr thisObj, object::type
     return object::makeObject(arr);
 }
 
-object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array &&args, stack *st)
+object::objectPtr modules::import(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::nullptr_t>(args);
     std::filesystem::path filePath;
@@ -113,7 +113,7 @@ object::objectPtr Import::import(object::objectPtr thisObj, object::type::Array 
     }
 }
 
-object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args, stack *st)
+object::objectPtr interpreter::parse(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<object::type::String>();
@@ -122,7 +122,7 @@ object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args
     return object::makeObject(root);
 }
 
-object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args, stack *st)
+object::objectPtr interpreter::execute(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<object::type::String>();
@@ -166,7 +166,7 @@ object::objectPtr constructorCaller(object::objectPtr thisObj, object::type::Arr
     return newObj;
 }
 
-object::objectPtr getStack(object::objectPtr thisObj, object::type::Array &&args, stack *st)
+object::objectPtr interpreter::getStack(object::objectPtr thisObj, object::type::Array &&args, stack *st)
 {
     auto obj = object::makeEmptyObject();
     st->copyToObject(obj, true);

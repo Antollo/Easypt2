@@ -7,7 +7,7 @@ void Accessible::init(stack *st)
 
     (*Accessible)[n::classPrototype] = accessablePrototype;
 
-    addFunctionL(accessablePrototype, n::constructor, {
+    accessablePrototype->addFunctionL(n::constructor, {
         thisObj->setType<nullptr_t>();
         thisObj->setAccessible();
         return thisObj;

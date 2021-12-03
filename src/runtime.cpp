@@ -34,14 +34,14 @@ void runtime::init(stack *st)
     object::promisePrototype = object::makeEmptyObject();
     (*object::promisePrototype)[n::prototype] = object::objectPrototype;
 
-    addFunctionL(object::functionPrototype, "call"_n, {
+    object::functionPrototype->addFunctionL("call"_n, {
         argsConvertibleGuard<nullptr_t>(args);
         auto thisArg = args[0];
         args.erase(args.begin());
         return (*thisObj)(thisArg, std::move(args), st);
     });
 
-    addFunctionL(object::functionPrototype, "__explain"_n, {
+    object::functionPrototype->addFunctionL("__explain"_n, {
         return object::makeObject(thisObj->get<object::type::Function>().first->explain());
     });
 
@@ -50,14 +50,13 @@ void runtime::init(stack *st)
 
     insertObject("true"_n, true)->setConst();
     insertObject("false"_n, false)->setConst();
-    
-    auto import = insertObject(n::import, &Import::import);
-    import->addProperty("getImportPaths"_n, object::makeObject(&Import::getImportPaths));
 
-    insertObject("parse"_n, ez_parse);
-    insertObject(n::execute, execute);
-    insertObject("getStack"_n, getStack);
+    auto import = insertObject(n::import, &modules::import);
+    import->addProperty("getImportPaths"_n, object::makeObject(&modules::getImportPaths));
 
+    insertObject("parse"_n, interpreter::parse);
+    insertObject(n::execute, interpreter::execute);
+    insertObject("getStack"_n, interpreter::getStack);
 
     Object::init(st);
     Array::init(st);
@@ -74,18 +73,17 @@ void runtime::init(stack *st)
     ChildProcess::init(st);
     Buffer::init(st);
 
-    auto modules = st->insert("modules"_n, object::makeEmptyObject());
-    Import::init(modules);
+    auto modulesPtr = st->insert("modules"_n, object::makeEmptyObject());
+    modules::init(modulesPtr);
 }
 
 void runtime::fini(stack *st)
 {
     while (coroutine<object::objectPtr>::stepAll())
         ;
-    Import::fini();
+    modules::fini();
     object::setGlobalStack(nullptr);
     st->clear();
-    Array::fini();
     object::numberPrototype = nullptr;
     object::stringPrototype = nullptr;
     object::booleanPrototype = nullptr;

@@ -150,7 +150,7 @@ childProcess::childProcess(const std::string &command, std::vector<std::string> 
     }
 
     child = fork();
-    if (0 == child)
+    if (child == 0)
     {
         if (dup2(childStdinRd, STDIN_FILENO) == -1)
             exit(errno);
@@ -356,7 +356,7 @@ void childProcess::throwError(const std::string &op, const std::string &f)
                                  0,
                                  nullptr);
 
-    std::string message = utf8Encode(std::wstring(messageBuffer, size));
+    std::string message = osDependant::utf8Encode(std::wstring(messageBuffer, size));
     LocalFree(messageBuffer);
 #else
     std::string message(std::strerror(errno));

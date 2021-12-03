@@ -9,12 +9,12 @@ void String::init(stack *st)
 
     (*String)[n::classPrototype] = object::stringPrototype;
 
-    addFunctionL(object::stringPrototype, n::constructor, {
+    object::stringPrototype->addFunctionL(n::constructor, {
         thisObj->setType<std::string>();
         return thisObj;
     });
 
-    addFunctionL(object::stringPrototype, n::readOperator, {
+    object::stringPrototype->addFunctionL(n::readOperator, {
         argsConvertibleGuard<number>(args);
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const std::string &me = thisObj->get<const std::string>();
@@ -23,7 +23,7 @@ void String::init(stack *st)
         return object::makeObject(std::string(1, me[pos]));
     });
 
-    addFunctionL(object::stringPrototype, "getByteAt"_n, {
+    object::stringPrototype->addFunctionL("getByteAt"_n, {
         argsConvertibleGuard<number>(args);
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         const std::string &me = thisObj->get<const std::string>();
@@ -32,7 +32,7 @@ void String::init(stack *st)
         return object::makeObject(number(static_cast<unsigned char>(me[pos])));
     });
 
-    addFunctionL(object::stringPrototype, "setByteAt"_n, {
+    object::stringPrototype->addFunctionL("setByteAt"_n, {
         argsConvertibleGuard<number, number>(args);
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         unsigned char byte = static_cast<unsigned char>(args[1]->getConverted<object::type::Number>());
@@ -43,11 +43,11 @@ void String::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::stringPrototype, "length"_n, {
+    object::stringPrototype->addFunctionL("length"_n, {
         return object::makeObject(static_cast<number>(thisObj->get<const std::string>().size()));
     });
 
-    addFunctionL(object::stringPrototype, "insertFrom"_n, {
+    object::stringPrototype->addFunctionL("insertFrom"_n, {
         argsConvertibleGuard<number, std::string>(args);
         std::string &dest = thisObj->get<object::type::String>();
         const std::string &src = args[1]->get<const std::string>();
@@ -74,7 +74,7 @@ void String::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::stringPrototype, "append"_n, {
+    object::stringPrototype->addFunctionL("append"_n, {
         argsConvertibleGuard<std::string>(args);
         std::string &dest = thisObj->get<object::type::String>();
         const std::string &src = args[0]->get<const std::string>();
@@ -98,7 +98,7 @@ void String::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::stringPrototype, "substring"_n, {
+    object::stringPrototype->addFunctionL("substring"_n, {
         argsConvertibleGuard<number>(args);
         const std::string &me = thisObj->get<const std::string>();
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
@@ -114,7 +114,7 @@ void String::init(stack *st)
         return object::makeObject(std::string(me.begin() + pos, me.begin() + pos + length));
     });
 
-    addFunctionL(object::stringPrototype, "erase"_n, {
+    object::stringPrototype->addFunctionL("erase"_n, {
         argsConvertibleGuard<number>(args);
         std::string &me = thisObj->get<object::type::String>();
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
@@ -131,7 +131,7 @@ void String::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::stringPrototype, "split"_n, {
+    object::stringPrototype->addFunctionL("split"_n, {
         argsConvertibleGuard<std::string>(args);
         const std::string &me = thisObj->get<const std::string>();
         const std::string &delim = args[0]->getConverted<object::type::String>();
@@ -148,7 +148,7 @@ void String::init(stack *st)
         return object::makeObject(res);
     });
 
-    addFunctionL(object::stringPrototype, "indexOf"_n, {
+    object::stringPrototype->addFunctionL("indexOf"_n, {
         argsConvertibleGuard<std::string>(args);
         std::string &me = thisObj->get<object::type::String>();
         std::string key = args[0]->getConverted<object::type::String>();
@@ -160,7 +160,7 @@ void String::init(stack *st)
         return object::makeObject(static_cast<number>(me.find(key, pos)));
     });
 
-    addFunctionL(object::stringPrototype, "search"_n, {
+    object::stringPrototype->addFunctionL("search"_n, {
         argsConvertibleGuard<std::string>(args);
         const std::string &me = thisObj->get<const std::string>();
         std::regex regex(args[0]->getConverted<object::type::String>());
@@ -184,7 +184,7 @@ void String::init(stack *st)
         return object::makeObject(array);
     });
 
-    addFunctionL(object::stringPrototype, "searchAll"_n, {
+    object::stringPrototype->addFunctionL("searchAll"_n, {
         argsConvertibleGuard<std::string>(args);
         const std::string &me = thisObj->get<const std::string>();
         std::regex regex(args[0]->getConverted<object::type::String>());

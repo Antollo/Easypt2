@@ -2,7 +2,7 @@
 #include "error.h"
 #include "console.h"
 
-std::filesystem::path getExecutablePath()
+std::filesystem::path osDependant::getExecutablePath()
 {
     static std::string ret;
     if (!ret.empty())
@@ -75,7 +75,7 @@ void translateSEH(unsigned int u, EXCEPTION_POINTERS *)
     throw os_error("Win32 exception " + name);
 }
 
-std::string utf8Encode(const std::wstring &wstr)
+std::string osDependant::utf8Encode(const std::wstring &wstr)
 {
     if (wstr.empty())
         return std::string();
@@ -85,7 +85,7 @@ std::string utf8Encode(const std::wstring &wstr)
     return strTo;
 }
 
-std::wstring utf8Decode(const std::string &str)
+std::wstring osDependant::utf8Decode(const std::string &str)
 {
     if (str.empty())
         return std::wstring();
@@ -95,23 +95,17 @@ std::wstring utf8Decode(const std::string &str)
     return wstrTo;
 }
 
-const bool isAttyInput()
+const bool osDependant::isAttyInput()
 {
     static const bool attyInput = _isatty(_fileno(stdin));
     return attyInput;
 }
 
-const bool isAttyOutput()
+const bool osDependant::isAttyOutput()
 {
     static const bool attyOutput = _isatty(_fileno(stdout));
     return attyOutput;
 }
-
-/*BOOL WINAPI consoleHandler(DWORD signal) {
-    if (signal == CTRL_C_EVENT)
-        console::error("CTRL_C_EVENT");
-    return TRUE;
-}*/
 
 #else
 
@@ -122,19 +116,22 @@ static void sigaction_segv(int signal, siginfo_t *si, void *arg)
 }
 #endif
 
-void initialize()
+void osDependant::initialize()
 {
-    initializeThread();
+    osDependant::initializeThread();
 #ifdef _WIN32
     setlocale(LC_ALL, ".UTF8");
     setlocale(LC_NUMERIC, "en_US.UTF8");
 
-    if (isAttyInput())
+    SetConsoleCP(CP_UTF8);
+	SetConsoleOutputCP(CP_UTF8);
+
+    if (osDependant::isAttyInput())
         _setmode(_fileno(stdin), _O_WTEXT);
     else
         _setmode(_fileno(stdin), _O_BINARY);
 
-    if (isAttyOutput())
+    if (osDependant::isAttyOutput())
         _setmode(_fileno(stdout), _O_WTEXT);
     else
         _setmode(_fileno(stdout), _O_BINARY);
@@ -152,7 +149,7 @@ void initialize()
     console::write(std::boolalpha);
 }
 
-void initializeThread()
+void osDependant::initializeThread()
 {
 #ifdef _WIN32
 
@@ -175,7 +172,7 @@ void initializeThread()
 #endif
 }
 
-size_t dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
+size_t osDependant::dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
 {
 #ifdef _WIN32
     libraryType library = LoadLibraryA(filePath.string().c_str());
@@ -193,7 +190,7 @@ size_t dynamicLibrary::loadLibrary(const std::filesystem::path &filePath)
     return libraries.size() - 1;
 }
 
-void *dynamicLibrary::getFunction(size_t i, const std::string &functionName)
+void *osDependant::dynamicLibrary::getFunction(size_t i, const std::string &functionName)
 {
     if (i >= libraries.size())
         throw std::runtime_error("library does not exist");
@@ -212,7 +209,7 @@ void *dynamicLibrary::getFunction(size_t i, const std::string &functionName)
 #endif
 }
 
-void dynamicLibrary::unloadLibraries()
+void osDependant::dynamicLibrary::unloadLibraries()
 {
     for (const auto &library : libraries)
 #ifdef _WIN32

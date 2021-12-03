@@ -3,35 +3,43 @@
 
 #include "nobject.h"
 
-class Import
+/// Class that handle Easypt import function and modules
+class modules
 {
 public:
     static object::objectPtr import(object::objectPtr thisObj, object::type::Array &&args, stack *st);
     static object::objectPtr getImportPaths(object::objectPtr thisObj, object::type::Array &&args, stack *st);
-    static void init(objectPtrImpl modulesPtr)
+
+    static void init(objectPtrImpl newModulesPtr)
     {
-        modules = modulesPtr;
-        imported = &*modules->_properties;
+        modulesPtr = newModulesPtr;
+        imported = &*modulesPtr->_properties;
     }
+
     static void fini()
-    { 
+    {
         imported->clear();
         imported = nullptr;
-        modules = nullptr;
+        modulesPtr = nullptr;
     }
 
 private:
     static inline object::propertiesType *imported = nullptr;
-    static inline object::objectPtr modules = nullptr;
+    static inline object::objectPtr modulesPtr = nullptr;
     static inline std::vector<std::filesystem::path> importPaths = {
-        getExecutablePath().parent_path().parent_path(),
-        getExecutablePath().parent_path(),
+        osDependant::getExecutablePath().parent_path().parent_path(),
+        osDependant::getExecutablePath().parent_path(),
         std::filesystem::current_path()};
 };
 
-object::objectPtr ez_parse(object::objectPtr thisObj, object::type::Array &&args, stack *st);
-object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args, stack *st);
-object::objectPtr getStack(object::objectPtr thisObj, object::type::Array &&args, stack *st);
+namespace interpreter
+{
+    object::objectPtr parse(object::objectPtr thisObj, object::type::Array &&args, stack *st);
+    object::objectPtr execute(object::objectPtr thisObj, object::type::Array &&args, stack *st);
+    object::objectPtr getStack(object::objectPtr thisObj, object::type::Array &&args, stack *st);
+};
+
+/// Objects of Class Easypt type store constructorCaller as internal value
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::type::Array &&args, stack *st);
 
 #endif /* !CORE_H_ */

@@ -6,7 +6,7 @@ void Promise::init(stack *st)
 
     (*Promise)[n::classPrototype] = object::promisePrototype;
 
-    addFunctionL(object::promisePrototype, n::constructor, {
+    object::promisePrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<nullptr_t>(args);
 
         thisObj->setType<object::type::Promise>();
@@ -18,7 +18,7 @@ void Promise::init(stack *st)
         return thisObj;
     });
 
-    addFunctionL(object::promisePrototype, "then"_n, {
+    object::promisePrototype->addFunctionL("then"_n, {
         argsConvertibleGuard<nullptr_t>(args);
 
         return object::makeObject(thisObj->get<object::type::Promise>()->then([args](object::objectPtr r) {
@@ -27,11 +27,11 @@ void Promise::init(stack *st)
         }));
     });
 
-    addFunctionL(object::promisePrototype, n::await_, {
+    object::promisePrototype->addFunctionL(n::await_, {
         return await thisObj->get<object::type::Promise>()->getFuture();
     });
 
-    addFunctionL(Promise, "tick"_n, {
+    Promise->addFunctionL("tick"_n, {
         yield;
         return thisObj;
     });
@@ -42,7 +42,7 @@ void Promise::init(stack *st)
     (*conditionalPromisePrototype)[n::prototype] = object::promisePrototype;
     (*ConditionalPromise)[n::classPrototype] = conditionalPromisePrototype;
 
-    addFunctionL(conditionalPromisePrototype, n::constructor, {
+    conditionalPromisePrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<nullptr_t, nullptr_t>(args);
 
         thisObj->setType<object::type::Promise>();
@@ -63,7 +63,7 @@ void Promise::init(stack *st)
     (*timeoutPrototype)[n::prototype] = object::promisePrototype;
     (*Timeout)[n::classPrototype] = timeoutPrototype;
 
-    addFunctionL(timeoutPrototype, n::constructor, {
+    timeoutPrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<number>(args);
 
         auto begin = std::chrono::steady_clock::now();

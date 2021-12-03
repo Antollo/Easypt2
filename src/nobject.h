@@ -9,7 +9,9 @@
 #include <bitset>
 #include <span>
 #include <functional>
+#include <cstdint>
 #include "objectPtrImpl.h"
+#include "assert.h"
 #include "name.h"
 #include "stack.h"
 #include "number.h"
@@ -22,14 +24,6 @@
 #include "externalFunction.h"
 #include "copyPtr.h"
 
-namespace std
-{
-    inline bool operator==(const span<objectPtrImpl, dynamic_extent> &lhs, const span<objectPtrImpl, dynamic_extent> &rhs) // comparison operator for ArrayView
-    {
-        return equal(begin(lhs), end(lhs), begin(rhs), end(rhs));
-    }
-};
-
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
 
 class tcpClient;
@@ -41,8 +35,6 @@ public:
     using objectPtr = objectPtrImpl;
     using propertiesType = std::unordered_map<name, objectPtr, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtr>>>;
 
-    using ArrayLike = std::span<objectPtr, std::dynamic_extent>;
-
     struct type
     {
         using Object = nullptr_t;
@@ -50,7 +42,6 @@ public:
         using Number = number;
         using String = std::string;
         using Array = std::vector<objectPtr, allocator<objectPtr>>;
-        using ArrayView = std::span<objectPtr, std::dynamic_extent>;
         using Promise = std::shared_ptr<coroutine<objectPtr>>;
         using Function = std::pair<std::shared_ptr<Node>, std::shared_ptr<stack>>;
         using NativeFunction = objectPtr (*)(objectPtr, Array &&, stack *);
@@ -69,7 +60,6 @@ public:
         Number,
         String,
         Array,
-        ArrayView,
         Promise,
         Function,
         NativeFunction,
@@ -93,7 +83,7 @@ public:
             return objectPtr(new object(std::forward<T>(t)));
 
         object *ptr = objects.data[objects.tail++];
-        if (objects.tail == buffer::maxLength)
+        if (objects.tail == objectBuffer::maxLength)
             objects.tail = 0;
         objects.length--;
         ptr->_value = std::forward<T>(t);
@@ -154,7 +144,12 @@ public:
             throw std::runtime_error("wrong type "s + typeid(T).name());
     }
 
-    object(object &&) = default;
+    object(object &&rhs)
+        : _value(std::move(rhs._value)),
+          _prototype(std::move(rhs._prototype)),
+          _properties(std::move(rhs._properties)),
+          _flags(std::move(rhs._flags)) {}
+
     object &operator=(object &&rhs)
     {
         _value = std::move(rhs._value);
@@ -164,7 +159,13 @@ public:
         // no _refCount
         return *this;
     }
-    object(const object &) = default;
+
+    object(const object &rhs)
+        : _value(rhs._value),
+          _prototype(rhs._prototype),
+          _properties(rhs._properties),
+          _flags(rhs._flags) {}
+
     object &operator=(const object &rhs)
     {
         _value = rhs._value;
@@ -191,7 +192,7 @@ public:
     bool operator==(const object &rhs) const
     {
 
-        return _value == rhs._value && _properties->size() == rhs._properties->size() &&
+        return _value == rhs._value && _prototype == rhs._prototype && _properties->size() == rhs._properties->size() &&
                std::all_of(_properties->begin(), _properties->end(), [&rhs](const propertiesType::value_type &x)
                            {
                                auto it = rhs._properties->find(x.first);
@@ -217,18 +218,19 @@ public:
     }
 
     template <class T>
-    std::enable_if_t<std::is_const_v<T>, T> &get()
+    T &get()
     {
-        return std::get<std::remove_const_t<T>>(_value);
-    }
-
-    template <class T>
-    std::enable_if_t<!std::is_const_v<T>, T> &get()
-    {
-        if (!isConst())
-            return std::get<T>(_value);
+        if constexpr (std::is_const_v<T>)
+        {
+            return std::get<std::remove_const_t<T>>(_value);
+        }
         else
-            throw std::runtime_error("tried to modify constant value");
+        {
+            if (!isConst())
+                return std::get<T>(_value);
+            else
+                throw std::runtime_error("tried to modify constant value");
+        }
     }
 
     template <class T>
@@ -277,8 +279,29 @@ public:
                 return static_cast<type::Number>(uncheckedGet<type::String>());
             case typeIndex::Array:
                 return static_cast<type::Number>(uncheckedGet<type::Array>().size());
-            case typeIndex::ArrayView:
-                return static_cast<type::Number>(uncheckedGet<type::ArrayView>().size());
+            case typeIndex::Buffer:
+            {
+                const object::type::Buffer &me = uncheckedGet<const object::type::Buffer>();
+                me->assert<int8_t>(0);
+                switch (me->elementType())
+                {
+                case buffer::type::Int8:
+                    return static_cast<number>(me->get<int8_t>(0));
+                case buffer::type::Int16:
+                    return static_cast<number>(me->get<int16_t>(0));
+                case buffer::type::Int32:
+                    return static_cast<number>(me->get<int32_t>(0));
+                case buffer::type::Int64:
+                    return static_cast<number>(me->get<int64_t>(0));
+                case buffer::type::Float:
+                    return static_cast<number>(me->get<float>(0));
+                case buffer::type::Double:
+                    return static_cast<number>(me->get<double>(0));
+
+                default:
+                    throw std::runtime_error("unknow type of Buffer, cannot convert to Number");
+                }
+            }
             case typeIndex::Boolean:
                 return static_cast<type::Number>(uncheckedGet<type::Boolean>());
             default:
@@ -302,8 +325,11 @@ public:
                 return static_cast<type::String>(uncheckedGet<type::Number>());
             case typeIndex::Array:
                 return toJson();
-            case typeIndex::ArrayView:
-                return toJson();
+            case typeIndex::Buffer:
+            {
+                const object::type::Buffer &me = uncheckedGet<const object::type::Buffer>();
+                return std::string(reinterpret_cast<const char*>(me->begin()), reinterpret_cast<const char*>(me->end()));
+            }
             case typeIndex::Boolean:
                 return uncheckedGet<type::Boolean>() ? "true"s : "false"s;
             default:
@@ -322,12 +348,7 @@ public:
             {
             case typeIndex::Array:
                 return uncheckedGet<type::Array>();
-            case typeIndex::ArrayView:
-            {
-                auto &arrayView = uncheckedGet<type::ArrayView>();
-                return type::Array(arrayView.begin(), arrayView.end());
-            }
-            default:
+             default:
             {
                 auto toArrayMethod = read(n::toArray);
                 if (toArrayMethod && toArrayMethod != toArray)
@@ -350,8 +371,8 @@ public:
                 return static_cast<type::Boolean>(uncheckedGet<type::String>().size());
             case typeIndex::Array:
                 return static_cast<type::Boolean>(uncheckedGet<type::Array>().size());
-            case typeIndex::ArrayView:
-                return static_cast<type::Boolean>(uncheckedGet<type::Array>().size());
+            case typeIndex::Buffer:
+                return static_cast<type::Boolean>(uncheckedGet<type::Buffer>()->size());
             default:
             {
                 auto toBooleanMethod = read(n::toBoolean);
@@ -366,50 +387,6 @@ public:
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
     }
 
-    bool isArrayLike() const
-    {
-        switch (getTypeIndex())
-        {
-        case typeIndex::Array:
-        case typeIndex::ArrayView:
-            return true;
-        default:
-            return false;
-        }
-    }
-
-    ArrayLike getArrayLike()
-    {
-        switch (getTypeIndex())
-        {
-        case typeIndex::Array:
-        {
-            auto &array = uncheckedGet<object::type::Array>();
-            return {array.begin(), array.end()};
-        }
-        case typeIndex::ArrayView:
-            return uncheckedGet<object::type::ArrayView>();
-        default:
-            throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(ArrayLike).name());
-        }
-    }
-
-    ArrayLike getArrayLike() const
-    {
-        switch (getTypeIndex())
-        {
-        case typeIndex::Array:
-        {
-            auto &array = const_cast<object *>(this)->uncheckedGet<object::type::Array>();
-            return {array.begin(), array.end()};
-        }
-        case typeIndex::ArrayView:
-            return uncheckedGet<object::type::ArrayView>();
-        default:
-            throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(ArrayLike).name());
-        }
-    }
-
     void setConst(bool v = true) { _flags[_const] = v; }
     void setAccessible(bool v = true) { _flags[_accessible] = v; }
     void setSettable(bool v = true) { _flags[_setttable] = v; }
@@ -421,6 +398,7 @@ public:
     objectPtr &operator[](const name &n);
     objectPtr operator()(objectPtr thisObj, type::Array &&args, stack *st);
     bool hasOwnProperty(const name &n) const { return _properties->count(n) || (n == n::prototype && _prototype); }
+
     void addProperty(const name &n, objectPtr ptr)
     {
         if (n == n::prototype)
@@ -428,12 +406,14 @@ public:
         else
             _properties->insert_or_assign(n, ptr);
     }
+
     template <class It>
     void addProperties(It begin, It end)
     {
         _properties->insert(begin, end);
         _properties->erase(n::empty);
     }
+
     void removeProperty(const name &n)
     {
         if (n == n::prototype)
@@ -441,6 +421,7 @@ public:
         else
             _properties->erase(n);
     }
+
     type::Array getOwnPropertyNames() const;
     type::Array getOwnPropertyValues() const;
     const propertiesType &getOwnPropertiesWithoutPrototype() const { return *_properties; }
@@ -448,8 +429,6 @@ public:
     void clear();
 
     void captureStack(stack &&st) { get<type::Function>().second = std::make_shared<stack>(std::move(st)); }
-    void captureStack(const std::shared_ptr<stack> &st) { get<type::Function>().second = st; }
-    void captureStack(std::shared_ptr<stack> &&st) { get<type::Function>().second = std::move(st); }
 
     static inline objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
     static inline objectPtr toNumber, toString, toArray, toBoolean;
@@ -469,10 +448,11 @@ public:
 
 private:
     friend class objectPtrImpl;
-    friend class Import;
+    friend class modules;
 
-    std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::ArrayView, type::Promise, type::Function, type::NativeFunction,
-                 type::File, type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer, type::ExternalFunction>
+    std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::Promise,
+                 type::Function, type::NativeFunction, type::ExternalFunction, type::File,
+                 type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer>
         _value;
 
     objectPtr _prototype;
@@ -486,13 +466,13 @@ private:
 
     static inline stack *globalStack = nullptr;
 
-    struct buffer
+    struct objectBuffer
     {
         size_t length, head, tail;
         static constexpr size_t maxLength = 256;
         std::array<object *, maxLength> data;
     };
-    static inline buffer objects;
+    static inline objectBuffer objects;
 
     static void reuse(object *ptr);
 
@@ -504,7 +484,7 @@ private:
                           { return typeid(v).name(); },
                           _value);
     }
-    void toJson(std::string &str, const size_t indentation = 1) const;
+    void toJson(std::stringstream &str, const size_t indentation = 1) const;
 
     objectPtr ptrFromThis()
     {
