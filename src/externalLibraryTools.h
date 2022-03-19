@@ -111,6 +111,12 @@ void *call(R (*f)(Args...), void **args, std::index_sequence<Is...>)
         f((type<Args>::fromVoidPtr(args[Is]))...);
         return nullptr;
     }
+    else if constexpr (std::is_same_v<R, unsigned long>)
+    {
+        static number result;
+        result = static_cast<uint64_t>(f((type<Args>::fromVoidPtr(args[Is]))...));
+        return &result;
+    }
     else if constexpr (std::is_arithmetic_v<R>)
     {
         static number result;
@@ -133,7 +139,7 @@ void *function(R (*f)(Args...), void **args)
     return call(f, args, std::index_sequence_for<Args...>());
 }
 
-#define registerIntegerConstantM(x) registerIntegerConstant(#x, x)
+#define registerConstantM(x) if constexpr(std::is_integral_v<decltype(x)>) registerIntegerConstant(#x, x); else registerDoubleConstant(#x, x);
 #define registerFunctionM(x) \
     registerFunction(#x, reinterpret_cast<void *>(static_cast<void *(*)(void **)>([](void **args) -> void * { return function(x, args); })), functionTypeId(x))
 

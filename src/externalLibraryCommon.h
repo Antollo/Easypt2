@@ -7,7 +7,8 @@
 using FunctionTypeType = int64_t;
 using registerFunctionType = void (*)(const char *, void *, FunctionTypeType);
 using registerIntegerConstantType = void (*)(const char *, int64_t);
-using initializeType = void (*)(registerFunctionType, registerIntegerConstantType);
+using registerDoubleConstantType = void (*)(const char *, double);
+using initializeType = void (*)(registerFunctionType, registerIntegerConstantType, registerDoubleConstantType);
 
 constexpr const int8_t voidType = 0;
 constexpr const int8_t bufferType = 1;

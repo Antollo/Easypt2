@@ -16,6 +16,7 @@ public:
     {
         static_assert(std::is_same_v<registerFunctionType, decltype(&registerFunction)>);
         static_assert(std::is_same_v<registerIntegerConstantType, decltype(&registerIntegerConstant)>);
+        static_assert(std::is_same_v<registerDoubleConstantType, decltype(&registerDoubleConstant)>);
 
         auto library = osDependant::dynamicLibrary::loadLibrary(name.string());
         auto initialize = reinterpret_cast<initializeType>(osDependant::dynamicLibrary::getFunction(library, "initialize"));
@@ -24,7 +25,7 @@ public:
 
         try
         {
-            initialize(&registerFunction, &registerIntegerConstant);
+            initialize(&registerFunction, &registerIntegerConstant, &registerDoubleConstant);
         }
         catch (...)
         {
@@ -57,18 +58,23 @@ private:
     static void registerFunction(const char *str, void *pointer, FunctionTypeType type)
     {
         auto names = splitName(str);
-        //if (names.second.empty())
-            (*temp)[static_cast<name>(str)] = object::makeObject(externalFunction(type, pointer));
-        //else
-            (*(*temp)[static_cast<name>(names.first)])[static_cast<name>(names.second)] = object::makeObject(externalFunction(type, pointer));
+        auto obj = object::makeObject(externalFunction(type, pointer));
+        (*temp)[static_cast<name>(str)] = obj;
+        (*(*temp)[static_cast<name>(names.first)])[static_cast<name>(names.second)] = obj;
     }
     static void registerIntegerConstant(const char *str, int64_t value)
     {
         auto names = splitName(str);
-        //if (names.second.empty())
-            (*temp)[static_cast<name>(str)] = object::makeObject(static_cast<number>(value));
-        //else
-            (*(*temp)[static_cast<name>(names.first)])[static_cast<name>(names.second)] = object::makeObject(static_cast<number>(value));
+        auto obj = object::makeObject(static_cast<number>(value));
+        (*temp)[static_cast<name>(str)] = obj;
+        (*(*temp)[static_cast<name>(names.first)])[static_cast<name>(names.second)] = obj;
+    }
+    static void registerDoubleConstant(const char *str, double value)
+    {
+        auto names = splitName(str);
+        auto obj = object::makeObject(static_cast<number>(value));
+        (*temp)[static_cast<name>(str)] = obj;
+        (*(*temp)[static_cast<name>(names.first)])[static_cast<name>(names.second)] = obj;
     }
 
     static inline object::objectPtr temp;

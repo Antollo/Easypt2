@@ -10,7 +10,6 @@ name operator"" _n(const char *str, size_t c)
 
 name::name(std::string &&textName)
 {
-
     if (textName.size() == 0)
         throw std::runtime_error("terrible parser error");
     if (nameToCodeMap.count(textName) == 0)
@@ -27,7 +26,6 @@ name::name(std::string &&textName)
 
 name::name(const std::string &textName)
 {
-
     if (textName.size() == 0)
         throw std::runtime_error("terrible parser error");
     if (nameToCodeMap.count(textName) == 0)

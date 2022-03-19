@@ -16,8 +16,8 @@ public:
     using immediateStorageType = std::array<std::pair<name, objectPtrImpl>, immediateStorageSize>;
     using iterator = storageType::iterator;
 
-    stack() : previous(nullptr), immediateIndex(0) {}
-    stack(stack *st) : previous(st), immediateIndex(0) {}
+    stack() : parent(nullptr), immediateIndex(0) {}
+    stack(stack *st) : parent(st), immediateIndex(0) {}
 
     stack(stack &&) = default;
     stack &operator=(stack &&) = default;
@@ -40,7 +40,9 @@ public:
     void reserve(size_t count);
 
 private:
+    /// Helper for copyToFlatStack
     void copyToFlatStack(stack &st);
+    /// Copies elements from immediateStorage to storage
     void moveToMap()
     {
         storage.insert(immediateStorage.begin(), immediateStorage.end());
@@ -50,7 +52,7 @@ private:
     
     immediateStorageType immediateStorage;
     storageType storage;
-    stack *previous;
+    stack *parent;
     uint8_t immediateIndex;
 };
 

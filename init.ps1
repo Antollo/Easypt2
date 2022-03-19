@@ -8,11 +8,11 @@ $LLnextgenUrl = "https://os.ghalkes.nl/LLnextgen/releases/LLnextgen-w64-0.5.5.zi
 $LLnextgenZip = "$env:TEMP\LLnextgen.zip"
 $LLnextgenPath = "$env:TEMP\LLnextgen"
 
-$glewUrl = "https://netcologne.dl.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0-win32.zip"
+$glewUrl = "https://netix.dl.sourceforge.net/project/glew/glew/2.2.0/glew-2.2.0-win32.zip"
 $glewZip = "$env:TEMP\glew.zip"
 $glewPath = "$env:TEMP\glew"
 
-$glfwUrl = "https://github.com/glfw/glfw/releases/download/3.3.3/glfw-3.3.3.bin.WIN64.zip"
+$glfwUrl = "https://github.com/glfw/glfw/releases/download/3.3.6/glfw-3.3.6.bin.WIN64.zip"
 $glfwZip = "$env:TEMP\glfw.zip"
 $glfwPath = "$env:TEMP\glfw"
 

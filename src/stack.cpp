@@ -15,8 +15,8 @@ object::objectPtr &stack::operator[](const name &n)
         if (it != storage.end())
             return it->second;
     }
-    if (previous != nullptr)
-        return (*previous)[n];
+    if (parent != nullptr)
+        return (*parent)[n];
     throw std::runtime_error(static_cast<std::string>(n) + " not found");
 }
 
@@ -80,8 +80,8 @@ void stack::copyToObject(object::objectPtr &obj, bool recursive)
         obj->addProperties(immediateStorage.begin(), immediateStorage.end());
     else
         obj->addProperties(storage.begin(), storage.end());
-    if (recursive && previous != nullptr)
-        previous->copyToObject(obj, recursive);
+    if (recursive && parent != nullptr)
+        parent->copyToObject(obj, recursive);
 }
 
 stack stack::copyToFlatStack()
@@ -101,6 +101,6 @@ void stack::copyToFlatStack(stack &st)
     }
     else
         st.storage.insert(storage.begin(), storage.end());
-    if (previous != nullptr)
-        previous->copyToFlatStack(st);
+    if (parent != nullptr)
+        parent->copyToFlatStack(st);
 }

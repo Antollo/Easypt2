@@ -28,6 +28,8 @@ public:
 
     bool operator==(const name &n) const { return code == n.code; }
     bool operator==(name &&n) const { return code == n.code; }
+    bool operator<(const name &n) const { return code < n.code; }
+    bool operator<(name &&n) const { return code < n.code; }
 
     bool isEmpty() const { return code == emptyCode; }
 
