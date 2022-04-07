@@ -15,58 +15,121 @@
 ## Examples
 
 ```js
-console.write("What's your name?\t");
-let name = console.readLine();
-console.writeLine("Hello " + name + "! Nice to meet you.");
+console.write("What's your name? ")
+let name = console.readLine()
+console.writeLine("Hello " + name + "! Nice to meet you.")
 ```
 
 ```js
-let arr = "ab: cd\n\re: f\n\rg: hij".split("\n\r");
-for (let i = 0; i<arr.length(); i++)
-    console.writeLine(arr[i]);
+let arr = "ab c de fgh".split(" ")
+for (let i = 0; i < arr.length(); i++)
+    console.writeLine(arr[i])
 ```
 
 ```js
-function sum(a, b) { return a + b; };
-console.log(sum(1, 3));
+function sum(a, b) {
+    return a + b
+}
+console.log(sum(2, 3))
+
+let mul = (a, b) => a * b // Fat arrow syntax
+console.log(mul(2, 3))
 ```
 
 ```js
+// Parenthesis can be omitted in the function definition
 function sum {
-    let s = args[0];
+    let s = args[0] // "args" is an array of all arguments passed to the function
     for (let i = 1; i < args.length(); i++)
-        s = s + args[i];
-    return s;
-};
-console.log(sum(1, 3, 5, 7));
+        s = s + args[i]
+    return s
+}
+console.log(sum(1, 3, 5, 7))
 ```
 
 ```js
-class Myclass {
+class MyClass {
     constructor: function (sth) {
-        this.sth = sth;
-        console.log("constructor");
+        this.sth = sth
+        console.log("constructor")
     },
-    writeSth: function { console.writeLine(this.sth); },
-    destructor: function { console.log("destructor"); }
-};
+    writeSth: () => console.writeLine(this.sth),
+    destructor: () => console.log("destructor")
+}
 
-let a <- Myclass("something");
-a.writeSth();
+/*
+"=" is the assignment operator - it assigns a copy of the right operand to the left operand
+"<-" is the initialization assignment operator - if the left operand is in form of "identifier", 
+     "identifier.property" or "let identifier", then operator makes left operand a reference to 
+     right operand (left operand and right operand points to the same object)
+
+In summary, using "=" in the following code would create two MyClass instances (one temporary
+and one copy assigned to a)
+*/
+
+let a <- MyClass("something")
+a.writeSth()
 ```
 
 ```js
 let obj = {
     name: "Abc.xyz",
     arr: [1, 2, 3]
-};
+}
 
 try {
-    console.log(obj.name);
-    console.log(obj.arr[10]); // Throws exception!
+    console.log(obj.name)
+    console.log(obj.arr[10]) // Throws exception
 } catch {
-    console.error(exception);
+    console.error(exception)
 }
+```
+
+```js
+let seven = 7
+/*
+A semicolon is needed when the following line starts with a parenthesis "(" or a bracket "["
+(otherwise, the following code would be interpreted as seven[1, 2, 3])
+*/
+let copyOfSeven = seven;
+[1, 2, 3].forEach((element, index, array) => console.log(element))
+```
+
+```js
+// Spread operator:
+let arr = [...[1, 2, 3], ...[4, 5, 6]] // Unpacks arrays to the array
+console.log(arr)
+
+console.log(...[1, 2, 3]) // Unpacks array to the arguments
+
+let obj = {...{x: 1}, ...{y: 2}} // Unpacks object's properties to the object
+console.log(obj)
+
+let math = {
+    sum: (a, b) => a + b,
+    div: (a, b) => a / b,
+}
+
+...math // Unpacks objects to the stack
+console.log(sum(1, 2))
+
+```
+
+```js
+let server = SslClient() // Many IO APIs (for files, TCP sockets, subprocesses, etc.)
+Timeout(500).then(() => console.log("500 ms has elapsed")) // Promise
+await server.connect("example.com", 443) // Asynchronous call and await keyword
+console.log("Connected")
+await server.send("GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+let response = await server.receive()
+console.log(response)
+/*
+Possible output:
+01-01-2022 12:00:00 Connected
+01-01-2022 12:00:01 500 ms has elapsed
+01-01-2022 12:00:01 HTTP/1.1 200 OK
+...
+*/
 ```
 
 Run with `easypt -file my_file.ez`.
@@ -85,16 +148,16 @@ Easypt:
 
 ```js
 function gcd {
-    let a = args[0];
-    let b = args[1];
+    let a = args[0]
+    let b = args[1]
     while (a != b) {
         if (a < b)
-            b <- b - a;
+            b <- b - a
         else
-            a <- a - b;
+            a <- a - b
     }
-    return a;
-};
+    return a
+}
 ```
 
 Python:
@@ -144,9 +207,9 @@ The full code of the benchmark can be found in `/benchmarks`.
  
 ## Downloads
 
-- [For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win64.exe?branch=master&job=Image%3A%20Visual%20Studio%202019)
+- [For Windows](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-win64.exe?branch=master&job=Image%3A%20Visual%20Studio%202022)
 
-- [For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu)
+- [For Linux](https://ci.appveyor.com/api/projects/antollo/Easypt2/artifacts/packages%2FEasypt-0.0.1-Linux.sh?branch=master&job=Image%3A%20Ubuntu2004)
 
 ## Compiling
 

@@ -100,8 +100,16 @@ input { Node a(INI); }
     { treeParser::root->token(COMPOUND_STATEMENT); }
     ;
 
+optionalSemicolon :
+    [
+        %while(1)
+        ';'
+    ] ?
+    ;
+
 simpleStatement(Node& me) { Node a(INI); } :
-    expression(100, a) { me.addChild(a); } ';'
+    expression(100, a) { me.addChild(a); }
+    optionalSemicolon
     { me.token(STATEMENT); }
     ;
 
@@ -191,14 +199,14 @@ tryCatchStatement(Node& me) { Node a(INI), b(INI); } :
 returnStatement(Node& me) { Node a(INI); } :
     RETURN
     expression(100, a)
-    ';'
+    optionalSemicolon
     { me.token(RETURN); me.addChild(a); }
     ;
 
 throwStatement(Node& me) { Node a(INI); } :
     THROW
     expression(100, a)
-    ';'
+    optionalSemicolon
     { me.token(THROW); me.addChild(a); }
     ;
 
@@ -222,7 +230,7 @@ statement(Node& me) :
         throwStatement(me)
     |
         BREAK
-        ';'
+        optionalSemicolon
         { me.token(BREAK); }
     ]
     ;

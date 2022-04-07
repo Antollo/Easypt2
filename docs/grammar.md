@@ -127,8 +127,17 @@ input
 ```
 
 ```
+optionalSemicolon :
+    [
+        // while(true)
+        ';'
+    ] ?
+```
+
+```
 simpleStatement :
-    expression ';'
+    expression 
+    optionalSemicolon
 ```
 
 ```
@@ -205,14 +214,14 @@ tryCatchStatement :
 returnStatement :
     RETURN
     expression
-    ';'
+    optionalSemicolon
 ```
 
 ```
 throwStatement :
     THROW
     expression
-    ';'
+    optionalSemicolon
 ```
 
 ```
@@ -236,7 +245,7 @@ statement :
         throwStatement
     |
         BREAK
-        ';'
+        optionalSemicolon
     ]
 ```
 

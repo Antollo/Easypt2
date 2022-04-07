@@ -2,7 +2,7 @@
 
 ### Simple statement
 
-An expression followed with a semicolon.
+An expression followed with an optional semicolon.
 
 ### Compound statement
 
@@ -44,4 +44,4 @@ Executes the first statement. If an exception is thrown, stops the execution of 
 
 ### `break`
 
-Exits loop. _There must be a semicolon after `break`. Usage of `break` outside the loop results in undefined behavior._
+Exits loop. _Usage of `break` outside the loop results in undefined behavior._
