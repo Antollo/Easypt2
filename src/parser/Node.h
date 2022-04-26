@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <set>
 #include "gramUtility.h"
 #include "name.h"
 #include "objectPtrImpl.h"
@@ -13,15 +14,6 @@
 
 #define _evaluate(i) _children[i].evaluate(st)
 #define _evaluateIdentifier(i) st[_children[i]._text]
-
-#define _evaluate2(i, j) _children[i]._children[j].evaluate(st)
-#define _evaluateIdentifier2(i, j) st[_children[i]._children[j]._text]
-
-#define allCases(TOKEN)        \
-    case TOKEN:                \
-    case TOKEN | A_IDENTIFIER: \
-    case TOKEN | B_IDENTIFIER: \
-    case TOKEN | AB_IDENTIFIER:
 
 #define compareObjects(a, b, opName, op, objectReturn, valueReturn)                                                  \
     switch (a->getTypeIndex())                                                                                       \
@@ -63,6 +55,50 @@
                    assert(_children.size() == 2);                               \
                    compareObjects(a, b, opName, op, objectReturn, valueReturn); \
                })
+
+#define caseUnary(TOKEN, ...)             \
+    case TOKEN:                           \
+    {                                     \
+        auto a = _evaluate(0);            \
+        __VA_ARGS__                       \
+    }                                     \
+    case TOKEN | A_IDENTIFIER:            \
+    {                                     \
+        auto &a = _evaluateIdentifier(0); \
+        __VA_ARGS__                       \
+    }
+
+#define caseBinary(TOKEN, ...)            \
+    case TOKEN:                           \
+    {                                     \
+        auto a = _evaluate(0);            \
+        auto b = _evaluate(1);            \
+        __VA_ARGS__                       \
+    }                                     \
+    case TOKEN | A_IDENTIFIER:            \
+    {                                     \
+        auto &a = _evaluateIdentifier(0); \
+        auto b = _evaluate(1);            \
+        __VA_ARGS__                       \
+    }                                     \
+    case TOKEN | B_IDENTIFIER:            \
+    {                                     \
+        auto a = _evaluate(0);            \
+        auto &b = _evaluateIdentifier(1); \
+        __VA_ARGS__                       \
+    }                                     \
+    case TOKEN | AB_IDENTIFIER:           \
+    {                                     \
+        auto &a = _evaluateIdentifier(0); \
+        auto &b = _evaluateIdentifier(1); \
+        __VA_ARGS__                       \
+    }
+
+#define allCases(TOKEN)        \
+    case TOKEN:                \
+    case TOKEN | A_IDENTIFIER: \
+    case TOKEN | B_IDENTIFIER: \
+    case TOKEN | AB_IDENTIFIER:
 
 class Node
 {
@@ -348,6 +384,7 @@ private:
         }
         return result.str();
     }
+
     bool shouldHaveStackHelper() const
     {
         if (_token == COMPOUND_STATEMENT)
@@ -386,7 +423,7 @@ private:
     {
         if (stackTrace.empty())
             return;
-        for (int i = stackTrace.size() - 1; i >= 0; i--)
+        for (int64_t i = stackTrace.size() - 1; i >= 0; i--)
             console::error(stackTrace[i]);
         stackTrace.clear();
     }

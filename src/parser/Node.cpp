@@ -4,51 +4,6 @@
 #include <cassert>
 #include <exception>
 
-#define caseUnary(TOKEN, ...)             \
-    case TOKEN:                           \
-    {                                     \
-        auto a = _evaluate(0);            \
-        __VA_ARGS__                       \
-    }                                     \
-    case TOKEN | A_IDENTIFIER:            \
-    {                                     \
-        auto &a = _evaluateIdentifier(0); \
-        __VA_ARGS__                       \
-    }
-
-#define caseBinary(TOKEN, ...)                \
-    case TOKEN:                               \
-    {                                         \
-        auto a = _evaluate(0);                \
-        auto b = _evaluate(1);                \
-        __VA_ARGS__                           \
-    }                                         \
-    case TOKEN | A_IDENTIFIER:                \
-    {                                         \
-        auto &a = _evaluateIdentifier(0);     \
-        auto b = _evaluate(1);                \
-        __VA_ARGS__                           \
-    }                                         \
-    case TOKEN | B_IDENTIFIER:                \
-    {                                         \
-        auto a = _evaluate(0);                \
-        auto &b = _evaluateIdentifier(1);     \
-        __VA_ARGS__                           \
-    }                                         \
-    case TOKEN | AB_IDENTIFIER:               \
-    {                                         \
-        auto &a = _evaluateIdentifier(0);     \
-        auto &b = _evaluateIdentifier(1);     \
-        __VA_ARGS__                           \
-    }
-    
-#define allCases(TOKEN)                       \
-    case TOKEN:                               \
-    case TOKEN | A_IDENTIFIER:                \
-    case TOKEN | B_IDENTIFIER:                \
-    case TOKEN | AB_IDENTIFIER:               \
-
-
 std::string Node::parseString(const std::string &source)
 {
     std::string ret;
@@ -628,7 +583,7 @@ object::objectPtr Node::evaluate(stack &st) const
             st.erase(_children[0]._text);
             return a;
         }
-        else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
+        else if ((_children[0]._token & AB_MASK) == DOT && _children[0]._children[1]._token == IDENTIFIER)
         {
             assert(_children[0]._children.size() == 2);
             auto expr = _children[0]._children[0].evaluate(st);
@@ -652,6 +607,9 @@ object::objectPtr Node::evaluate(stack &st) const
 
     case CLASS:
     {
+        auto classObj = object::makeEmptyObject();
+        st.insert(_text, classObj);
+
         stack localJsonStack(&st);
         for (auto &child : _children)
             child.evaluateVoid(localJsonStack);
@@ -659,15 +617,15 @@ object::objectPtr Node::evaluate(stack &st) const
         auto obj = object::makeEmptyObject();
         localJsonStack.copyToObject(obj);
 
-        auto Class = st[n::Class];
         if (!_children.empty() && _children.back()._token == IDENTIFIER)
         {
             auto &prototype = (*obj)[n::prototype];
             prototype = (*_children.back().evaluate(st))[n::classPrototype];
             (*prototype)[n::super] = (*prototype)[n::constructor];
         }
-        obj = (*Class)(Class, {obj}, &st);
-        st.insert(_text, obj);
+
+        auto Class = st[n::Class];
+        *classObj = *(*Class)(Class, {obj}, &st);
         return obj;
     }
 
@@ -1299,7 +1257,7 @@ void Node::evaluateVoid(stack &st) const
             st.erase(_children[0]._text);
             return;
         }
-        else if (_children[0]._token == DOT && _children[0]._children[1]._token == IDENTIFIER)
+        else if ((_children[0]._token & AB_MASK) == DOT && _children[0]._children[1]._token == IDENTIFIER)
         {
             assert(_children[0]._children.size() == 2);
             auto expr = _children[0]._children[0].evaluate(st);
@@ -1323,6 +1281,9 @@ void Node::evaluateVoid(stack &st) const
 
     case CLASS:
     {
+        auto classObj = object::makeEmptyObject();
+        st.insert(_text, classObj);
+
         stack localJsonStack(&st);
         for (auto &child : _children)
             child.evaluateVoid(localJsonStack);
@@ -1330,15 +1291,15 @@ void Node::evaluateVoid(stack &st) const
         auto obj = object::makeEmptyObject();
         localJsonStack.copyToObject(obj);
 
-        auto Class = st[n::Class];
         if (!_children.empty() && _children.back()._token == IDENTIFIER)
         {
             auto &prototype = (*obj)[n::prototype];
             prototype = (*_children.back().evaluate(st))[n::classPrototype];
             (*prototype)[n::super] = (*prototype)[n::constructor];
         }
-        obj = (*Class)(Class, {obj}, &st);
-        st.insert(_text, obj);
+
+        auto Class = st[n::Class];
+        *classObj = *(*Class)(Class, {obj}, &st);
         return;
     }
 
