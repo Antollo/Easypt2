@@ -140,6 +140,12 @@ protected:
         SSL_free(ssl);
     }
 
+    void close()
+    {
+        ssl.reset();
+        sslContext.reset();
+    }
+
     std::shared_ptr<SSL_CTX> sslContext;
     std::shared_ptr<SSL> ssl;
 
@@ -326,6 +332,12 @@ public:
             throw std::runtime_error("SSL_read failed with error: " + std::to_string(code));
     }
 
+    void close() override
+    {
+        sslSocket::close();
+        tcpClient::close();
+    }
+
 private:
     friend class sslServer;
 
@@ -454,6 +466,12 @@ public:
             throw std::runtime_error("SSL_accept failed with error: " + std::to_string(code) + " " + getSslError());
 
         return std::shared_ptr<tcpClient>(new sslClient(clientSocket, sslContext, ssl));
+    }
+
+    void close() override
+    {
+        sslSocket::close();
+        tcpServer::close();
     }
 };
 
