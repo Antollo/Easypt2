@@ -1,0 +1,37 @@
+title: Easypt
+github_username: Antollo
+
+remote_theme: rundocs/jekyll-rtd-theme
+
+nav_version: true
+edit: true
+addons_branch: true
+
+addons:
+  - github
+  - i18n
+  - plugins
+  - analytics
+
+copyright:
+  revision: false
+
+readme_index:
+  with_frontmatter: true
+
+sass:
+  style: compressed
+
+plugins:
+  - jemoji
+  - jekyll-avatar
+  - jekyll-mentions
+  - jekyll-coffeescript
+  - jekyll-default-layout
+  - jekyll-gist
+  - jekyll-github-metadata
+  - jekyll-optional-front-matter
+  - jekyll-paginate
+  - jekyll-readme-index
+  - jekyll-titles-from-headings
+  - jekyll-relative-links

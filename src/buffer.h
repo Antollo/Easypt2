@@ -28,6 +28,10 @@ public:
         Int16,
         Int32,
         Int64,
+        Uint8,
+        Uint16,
+        Uint32,
+        Uint64,
         Float,
         Double,
         Unknown
@@ -123,14 +127,22 @@ public:
         _t_size = sizeof(T);
         _data = new std::byte[_n_length * _t_size]();
 
-        if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, uint8_t> || std::is_same_v<T, char> || std::is_same_v<T, std::byte>)
+        if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, char> || std::is_same_v<T, std::byte>)
             _t = type::Int8;
-        else if constexpr (std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t>)
+        else if constexpr (std::is_same_v<T, int16_t>)
             _t = type::Int16;
-        else if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>)
+        else if constexpr (std::is_same_v<T, int32_t>)
             _t = type::Int32;
-        else if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>)
+        else if constexpr (std::is_same_v<T, int64_t>)
             _t = type::Int64;
+        if constexpr (std::is_same_v<T, uint8_t> || std::is_same_v<T, unsigned char>)
+            _t = type::Uint8;
+        else if constexpr (std::is_same_v<T, uint16_t>)
+            _t = type::Uint16;
+        else if constexpr (std::is_same_v<T, uint32_t>)
+            _t = type::Uint32;
+        else if constexpr (std::is_same_v<T, uint64_t>)
+            _t = type::Uint64;
         else if constexpr (std::is_same_v<T, float>)
             _t = type::Float;
         else if constexpr (std::is_same_v<T, double>)

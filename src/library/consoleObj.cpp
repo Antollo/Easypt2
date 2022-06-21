@@ -1,3 +1,4 @@
+#include <sstream>
 #include "../library.h"
 
 void consoleObj::init(stack *st)
@@ -11,41 +12,50 @@ void consoleObj::init(stack *st)
     });
     consoleObj->addFunctionL("writeAsync"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
-            auto f = std::async(std::launch::async, [&args]() mutable {
+            std::stringstream temp;
+            for (auto &el : args)
+                temp << el->getConverted<object::type::String>();
+            auto f = std::async(std::launch::async, [&temp]() mutable {
                 coroutineEvent post;
-                for (auto &el : args)
-                    console::write(el->getConverted<object::type::String>());
+                console::write(temp.str());
             });
             await f;
             return thisObj;
         }));
     });
     consoleObj->addFunctionL("debug"_n, {
-        std::string temp;
+        std::stringstream temp;
         for (auto &el : args)
-            temp += el->getConverted<object::type::String>();
-        console::debug(temp);
+            temp << el->getConverted<object::type::String>();
+        console::debug(temp.str());
         return thisObj;
     });
     consoleObj->addFunctionL("log"_n, {
-        std::string temp;
+        std::stringstream temp;
         for (auto &el : args)
-            temp += el->getConverted<object::type::String>();
-        console::log(temp);
+            temp << el->getConverted<object::type::String>();
+        console::log(temp.str());
+        return thisObj;
+    });
+    consoleObj->addFunctionL("ok"_n, {
+        std::stringstream temp;
+        for (auto &el : args)
+            temp << el->getConverted<object::type::String>();
+        console::ok(temp.str());
         return thisObj;
     });
     consoleObj->addFunctionL("warn"_n, {
-        std::string temp;
+        std::stringstream temp;
         for (auto &el : args)
-            temp += el->getConverted<object::type::String>();
-        console::warn(temp);
+            temp << el->getConverted<object::type::String>();
+        console::warn(temp.str());
         return thisObj;
     });
     consoleObj->addFunctionL("error"_n, {
-        std::string temp;
+        std::stringstream temp;
         for (auto &el : args)
-            temp += el->getConverted<object::type::String>();
-        console::error(temp);
+            temp << el->getConverted<object::type::String>();
+        console::error(temp.str());
         return thisObj;
     });
     consoleObj->addFunctionL("writeLine"_n, {

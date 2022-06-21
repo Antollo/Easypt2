@@ -27,7 +27,7 @@ void file::open(FILE *_f)
 
 void file::create(const std::string &_path)
 {
-    open(_path, "w+");
+    open(_path, "wb+");
 }
 
 void file::close()
@@ -153,7 +153,7 @@ void file::setWritePosition(size_t n)
 void file::clear()
 {
     assert(isOpen(), "clear: " + (path.string().size() > 0 ? "file \"" + path.string() + "\" not open " : "file not open"));
-    f = std::freopen(nullptr, "w+", f);
+    f = std::freopen(nullptr, "wb+", f);
     assert(isOpen(), "clear: failed to reopen");
 }
 

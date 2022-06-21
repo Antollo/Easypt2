@@ -404,16 +404,34 @@ protected:
 class sslServer : public sslSocket, public tcpServer
 {
 public:
-    sslServer(const std::string &key, const std::string &cert) : tcpServer()
+    sslServer(const std::string &cert, const std::string &key, const std::vector<std::filesystem::path> &importPaths) : tcpServer()
     {
+        std::filesystem::path certPath = cert, keyPath = key;
+        for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++)
+        {
+            if (std::filesystem::exists(*it / cert))
+            {
+                certPath = (*it / cert);
+                break;
+            }
+        }
+        for (auto it = importPaths.crbegin(); !(it == importPaths.crend()); it++)
+        {
+            if (std::filesystem::exists(*it / key))
+            {
+                keyPath = (*it / key);
+                break;
+            }
+        }
+
         sslContext = std::shared_ptr<SSL_CTX>(SSL_CTX_new(TLS_server_method()), freeSslContext);
         if (sslContext == nullptr)
             throw std::runtime_error("SSL_CTX_new failed with error: " + getSslError());
 
-        int code = SSL_CTX_use_certificate_file(sslContext.get(), "cert.pem", SSL_FILETYPE_PEM);
+        int code = SSL_CTX_use_certificate_file(sslContext.get(), certPath.string().c_str(), SSL_FILETYPE_PEM);
         if (code <= 0)
             throw std::runtime_error("SSL_CTX_use_certificate_file failed with error: " + std::to_string(code) + " " + getSslError());
-        code = SSL_CTX_use_PrivateKey_file(sslContext.get(), "cert.key", SSL_FILETYPE_PEM);
+        code = SSL_CTX_use_PrivateKey_file(sslContext.get(), keyPath.string().c_str(), SSL_FILETYPE_PEM);
         if (code <= 0)
             throw std::runtime_error("SSL_CTX_use_PrivateKey_file failed with error: " + std::to_string(code) + " " + getSslError());
     }

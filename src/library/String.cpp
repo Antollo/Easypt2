@@ -16,8 +16,9 @@ void String::init(stack *st)
 
     object::stringPrototype->addFunctionL(n::readOperator, {
         argsConvertibleGuard<number>(args);
-        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        int64_t pos = static_cast<int64_t>(args[0]->getConverted<object::type::Number>());
         const std::string &me = thisObj->get<const std::string>();
+        negativeIndexing(pos, me);
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         return object::makeObject(std::string(1, me[pos]));
@@ -51,7 +52,7 @@ void String::init(stack *st)
         argsConvertibleGuard<number, std::string>(args);
         std::string &dest = thisObj->get<object::type::String>();
         const std::string &src = args[1]->get<const std::string>();
-        size_t destPos= static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        size_t destPos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         size_t srcPos = 0;
         size_t srcLength = src.size();
         if (args.size() > 2)
@@ -139,7 +140,8 @@ void String::init(stack *st)
 
         object::type::Array res;
 
-        while ((end = me.find (delim, begin)) != std::string::npos) {
+        while ((end = me.find(delim, begin)) != std::string::npos)
+        {
             res.push_back(object::makeObject(me.substr(begin, end - begin)));
             begin = end + delimSize;
         }
@@ -211,5 +213,44 @@ void String::init(stack *st)
         }
 
         return object::makeObject(array);
+    });
+
+    object::stringPrototype->addFunctionL("replace"_n, {
+        argsConvertibleGuard<std::string, std::string>(args);
+        bool inPlace = false;
+        if (args.size() >= 3)
+            inPlace = args[2]->getConverted<object::type::Boolean>();
+        std::string str;
+
+        std::string &me = inPlace ? thisObj->get<object::type::String>() : (str = thisObj->get<object::type::String>());
+        std::string pattern = args[0]->getConverted<object::type::String>();
+        std::string replacement = args[1]->getConverted<object::type::String>();
+
+        size_t pos = me.find(pattern);
+        if (pos != std::string::npos)
+            me.replace(pos, pattern.size(), replacement);
+
+        return inPlace ? thisObj : object::makeObject(std::move(str));
+    });
+
+    object::stringPrototype->addFunctionL("replaceAll"_n, {
+        argsConvertibleGuard<std::string, std::string>(args);
+        bool inPlace = false;
+        if (args.size() >= 3)
+            inPlace = args[2]->getConverted<object::type::Boolean>();
+        std::string str;
+
+        std::string &me = inPlace ? thisObj->get<object::type::String>() : (str = thisObj->get<object::type::String>());
+        std::string pattern = args[0]->getConverted<object::type::String>();
+        std::string replacement = args[1]->getConverted<object::type::String>();
+
+        size_t pos = 0;
+        while ((pos = me.find(pattern, pos)) != std::string::npos)
+        {
+            me.replace(pos, pattern.size(), replacement);
+            pos += replacement.length();
+        }
+
+        return inPlace ? thisObj : object::makeObject(std::move(str));
     });
 }

@@ -9,6 +9,7 @@ class modules
 public:
     static object::objectPtr import(object::objectPtr thisObj, object::type::Array &&args, stack *st);
     static object::objectPtr getImportPaths(object::objectPtr thisObj, object::type::Array &&args, stack *st);
+    static const std::vector<std::filesystem::path>& getImportPaths() {return importPaths;}
 
     static void init(objectPtrImpl newModulesPtr)
     {

@@ -293,6 +293,14 @@ public:
                     return static_cast<number>(me->get<int32_t>(0));
                 case buffer::type::Int64:
                     return static_cast<number>(me->get<int64_t>(0));
+                case buffer::type::Uint8:
+                    return static_cast<number>(me->get<uint8_t>(0));
+                case buffer::type::Uint16:
+                    return static_cast<number>(me->get<uint16_t>(0));
+                case buffer::type::Uint32:
+                    return static_cast<number>(me->get<uint32_t>(0));
+                case buffer::type::Uint64:
+                    return static_cast<number>(me->get<uint64_t>(0));
                 case buffer::type::Float:
                     return static_cast<number>(me->get<float>(0));
                 case buffer::type::Double:

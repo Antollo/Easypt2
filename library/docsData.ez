@@ -1,3 +1,35 @@
+function returns(obj, value) {
+    obj.addProperty("returns", value);
+};
+
+function parameters(obj, value) {
+    obj.addProperty("parameters", value);
+};
+
+function description(obj, value) {
+    obj.addProperty("description", value);
+};
+
+function example(obj, value) {
+    obj.addProperty("example", value);
+};
+
+function expectedOutput(obj, value) {
+    obj.addProperty("expectedOutput", value);
+};
+
+function adapted(obj, value) {
+    obj.description.addProperty("note", 
+"---
+<sub>This page has text and code adapted from [" +
+value + "](" + value + ")</sub> \\
+<sub>Prose content on this page is available under
+([CC-BY-SA 2.5](https://creativecommons.org/licenses/by-sa/2.5/)).</sub> \\
+<sub>Code examples on this page and snippets are in the public domain
+([CC0](https://creativecommons.org/publicdomain/zero/1.0/legalcode)).</sub>");
+}
+
+
 argc @description@
 "Number of the interpreter's command-line arguments.";
 argc @example@
@@ -96,8 +128,11 @@ execute @example@
 console.write(result, \" \", z);";
 execute @expectedOutput@ "24 24";
 
+
+/// console
+
 console @description@
-"`console` object provides standard input and output operations.";
+"The `console` object provides standard input and output operations.";
 console @example@
 "console.write(\"1+3 is \", 1+3);
 if (1+3 != 4) {
@@ -158,6 +193,21 @@ console.writeLineAsync @example@
 "await console.writeLineAsync(\"seven: \", 7);";
 console.writeLineAsync @expectedOutput@ "seven: 7\n";
 
+console.error @parameters@
+"/*any number of convertible to String parameters*/";
+console.error @returns@
+"console";
+console.error @description@
+"Writes arguments to standard output stream
+(with date and time, marked in green).";
+console.error @example@
+"try {
+    throw \"error\";
+} catch {
+    console.ok(\"This is fine.\");
+}";
+
+
 console.debug @parameters@
 "/*any number of convertible to String parameters*/";
 console.debug @returns@
@@ -198,7 +248,7 @@ console.error @returns@
 "console";
 console.error @description@
 "Writes arguments to standard output stream
-(with date and time, marked in yellow).";
+(with date and time, marked in red).";
 console.error @example@
 "try {
     throw \"error\";
@@ -285,9 +335,13 @@ console.setInput @example@
 console.setInput @expectedOutput@
 "abc";
 
+
+/// Array
+
 Array @description@
-"Array lists provides methods for manipulating arrays (list-like
-objects). Array elements are indexed with non-negative integers.";
+"Array class provides methods for manipulating arrays (list-like
+objects). Array elements are indexed with non-negative integers or
+negative integers (counts elemensts from the end of the array).";
 Array @example@
 "let arr = [36.6, \"Harry\", true];
 arr.forEach(function {
@@ -299,7 +353,7 @@ Array @expectedOutput@
 Array.classPrototype.append @parameters@
 "arr /*Array*/, [position = 0 /*Number*/, length = arr.length() /*Number*/]";
 Array.classPrototype.append @description@
-"Appends arr to this array (or optionally 
+"Appends `arr` to this array (or optionally 
 subarray starting from given position 
 and of given length).";
 Array.classPrototype.append @example@
@@ -379,13 +433,33 @@ console.write(subarr[0]);";
 Array.classPrototype.subarray @expectedOutput@
 "2";
 
+Array.classPrototype.join @parameters@
+"[separator = \",\" /*String*/]";
+Array.classPrototype.join @returns@
+"/*String*/";
+Array.classPrototype.join @description@
+"The `join` method creates and returns a new string by concatenating all of the elements in an 
+array, separated by commas or a specified separator string. If the array has only one item, 
+then that item will be returned without using the separator.";
+Array.classPrototype.join @adapted@ "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join"
+Array.classPrototype.join @example@
+"let elements = [\"Fire\", \"Air\", \"Water\"];
+console.write(elements.join());
+console.write(\"\\n\");
+console.write(elements.join(\"\"));
+console.write(\"\\n\");
+console.write(elements.join(\"-\"));";
+Array.classPrototype.join @expectedOutput@
+"Fire,Air,Water\nFireAirWater\nFire-Air-Water";
+
 Array.classPrototype.readOperator @parameters@
 "position /*Number*/";
 Array.classPrototype.readOperator @returns@
 "/*Object*/";
 Array.classPrototype.readOperator @description@
-"Read operator (arrayInstance[n]) returns element at given position.
-Not to be confused with static method Array.readOperator.";
+"Read operator (`arrayInstance[position]`) returns element at given position. 
+Negative indicies can be used, and count from the end of the array.
+Not to be confused with static method `Array.readOperator`.";
 Array.classPrototype.readOperator @example@
 "let arr = [36.6, \"Harry\", true];
 console.write(arr[1]);";
@@ -397,8 +471,8 @@ Array.readOperator @parameters@
 Array.readOperator @returns@
 "/*Array*/";
 Array.readOperator @description@
-"Static read operator ([1, \"A\"]) constructs new Array.
-Not to be confused with method Array.classPrototype.readOperator.";
+"Static read operator (`[1, \"A\"]`) constructs new Array.
+Not to be confused with method `Array.classPrototype.readOperator`.";
 Array.readOperator @example@
 "let arr = [36.6, \"Harry\", true];
 console.write(arr[1]);";
@@ -407,7 +481,7 @@ Array.readOperator @expectedOutput@
 
 Object @description@
 "Base class of all Easypt classes, all objects
-are instances of Object.";
+are instances of `Object`.";
 Object @example@
 "let obj; // Object is default type
 obj.addProperty(\"first\", 1);
@@ -435,7 +509,7 @@ Object.classPrototype.addProperty @parameters@
 Object.classPrototype.addProperty @returns@
 "key /*String*/";
 Object.classPrototype.addProperty @description@
-"Adds new property to object.";
+"Adds new property to the object.";
 Object.classPrototype.addProperty @example@
 "let obj;
 obj.addProperty(\"first\", 1);
@@ -445,9 +519,9 @@ Object.classPrototype.addProperty @expectedOutput@
 "1 a";
 
 Object.classPrototype.removeProperty @parameters@
-"key /*String*/, value";
+"key /*String*/";
 Object.classPrototype.removeProperty @description@
-"Adds new property to object.";
+"Removes the property from the object.";
 Object.classPrototype.removeProperty @example@
 "let obj;
 obj.addProperty(\"first\", 1);
@@ -570,20 +644,76 @@ Object.classPrototype.toBoolean @example@
 Object.classPrototype.toBoolean @expectedOutput@
 "false true";
 
-module @description@
-"Object containing information about current source file.";
-module @example@
-"console.writeLine(module.name);";
+Object.classPrototype.toJson @returns@
+"/*String*/";
+Object.classPrototype.toJson @description@
+"The `toJson` method converts an object to a JSON string.";
+Object.classPrototype.toJson @adapted@ "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify"
+Object.classPrototype.toJson @example@
+"console.write({ arr: [1, \"a\", true]});";
+Object.classPrototype.toJson @expectedOutput@
+"{
+    \"arr\": [1, \"a\", true]
+}";
 
-module.name @description@
-"Path of current source file.";
-module.name @example@
-"console.writeLine(module.name);";
+function addDocToModuleObject(module)
+{
+    module @description@
+    "Object containing information about current source file.";
+    module @example@
+    "console.writeLine(module.name);
+/* Possible output:
+21-06-2022 12:00:00 {
+    \"name\": \"repl\",
+    \"filename\": \"repl.ez\",
+    \"path\": \"C:\\\\Easypt2\\\\library\"
+}
+*/";
+
+    module.name @description@
+    "The name of current source file.";
+    module.name @example@
+    "console.writeLine(module.name);";
+
+    module.filename @description@
+    "The file name of current source file.";
+    module.filename @example@
+    "console.writeLine(module.filename);";
+
+    module.path @description@
+    "The directory name of current source file.";
+    module.path @example@
+    "console.writeLine(module.path);";
+
+    module.exports @description@
+    "The directory name of current source file.";
+    module.exports @example@
+    "console.writeLine(module.path);";
+}
+
+modules @description@
+"Object containing information about all imported source files in the 
+same form as in the `module` object.";
+modules @example@
+"console.log(modules);
+/* Possible output:
+21-06-2022 12:00:00 {
+    \"repl\": {
+        \"name\": \"repl\",
+        \"filename\": \"repl.ez\",
+        \"path\": \"C:\\\\Easypt2\\\\library\"
+    }
+}
+*/";
+
+
+/// String
 
 String @description@
 "Represents text as a sequence of characters (UTF-8 code units).
 Provides methods for manipulating such sequences. Strings 
-are indexed with non-negative integers.";
+are indexed with non-negative integers or negative integers 
+(counts elemensts from the end of the array)";
 String @example@
 "console.write(\"a\".getByteAt(0));";
 String @expectedOutput@
@@ -636,7 +766,8 @@ String.classPrototype.readOperator @parameters@
 String.classPrototype.readOperator @returns@
 "/*String*/";
 String.classPrototype.readOperator @description@
-"Read operator (stringInstance[n]) returns character at given position.";
+"Read operator (`stringInstance[position]`) returns character at given position. 
+Negative indicies can be used, and count from the end of the string.";
 String.classPrototype.readOperator @example@
 "console.write(\"Harry\"[1]);";
 String.classPrototype.readOperator @expectedOutput@
@@ -741,6 +872,38 @@ console.write(\" | \", str);";
 String.classPrototype.append @expectedOutput@
 "Roses are red, Violets are blue. | Roses are blue.";
 
+String.classPrototype.replace @parameters@
+"pattern /*String*/, replacement /*String*/, [inPlace = false /*Boolean*/]";
+String.classPrototype.replace @returns@
+"/*Number*/";
+String.classPrototype.replace @description@
+"The `replace` method returns a new string with the first match of a pattern replaced 
+by a replacement. If `inPlace` is true, the original string is modified";
+String.classPrototype.replace @adapted@
+"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace"
+String.classPrototype.replace @example@
+"let sentence = \"The quick brown fox jumps over the lazy dog. If the dog reacted, was it really lazy?\";
+console.write(sentence.replace(\"dog\", \"monkey\"));";
+String.classPrototype.replace @expectedOutput@
+"The quick brown fox jumps over the lazy monkey. If the dog reacted, was it really lazy?";
+
+String.classPrototype.replaceAll @parameters@
+"pattern /*String*/, replacement /*String*/, [inPlace = false /*Boolean*/]";
+String.classPrototype.replaceAll @returns@
+"/*Number*/";
+String.classPrototype.replaceAll @description@
+"The `replaceAll` method returns a new string with all matches of a pattern replaced 
+by a replacement. If `inPlace` is true, the original string is modified";
+String.classPrototype.replaceAll @adapted@
+"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace"
+String.classPrototype.replaceAll @example@
+"let sentence = \"The quick brown fox jumps over the lazy dog. If the dog reacted, was it really lazy?\";
+console.write(sentence.replaceAll(\"dog\", \"monkey\"));";
+String.classPrototype.replaceAll @expectedOutput@
+"The quick brown fox jumps over the lazy monkey. If the monkey reacted, was it really lazy?";
+
+/// Boolean
+
 Boolean @description@
 "Represents boolean value.";
 Boolean @example@
@@ -779,7 +942,7 @@ Number.classPrototype.toFloatingPoint @expectedOutput@
 "3.000000";
 
 Function @description@
-"Represents function.";
+"Represents a function.";
 Function @example@
 "function sum (a, b) {
     return a + b;    
@@ -886,6 +1049,16 @@ file.close();
 console.write(name, \" \", port);";
 File @expectedOutput@
 "http 80";
+
+File.classPrototype.constructor @parameters@
+"[path /*String*/]";
+File.classPrototype.constructor @description@
+"Optionally opens file specified by the path.";
+File.classPrototype.constructor @example@
+"File().create(\"abc.txt\").write(\"abc\");
+console.write(File(\"abc.txt\").read());";
+File.classPrototype.constructor @expectedOutput@
+"abc";
 
 File.classPrototype.write @parameters@
 "/*any number of convertible to String parameters*/";
@@ -1318,9 +1491,8 @@ File.classPrototype.setWritePosition @expectedOutput@
 "abba 5 0";
 
 Promise @description@
-"Represents an operation that that executes 
-asynchronously and its resulting value or error that 
-raised during its execution.";
+"Represents an operation that executes asynchronously and its 
+ value or error that raised during its execution.";
 Promise @example@
 "Timeout(20).then(() => console.write(20, \" \"););
 await Timeout(30);
@@ -1394,7 +1566,7 @@ Promise.tick @expectedOutput@
 //ConditionalPromise @parameters@
 //"callback /*Function*/, condition /*Function*/"
 //ConditionalPromise @description@
-//"Represents an operation that that is asynchronously 
+//"Represents an operation that is asynchronously 
 //sampling the value of condition and when it's true 
 //executes callback.";
 //ConditionalPromise @example@
@@ -1407,20 +1579,39 @@ Promise.tick @expectedOutput@
 //ConditionalPromise @expectedOutput@
 //"c is now true";
 
-Timeout @parameters@
-"milliseconds /*Number*/";
+
+/// Timeout
+
 Timeout @description@
 "Asynchronously waits for the given amount 
 of time (in milliseconds). Completes after 
 finishing waiting.";
 Timeout @example@
-"// Wait for 10 ms
+"// Wait for ms
 Timeout(1).then(() => console.write(1););
 console.write(0);
 await Timeout(23);
 console.write(23);";
 Timeout @expectedOutput@
 "0123";
+
+Timeout.classPrototype.constructor @parameters@
+"milliseconds /*Number*/";
+Timeout.classPrototype.constructor @returns@
+"/*Timeout*/"
+Timeout.classPrototype.constructor @description@
+"Creates new `Timeout` object.";
+Timeout.classPrototype.constructor @example@
+"// Wait for 1 ms
+Timeout(1).then(() => console.write(1););
+console.write(0);
+await Timeout(23);
+console.write(23);";
+Timeout.classPrototype.constructor @expectedOutput@
+"0123";
+
+
+/// Tcp
 
 let tcpExample = "let tcpServer = TcpServer();
 let port = 3000;
@@ -1446,6 +1637,9 @@ await tcpClientA.send(\"abcd\");
 await tcpClientA.close();";
 
 let tcpExampleOutput = "abcd";
+
+
+/// TcpServer
 
 TcpServer @description@
 "TCP server listens for TCP connections.";
@@ -1482,6 +1676,8 @@ TcpServer.classPrototype.close @expectedOutput@
 tcpExampleOutput;
 
 
+/// TcpClient
+
 TcpClient @description@
 "TCP client provides TCP socket 
 input and output operations.";
@@ -1510,6 +1706,17 @@ tcpExample;
 TcpClient.classPrototype.receive @expectedOutput@
 tcpExampleOutput;
 
+TcpClient.classPrototype.connect @parameters@
+"address /*String*/, port /*Number*/";
+TcpClient.classPrototype.connect @returns@
+"/*Promise of TcpClient*/";
+TcpClient.classPrototype.connect @description@
+"Asynchronously initiate a connection.";
+TcpClient.classPrototype.connect @example@
+tcpExample;
+TcpClient.classPrototype.connect @expectedOutput@
+tcpExampleOutput;
+
 TcpClient.classPrototype.close @description@
 "Closes the socket.";
 TcpClient.classPrototype.close @example@
@@ -1518,11 +1725,84 @@ TcpClient.classPrototype.close @expectedOutput@
 tcpExampleOutput;
 
 
+/// SslServer
+
+let sslServerExample = "// Simple HTTPS server
+let tcpServer = SslServer(\"cert.pem\", \"cert.key\");
+await tcpServer.bind(3003);
+while (true) {
+    try {
+        let tcpClientB = await tcpServer.listen();
+        let time = Time.sinceEpoch.asFloatingPoint();
+        await tcpClientB.receive();
+        await tcpClientB.send(\"HTTP/1.1 200 OK\\r\\n\"+
+                            \"Date: Mon, 27 Jul 2009 12:28:53 GMT\\r\\n\"+
+                            \"Server: Apache/2.2.14 (Win32)\\r\\n\"+
+                            \"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\\r\\n\"+
+                            \"Content-Length: 48\\r\\n\"+
+                            \"Content-Type: text/html\\r\\n\"+
+                            \"Connection: Closed\\r\\n\\r\\n\"+
+                            \"<html>\"+
+                            \"<body>\"+
+                            \"<h1>Hello, World!</h1>\"+
+                            \"</body>\"+
+                            \"</html>\");
+        console.log(Time.sinceEpoch.asFloatingPoint() - time);
+    } catch {
+        console.error(exception);
+    }
+}"
+
+SslServer @description@
+"SSL server listens for secure sockets (such as SSL or TLS) connections.";
+SslServer @example@
+sslServerExample;
+
+SslServer.classPrototype.constructor @parameters@
+"cert /*String*/, key /*String*/";
+SslServer.classPrototype.constructor @description@
+"Creates a new SSL server socket. Files are searched in directories 
+listed in `import.getImportPaths()`.
+ - `cert` - path to certificate stored in file in PEM format
+            (see `SSL_CTX_use_certificate_file`)
+ - `key`  - path to private key in PEM format
+            (see `SSL_CTX_use_PrivateKey`)
+ ";
+SslServer.classPrototype.constructor @example@
+sslServerExample;
+
+
+/// SslClient
+
+let sslClientExample = "// HTTPS request
+let tcpClientA = SslClient();
+await tcpClientA.connect(\"www.example.com\", 443);
+await tcpClientA.send(\"GET / HTTP/1.1\\r\\nHost: www.example.com\\r\\n\\r\\n\");
+console.write((await tcpClientA.receive()).split(\"\\r\")[0]);
+await tcpClientA.close();";
+
+let sslClientExampleOutput = "HTTP/1.1 200 OK";
+
+SslClient @description@
+"SSL client provides secure socket (such as SSL 
+or TLS) input and output operations.";
+SslClient @example@
+sslClientExample;
+SslClient @expectedOutput@
+sslClientExampleOutput;
+
+
+/// getStack
+
+getStack @description@
+"Returns object containing all variables defined on stack as properties.";
+getStack @example@
+"console.log(getStack())";
+
+
 /* TODO: 
 - ChildProcess
-- Accessible
-- TcpClient
-- TcpServer
+- Buffer
 */
 
 /*
@@ -1537,3 +1817,7 @@ T @example@
 T @expectedOutput@
 "";
 */
+
+return {
+    addDocToModuleObject: addDocToModuleObject
+}

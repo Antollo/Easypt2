@@ -1,65 +1,57 @@
+---
+sort: 2
+---
+
 # Expressions
 
 ## Functions
 
-### `function` expression
+### `function` Function expression.
 
-- `function` _identifier_ `(`_parameter_list_`)` _compound_statement_
-- `function` _identifier_ _compound_statement_
+  - `function` _identifier_ `(` _parameter list_ `)` _compound statement_
+  - `function` _identifier_ _compound statement_
+  
+  Defines function with a specified name and optional aliases for arguments.
+  
+  - `function` `(` _parameter list_ `)` _compound statement_
+  - `function` _compound statement_
 
- Defines function with a specified name and optional aliases for arguments.
+  Defines function with optional aliases for arguments.
 
-- `function` `(`_parameter_list_`)` _compound_statement_
-- `function` _compound_statement_
+### `=>` "Fat arrow" function expression.
 
-Defines function with optional aliases for arguments.
+  - `(` _parameter list_ `) =>` _compound statement_
 
-### `=>` "fat arrow" function
+  Defines function with aliases for arguments.
 
-- `(`_parameter_list_`) => ` _compound_statement_
+  - `(` _parameter list_ `) =>` _statement_
 
-Defines function with aliases for arguments.
+  Defines function with aliases for arguments. The return value of the function is the value of an expression that the statement consists of.
 
-- `(`_parameter_list_`) => ` statement
+### JSON expression.
 
-Defines function with aliases for arguments. The return value of the function is the value of an expression that the statement consists of.
+  - A sequence of JSON statements between braces.
 
-## JSON expression
-
-A sequence of JSON statements between braces.
-
-_Probably not fully compatible with JSON specification yet._
+  ```warning
+  Probably not fully compatible with JSON specification yet.
+  ```
 
 ## Classes
 
-### `class` expression
+### `class` expression.
 
-- `class` _identifier_ _json-expression_
-- `class` _identifier_ `extends` _identifier_ _json-expression_
+  - `class` _identifier_ _json-expression_
+  - `class` _identifier_ `extends` _identifier_ _json-expression_
 
-Defines a new class (`Class` object) optionally with a specified base class.
+  Defines a new class (`Class` object) optionally with a specified base class.
 
 ## Declarations
 
-### `let` expression
+### `let` expression.
 
-`let` _identifier_
+  - `let` _identifier_
 
-Declares variable with the specified name. The default value is `Object()`.
-
-## Control flow
-
-### `return` keyword
-
-`return` _expression_
-
-Ends execution of functions. The value of the current function call is `a`.
-
-### `throw` keyword
-
-`throw` _expression_
-
-Stops execution of current context. Throws `a`.
+  Declares variable with the specified name. The default value is `Object()`.
 
 # Operators
 
@@ -225,8 +217,11 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 - #### `a[b]` Read operator.
   Equivalent of `a.readOperator(b)`.
 
-- #### `a @f@ b` User operator.
+- #### `a @f@ b` Binary function operator.
   Equivalent of `f(a, b)`.
+
+- #### `@f a` Decorator.
+  Equivalent of `f(a)`.
 
 
 ## Other operators
@@ -234,24 +229,35 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 - #### `...a` Spread operator
   - `f(...a)` Function call, method call and read operator.
 
-    If `a` is convertible to `Array`, pass elements of the array to the function. Example:
-    ```js
-    console.log(1, 2, ...[3, 4], 5, 6);
-    ```
+  If `a` is convertible to `Array`, pass elements of the array to the function. Example:
+  ```js
+  console.log(1, 2, ...[3, 4], 5, 6);
+  ```
 
   - `{ ...a }` Object literal.
 
-    Pass properties of `a` (excluding prototype) to the new object. Example:
-    ```js
-    { x: 1, ...{ y: 2, z:3 } }
-    ```
+  Pass properties of `a` (excluding prototype) to the new object. Example:
+  ```js
+  { x: 1, ...{ y: 2, z: 3 } }
+  ```
 
   - `[ ...a ]` Array literal.
 
-    If `a` is convertible to `Array`, pass elements of the array to new array. Example:
-    ```js
-    [1, 2, ...[3, 4], 5, 6]
-    ```
+  If `a` is convertible to `Array`, pass elements of the array to new array. Example:
+  ```js
+  [1, 2, ...[3, 4], 5, 6]
+  ```
+
+  - `...a ` Stack.
+
+  Unpack properties of `a` as variables. 
+  Example:
+  ```js
+  let a = { x: 1, y: "abc" }
+  // console.log(y) Error: "y not found"
+  ...a
+  console.log(y) // Prints "abc"
+  ```
 
 - #### `a ? b : c` Conditional (ternary) operator.
   If `a` is true then value of conditional expression

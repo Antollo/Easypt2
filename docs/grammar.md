@@ -1,12 +1,27 @@
+---
+sort: 1
+---
+
 # Grammar
 
 ## Lexical grammar
 
-### Identifier, whitespace and literals
+### Identifier
 
 ```
 identifier      : [_a-zA-Z][_a-zA-Z0-9]*
+
+```
+
+### Whitespace
+
+```
 ws              : [ \t\n\r]*
+```
+
+### Literals
+
+```
 float           : [0-9]+[.][0-9]+([eE]-?[0-9]+)?
 decimal         : [1-9][0-9]*|0
 hexadecimal     : 0[xX][0-9a-fA-F]+
@@ -54,9 +69,11 @@ break           : BREAK
 {identifier}    : IDENTIFIER;
 ```
 
+```note
 Identifiers starting with double underscores are 
 reserved for internal interpreter implementation 
 and should not be used.
+```
 
 ### Literals
 
@@ -78,7 +95,6 @@ and should not be used.
 ### Operators
 
 ```
-@{identifier}@  : USER_OPERATOR
 ==              : EQUAL
 !=              : NOT_EQUAL
 \<              : LESS
@@ -114,6 +130,8 @@ and should not be used.
 \]              : BRACKET_CLOSE
 \?              : CONDITIONAL
 \.\.\.          : SPREAD_OPERATOR
+@{identifier}   : DECORATOR
+@{identifier}@  : BINARY_FUNCTION_OPERATOR
 ```
 
 ## Grammar
@@ -397,7 +415,7 @@ leftAssociativeOperator :
     | GREATER_EQUAL
     | AND
     | OR
-    | USER_OPERATOR
+    | BINARY_FUNCTION_OPERATOR
     | INSTANCEOF
     ]
 ```

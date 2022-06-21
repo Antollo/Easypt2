@@ -16,8 +16,9 @@ void Array::init(stack *st)
 
     object::arrayPrototype->addFunctionL(n::readOperator, {
         argsConvertibleGuard<number>(args);
-        size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        int64_t pos = static_cast<int64_t>(args[0]->getConverted<object::type::Number>());
         object::type::Array &me = thisObj->get<object::type::Array>();
+        negativeIndexing(pos, me);
         assert<std::greater_equal>(pos, 0);
         assert<std::less>(pos, me.size());
         return me[pos];
@@ -30,7 +31,7 @@ void Array::init(stack *st)
     object::arrayPrototype->addFunctionL("insert"_n, {
         argsConvertibleGuard<number, nullptr_t>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
-        size_t destPos= static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        size_t destPos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         assert<std::greater_equal>(destPos, 0);
         assert<std::less_equal>(destPos, dest.size());
         dest.insert(dest.begin() + destPos, args[1]);
@@ -127,5 +128,20 @@ void Array::init(stack *st)
         for (size_t i = 0; i < me.size(); i++)
             (*args[0])(args[0], {me[i], object::makeObject(static_cast<number>(i)), thisObj}, st);
         return thisObj;
+    });
+
+    object::arrayPrototype->addFunctionL("join"_n, {
+        std::string separator = ",";
+        if (args.size() > 0)
+            separator = args[0]->getConverted<object::type::String>();
+        object::type::Array &me = thisObj->get<object::type::Array>();
+        std::stringstream result;
+        for (size_t i = 0; i < me.size(); i++)
+        {
+            result << me[i]->getConverted<object::type::String>();
+            if (i + 1 != me.size())
+                result << separator;
+        }
+        return object::makeObject(result.str());
     });
 }

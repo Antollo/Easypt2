@@ -53,7 +53,7 @@ public:
         return *this;
     }
 
-    void open(const std::string &path, const char * = "r+");
+    void open(const std::string &path, const char * = "rb+");
     void open(FILE *f);
     void create(const std::string &path);
     void remove();

@@ -287,7 +287,7 @@ object::objectPtr Node::evaluate(stack &st) const
             while (_children[0].evaluateBoolean(st))
                 _children[1].evaluateVoid(st);
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return nullptr;
@@ -302,7 +302,7 @@ object::objectPtr Node::evaluate(stack &st) const
                 for (auto &child : _children[1]._children)
                     child.evaluateVoid(localStack);
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return nullptr;
@@ -316,7 +316,7 @@ object::objectPtr Node::evaluate(stack &st) const
                 for (auto &child : _children[1]._children)
                     child.evaluateVoid(st);
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return nullptr;
@@ -332,7 +332,7 @@ object::objectPtr Node::evaluate(stack &st) const
                 _children[2].evaluateVoid(st);
             }
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return nullptr;
@@ -351,7 +351,7 @@ object::objectPtr Node::evaluate(stack &st) const
                 _children[2].evaluateVoid(st);
             }
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return nullptr;
@@ -369,7 +369,7 @@ object::objectPtr Node::evaluate(stack &st) const
                 _children[2].evaluateVoid(st);
             }
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return nullptr;
@@ -674,7 +674,7 @@ object::objectPtr Node::evaluate(stack &st) const
         return nullptr;
     }
 
-    caseBinary(USER_OPERATOR,
+    caseBinary(BINARY_FUNCTION_OPERATOR,
     {
         assert(_children.size() == 2);
         auto op = st[_text];
@@ -870,6 +870,13 @@ object::objectPtr Node::evaluate(stack &st) const
         return (*(*a)[n::complement])(a, {}, &st);
     })
 
+    caseUnary(DECORATOR,
+    {
+        assert(_children.size() == 1);
+        auto op = st[_text];
+        return (*op)(op, {a}, &st);
+    })
+
     case IDENTIFIER:
         assert(!_text.isEmpty());
         return st[_text];
@@ -963,7 +970,7 @@ void Node::evaluateVoid(stack &st) const
             while (_children[0].evaluateBoolean(st))
                 _children[1].evaluateVoid(st);
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return;
@@ -978,7 +985,7 @@ void Node::evaluateVoid(stack &st) const
                 for (auto &child : _children[1]._children)
                     child.evaluateVoid(localStack);
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return;
@@ -992,7 +999,7 @@ void Node::evaluateVoid(stack &st) const
                 for (auto &child : _children[1]._children)
                     child.evaluateVoid(st);
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return;
@@ -1008,7 +1015,7 @@ void Node::evaluateVoid(stack &st) const
                 _children[2].evaluateVoid(st);
             }
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return;
@@ -1027,7 +1034,7 @@ void Node::evaluateVoid(stack &st) const
                 _children[2].evaluateVoid(st);
             }
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return;
@@ -1045,7 +1052,7 @@ void Node::evaluateVoid(stack &st) const
                 _children[2].evaluateVoid(st);
             }
         }
-        catch (const breakType &e)
+        catch (const breakType &)
         {
         }
         return;
@@ -1342,7 +1349,7 @@ void Node::evaluateVoid(stack &st) const
         return;
     }
 
-    caseBinary(USER_OPERATOR,
+    caseBinary(BINARY_FUNCTION_OPERATOR,
     {
         assert(_children.size() == 2);
         auto op = st[_text];
@@ -1478,6 +1485,8 @@ void Node::evaluateVoid(stack &st) const
         return;
     })
 
+    #undef objectReturn
+    #undef valueReturn
     #define objectReturn(...) __VA_ARGS__; return
     #define valueReturn(...) return
     forCompareOperator(compareNode);
@@ -1512,6 +1521,14 @@ void Node::evaluateVoid(stack &st) const
         if (a->isConvertible<bool>())
             return;
         (*(*a)[n::notOp])(a, {}, &st);
+        return;
+    })
+
+    caseUnary(DECORATOR,
+    {
+        assert(_children.size() == 1);
+        auto op = st[_text];
+        (*op)(op, {a}, &st);
         return;
     })
 
@@ -1634,6 +1651,8 @@ bool Node::evaluateBoolean(stack &st) const
         return (*(*a)[n::orOp])(a, {b}, &st)->getConverted<object::type::Boolean>();
     })
 
+    #undef objectReturn
+    #undef valueReturn
     #define objectReturn(...) return (__VA_ARGS__)->getConverted<object::type::Boolean>()
     #define valueReturn(...) return __VA_ARGS__
     forCompareOperator(compareNode);

@@ -63,11 +63,11 @@ console.writeLine(arr[999]);
 
 
 let x;
-let acc <- Accessible();
 let i = 0;
-acc.get = () => {console.writeLine("hello"); return i++;};
-acc.set = (a) => {console.writeLine(a); return i;};
-x.a <- acc;
+x.a <- Accessible({
+    get: () => {console.writeLine("hello"); return i++;},
+    set: (a) => {console.writeLine(a); return i;}
+});
 console.writeLine(x.a);
 console.writeLine(x.a);
 x.a = 7;

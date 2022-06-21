@@ -18,7 +18,7 @@ void ChildProcess::init(stack *st)
         else
             cwd = std::filesystem::absolute(std::filesystem::current_path()).string();
 
-        object::type::Array argsIn= args[1]->getConverted<object::type::Array>();
+        object::type::Array argsIn = args[1]->getConverted<object::type::Array>();
         std::vector<std::string> argsV(argsIn.size());
 
         for (size_t i = 0; i < argsIn.size(); i++)
@@ -42,5 +42,26 @@ void ChildProcess::init(stack *st)
         _stderr->get<object::type::File>()->f = _childProcess->getError();
 
         return thisObj;
+    });
+
+    childProcessPrototype->addFunctionL("running"_n, {
+        object::type::ChildProcess &me = thisObj->get<object::type::ChildProcess>();
+        return object::makeObject(me->running());
+    });
+
+    childProcessPrototype->addFunctionL("kill"_n, {
+        object::type::ChildProcess &me = thisObj->get<object::type::ChildProcess>();
+        return object::makeObject(me->kill());
+    });
+
+    childProcessPrototype->addFunctionL("wait"_n, {
+        return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj, args]() mutable {
+            object::type::ChildProcess &me = thisObj->get<object::type::ChildProcess>();
+            auto f = std::async(std::launch::async, [&me]() {
+                coroutineEvent post;
+                return me->wait();
+            });
+            return object::makeObject(await f);
+        }));
     });
 }

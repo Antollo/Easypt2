@@ -43,4 +43,11 @@ void argsConvertibleGuard(const object::type::Array &arr)
 	argsConvertibleGuardHelper<Args...>(arr, std::index_sequence_for<Args...>());
 }
 
+template <class I, class C>
+void negativeIndexing(I &i, const C &c)
+{
+	if (i < 0)
+		i += c.size();
+}
+
 #endif /* !COMMON_H_ */

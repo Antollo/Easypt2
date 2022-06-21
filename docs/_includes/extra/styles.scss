@@ -1,0 +1,93 @@
+$border-radius: 0 !important;
+$primary-color: #FFA000;
+$secondary-color: #424242;
+
+div.highlighter-rouge:after {
+    display: none !important;
+}
+
+pre.highlight {
+    border-radius: $border-radius;
+}
+
+.btn {
+    border-radius: $border-radius;
+}
+
+code {
+    border-radius: $border-radius;
+}
+
+.header {
+    color: $secondary-color;
+    background: $primary-color;
+}
+
+.sidebar {
+    color: $primary-color;
+    background: $secondary-color;
+}
+
+.toctree {
+    color: $primary-color;
+}
+
+a.caption, .addons-wrap .status .branch .name {
+    color: #FFC107 !important;
+}
+
+dl>dt {
+    display: table;
+    margin: 6px 0;
+    font-size: 90% !important;
+    line-height: normal;
+    background: #e7f2fa;
+    color: #2980b9;
+    border-top: 3px solid #6ab0de;
+    padding: 6px !important;
+    position: relative
+}
+
+dt:first-child,
+dl>dt:first-child {
+    margin-top: 0
+}
+
+.markdown-body dt {
+    font-family: inherit;
+}
+
+.markdown-body dl dt {
+    font-style: inherit;
+}
+
+.markdown-body dl dd {
+    margin: 0 0 12px 24px;
+}
+
+.toc>a {
+    padding: 0.5em !important;
+}
+
+.toasts, .toasts .title {
+    box-shadow: none !important;
+}
+
+html {
+    --toc-1: #9E9E9E !important;
+    --toc-2: #BDBDBD !important;
+    --toc-3: #E0E0E0 !important;
+    --toc-4: #EEEEEE !important;
+    --toc-5: #F5F5F5 !important;
+    --toc-6: #9E9E9E !important;
+    --toc-7: #BDBDBD !important;
+    --toc-8: #E0E0E0 !important;
+    --toc-9: #EEEEEE !important;
+    --toc-10: #F5F5F5 !important;
+    --toc-11: #9E9E9E !important;
+    --toc-12: #BDBDBD !important;
+}
+
+.markdown-body li {
+    list-style: disc;
+}

@@ -12,7 +12,7 @@ void File::init(stack *st)
         thisObj->setType<std::shared_ptr<file>>();
         thisObj->get<std::shared_ptr<file>>() = std::make_shared<file>();
 
-        if (args.size() > 1 && args[0]->isConvertible<std::string>())
+        if (args.size() > 0 && args[0]->isConvertible<std::string>())
             thisObj->get<std::shared_ptr<file>>()->open(args[0]->getConverted<object::type::String>());
         return thisObj;
     });

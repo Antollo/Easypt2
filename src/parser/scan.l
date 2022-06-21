@@ -82,7 +82,8 @@ comment \/\/.*
                             }
 <INITIAL>\(/({identifier},{ws})*{identifier}?\){ws}=> { return FAT_ARROW_BEGIN; }
 <INITIAL>=>                 { return FAT_ARROW; }
-<INITIAL>@{identifier}@     { treeParser::text = std::string(yytext + 1, std::strlen(yytext) - 2); return USER_OPERATOR; }
+<INITIAL>@{identifier}@     { treeParser::text = std::string(yytext + 1, std::strlen(yytext) - 2); return BINARY_FUNCTION_OPERATOR; }
+<INITIAL>@{identifier}      { treeParser::text = std::string(yytext + 1, std::strlen(yytext) - 1); return DECORATOR; }
 <INITIAL>==                 { treeParser::text = yytext; return EQUAL; }
 <INITIAL>!=                 { treeParser::text = yytext; return NOT_EQUAL; }
 <INITIAL>\<                 { treeParser::text = yytext; return LESS; }

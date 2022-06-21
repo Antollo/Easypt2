@@ -1,10 +1,9 @@
 let tcpClientA = SslClient();
 await tcpClientA.connect("www.example.com", 443);
 await tcpClientA.send("GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n");
-console.log(await tcpClientA.receive());
+console.log((await tcpClientA.receive()).split("\r")[0]);
 await tcpClientA.close();
 
-return 0;
 
 let str = "HTTP/1.1 200 OK\r\n"+
                             "Date: Mon, 27 Jul 2009 12:28:53 GMT\r\n"+
@@ -21,8 +20,8 @@ let str = "HTTP/1.1 200 OK\r\n"+
 console.error(str.length());
 
 
-let tcpServer = SslServer("cert.key", "cert.pem");
-await tcpServer.bind(3006);
+let tcpServer = SslServer("cert.pem", "cert.key");
+await tcpServer.bind(3003);
 while (true) {
     try {
         let tcpClientB = await tcpServer.listen();

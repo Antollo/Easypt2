@@ -69,7 +69,7 @@ function request(method, requestUri, headers, body, port, httpVersion)
     if (args.length() < 6)
         let httpVersion <- "HTTP/1.1";
     if (args.length() < 5)
-        let port <- 80;
+        let port <- 443;
     if (args.length() < 4)
         let body <- "";
 
@@ -82,7 +82,7 @@ function request(method, requestUri, headers, body, port, httpVersion)
     
     r.append("\r\n").append(body);
 
-    let server = TcpClient();
+    let server = SslClient();
     await server.connect(headers["Host"], port);
     await server.send(r);
     let obj <- parseHttpMessage(await server.receive());
@@ -92,9 +92,9 @@ function request(method, requestUri, headers, body, port, httpVersion)
     return obj;
 };
 
-//let r = request("GET", "/", { Host: "motherfuckingwebsite.com" });
-//console.log(r);
+let r = request("GET", "/", { Host: "example.com" });
+console.log(r);
 
 
-let h <- HttpServer();
-h.listen(1717);
+//let h <- HttpServer();
+//h.listen(1717);

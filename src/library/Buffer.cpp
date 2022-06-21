@@ -14,6 +14,51 @@ void Buffer::init(stack *st)
         return thisObj;
     });
 
+    bufferPrototype->addFunctionL(n::readOperator, {
+        argsConvertibleGuard<number>(args);
+        int64_t pos = static_cast<int64_t>(args[0]->getConverted<object::type::Number>());
+        object::type::Buffer &me = thisObj->get<object::type::Buffer>();
+        negativeIndexing(pos, *me);
+        assert<std::greater_equal>(pos, 0);
+
+        switch (me->elementType())
+        {
+        case buffer::type::Int8:
+            me->assert<int8_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<int8_t>(pos)));
+        case buffer::type::Int16:
+            me->assert<int16_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<int16_t>(pos)));
+        case buffer::type::Int32:
+            me->assert<int32_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<int32_t>(pos)));
+        case buffer::type::Int64:
+            me->assert<int64_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<int64_t>(pos)));
+        case buffer::type::Uint8:
+            me->assert<uint8_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<uint8_t>(pos)));
+        case buffer::type::Uint16:
+            me->assert<uint16_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<uint16_t>(pos)));
+        case buffer::type::Uint32:
+            me->assert<uint32_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<uint32_t>(pos)));
+        case buffer::type::Uint64:
+            me->assert<uint64_t>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<uint64_t>(pos)));
+        case buffer::type::Float:
+            me->assert<float>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<float>(pos)));
+        case buffer::type::Double:
+            me->assert<double>(pos);
+            return object::makeObject(static_cast<object::type::Number>(me->get<double>(pos)));
+        
+        default:
+            throw std::runtime_error("unknow type of Buffer, cannot convert to Number");
+        }
+    });
+
     bufferPrototype->addFunctionL("getInt8"_n, {
         argsConvertibleGuard<object::type::Number>(args);
         size_t pos = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
@@ -162,6 +207,26 @@ void Buffer::init(stack *st)
                 arr.emplace_back(object::makeObject(number(element)));
             break;
 
+        case buffer::type::Uint8:
+            for (auto element : me.asSpan<uint8_t>())
+                arr.emplace_back(object::makeObject(number(element)));
+            break;
+
+        case buffer::type::Uint16:
+            for (auto element : me.asSpan<uint16_t>())
+                arr.emplace_back(object::makeObject(number(element)));
+            break;
+
+        case buffer::type::Uint32:
+            for (auto element : me.asSpan<uint32_t>())
+                arr.emplace_back(object::makeObject(number(element)));
+            break;
+
+        case buffer::type::Uint64:
+            for (auto element : me.asSpan<uint64_t>())
+                arr.emplace_back(object::makeObject(number(element)));
+            break;
+
         case buffer::type::Float:
             for (auto element : me.asSpan<float>())
                 arr.emplace_back(object::makeObject(number(element)));
@@ -189,6 +254,14 @@ void Buffer::init(stack *st)
             return object::makeObject(static_cast<number>(me->get<int32_t>(0)));
         case buffer::type::Int64:
             return object::makeObject(static_cast<number>(me->get<int64_t>(0)));
+        case buffer::type::Uint8:
+            return object::makeObject(static_cast<number>(me->get<uint8_t>(0)));
+        case buffer::type::Uint16:
+            return object::makeObject(static_cast<number>(me->get<uint16_t>(0)));
+        case buffer::type::Uint32:
+            return object::makeObject(static_cast<number>(me->get<uint32_t>(0)));
+        case buffer::type::Uint64:
+            return object::makeObject(static_cast<number>(me->get<uint64_t>(0)));
         case buffer::type::Float:
             return object::makeObject(static_cast<number>(me->get<float>(0)));
         case buffer::type::Double:
@@ -211,6 +284,14 @@ void Buffer::init(stack *st)
             return object::makeObject(std::string("Int32"));
         case buffer::type::Int64:
             return object::makeObject(std::string("Int64"));
+        case buffer::type::Uint8:
+            return object::makeObject(std::string("Uint8"));
+        case buffer::type::Uint16:
+            return object::makeObject(std::string("Uint16"));
+        case buffer::type::Uint32:
+            return object::makeObject(std::string("Uint32"));
+        case buffer::type::Uint64:
+            return object::makeObject(std::string("Uint64"));
         case buffer::type::Float:
             return object::makeObject(std::string("Float"));
         case buffer::type::Double:
@@ -249,6 +330,38 @@ void Buffer::init(stack *st)
         size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
         object::type::Buffer &me = thisObj->get<object::type::Buffer>();
         me->allocate<int64_t>(size);
+        return thisObj;
+    });
+
+    bufferPrototype->addFunctionL("allocateUint8"_n, {
+        argsConvertibleGuard<object::type::Number>(args);
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        object::type::Buffer &me = thisObj->get<object::type::Buffer>();
+        me->allocate<uint8_t>(size);
+        return thisObj;
+    });
+
+    bufferPrototype->addFunctionL("allocateUint16"_n, {
+        argsConvertibleGuard<object::type::Number>(args);
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        object::type::Buffer &me = thisObj->get<object::type::Buffer>();
+        me->allocate<uint16_t>(size);
+        return thisObj;
+    });
+
+    bufferPrototype->addFunctionL("allocateUint32"_n, {
+        argsConvertibleGuard<object::type::Number>(args);
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        object::type::Buffer &me = thisObj->get<object::type::Buffer>();
+        me->allocate<uint32_t>(size);
+        return thisObj;
+    });
+
+    bufferPrototype->addFunctionL("allocateUint64"_n, {
+        argsConvertibleGuard<object::type::Number>(args);
+        size_t size = static_cast<size_t>(args[0]->getConverted<object::type::Number>());
+        object::type::Buffer &me = thisObj->get<object::type::Buffer>();
+        me->allocate<uint64_t>(size);
         return thisObj;
     });
 
@@ -353,6 +466,70 @@ void Buffer::init(stack *st)
         {
             assert(arr[i]->isOfType<object::type::Number>(), "element is not a number");
             b.get<int64_t>(i) = static_cast<int64_t>(arr[i]->get<const object::type::Number>());
+        }
+        newObj->get<object::type::Buffer>() = std::make_shared<buffer>(std::move(b));
+        return newObj;
+    });
+
+    Buffer->addFunctionL("fromUint8Array"_n, {
+        argsConvertibleGuard<object::type::Array>(args);
+        auto Buffer = (*st)[n::Buffer];
+        auto newObj = (*Buffer)(Buffer, {}, st);
+        auto  arr = args[0]->getConverted<object::type::Array>();
+        buffer b;
+        b.allocate<uint8_t>(arr.size());
+        for (size_t i = 0; i < arr.size(); i++)
+        {
+            assert(arr[i]->isOfType<object::type::Number>(), "element is not a number");
+            b.get<uint8_t>(i) = static_cast<uint8_t>(arr[i]->get<const object::type::Number>());
+        }
+        newObj->get<object::type::Buffer>() = std::make_shared<buffer>(std::move(b));
+        return newObj;
+    });
+
+    Buffer->addFunctionL("fromUint16Array"_n, {
+        argsConvertibleGuard<object::type::Array>(args);
+        auto Buffer = (*st)[n::Buffer];
+        auto newObj = (*Buffer)(Buffer, {}, st);
+        auto  arr = args[0]->getConverted<object::type::Array>();
+        buffer b;
+        b.allocate<uint16_t>(arr.size());
+        for (size_t i = 0; i < arr.size(); i++)
+        {
+            assert(arr[i]->isOfType<object::type::Number>(), "element is not a number");
+            b.get<uint16_t>(i) = static_cast<uint16_t>(arr[i]->get<const object::type::Number>());
+        }
+        newObj->get<object::type::Buffer>() = std::make_shared<buffer>(std::move(b));
+        return newObj;
+    });
+
+    Buffer->addFunctionL("fromUint32Array"_n, {
+        argsConvertibleGuard<object::type::Array>(args);
+        auto Buffer = (*st)[n::Buffer];
+        auto newObj = (*Buffer)(Buffer, {}, st);
+        auto  arr = args[0]->getConverted<object::type::Array>();
+        buffer b;
+        b.allocate<uint32_t>(arr.size());
+        for (size_t i = 0; i < arr.size(); i++)
+        {
+            assert(arr[i]->isOfType<object::type::Number>(), "element is not a number");
+            b.get<uint32_t>(i) = static_cast<uint32_t>(arr[i]->get<const object::type::Number>());
+        }
+        newObj->get<object::type::Buffer>() = std::make_shared<buffer>(std::move(b));
+        return newObj;
+    });
+
+    Buffer->addFunctionL("fromUint64Array"_n, {
+        argsConvertibleGuard<object::type::Array>(args);
+        auto Buffer = (*st)[n::Buffer];
+        auto newObj = (*Buffer)(Buffer, {}, st);
+        auto  arr = args[0]->getConverted<object::type::Array>();
+        buffer b;
+        b.allocate<uint64_t>(arr.size());
+        for (size_t i = 0; i < arr.size(); i++)
+        {
+            assert(arr[i]->isOfType<object::type::Number>(), "element is not a number");
+            b.get<uint64_t>(i) = static_cast<uint64_t>(arr[i]->get<const object::type::Number>());
         }
         newObj->get<object::type::Buffer>() = std::make_shared<buffer>(std::move(b));
         return newObj;

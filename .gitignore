@@ -1,3 +1,6 @@
+docsC
+docsJ
+*.html
 bin_old
 *copy.*
 VTune Profiler Results/

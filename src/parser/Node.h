@@ -272,6 +272,7 @@ public:
         case CALL_OPERATOR:
         case READ_OPERATOR:
         case METHOD_CALL_OPERATOR:
+        case DECORATOR:
 
             if (_children[0]._token == IDENTIFIER)
                 _token |= A_IDENTIFIER;
@@ -282,7 +283,7 @@ public:
         case MULTIPLICATION:
         case DIVISION:
         case MODULUS:
-        case USER_OPERATOR:
+        case BINARY_FUNCTION_OPERATOR:
         case INSTANCEOF:
         case BITWISE_AND:
         case BITWISE_OR:
@@ -321,6 +322,27 @@ public:
         result << std::string(indentation, '\t') << toName() << '\n';
         for (const auto &child : _children)
             result << child.explain(indentation + 1);
+        return result.str();
+    }
+
+    std::string toIntermediateLanguage() const
+    {
+        std::stringstream result;
+        translationContextType translationContext;
+
+        // Podczas wykonania dostajemy context i result
+        auto usedNames = getUsedNames();
+        result << "// All names used in function: ";
+        for (const auto &n : usedNames)
+            result << static_cast<std::string>(n) << ", ";
+        result << "\n";
+        for (const auto &n : usedNames)
+            result << "objectPtrPtr " << static_cast<std::string>(n) << " = readFromStackOrNull(" << static_cast<name::codeType>(n) << ", context);\n"; // let will set this to new object
+
+
+
+
+        toIntermediateLanguage(result, translationContext);
         return result.str();
     }
 
@@ -384,6 +406,74 @@ private:
         }
         return result.str();
     }
+
+    class translationContextType
+    {
+    public:
+        std::set<name> namesDeclaredInFunctionScope;
+        static std::string getClosureName() { return getName("closure"); }
+        static std::string getContextName() { return getName("context"); }
+
+    private:
+        static std::string getName(const char *nameType) { return nameType + std::to_string(counter++); }
+        static inline size_t counter = 1;
+    };
+
+    std::set<name> getUsedNames() const
+    {
+        std::set<name> names;
+        getUsedNames(names);
+        return names;
+    }
+
+    std::set<name> getDeclaredNames() const
+    {
+        std::set<name> names;
+        for (const auto &child : _children)
+            child.getDeclaredNames(names);
+        return names;
+    }
+
+    void getUsedNames(std::set<name> &names) const
+    {
+        console::log(toName());
+        switch (_token)
+        {
+        case FUNCTION:
+            break;
+        case IDENTIFIER:
+            names.emplace(_text);
+            break;
+        case METHOD_CALL_OPERATOR:
+            _children.front().getUsedNames(names);
+        case DOT:
+            _children.front().getUsedNames(names);
+            break;
+        default:
+            for (const auto &child : _children)
+                child.getUsedNames(names);
+            break;
+        }
+    }
+
+    void getDeclaredNames(std::set<name> &names) const
+    {
+        console::log(toName());
+        switch (_token)
+        {
+        case FUNCTION:
+        case COMPOUND_STATEMENT:
+            break;
+        case LET:
+            names.emplace(_text);
+        default:
+            for (const auto &child : _children)
+                child.getUsedNames(names);
+            break;
+        }
+    }
+
+    void toIntermediateLanguage(std::stringstream &result, translationContextType &translationContext) const;
 
     bool shouldHaveStackHelper() const
     {

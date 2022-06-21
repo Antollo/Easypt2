@@ -87,6 +87,7 @@ public:
         codeToNameMap[toBooleanCode] = "toBoolean"s;
         codeToNameMap[BufferCode] = "Buffer"s;
         codeToNameMap[__clientCode] = "__client"s;
+        codeToNameMap[onNewPropertyCode] = "onNewProperty"s;
         
         nameToCodeMap["prototype"s] = prototypeCode;
         nameToCodeMap["args"s] = argsCode;
@@ -140,6 +141,7 @@ public:
         nameToCodeMap["toBoolean"s] = toBooleanCode;
         nameToCodeMap["Buffer"s] = BufferCode;
         nameToCodeMap["__client"s] = __clientCode;
+        nameToCodeMap["onNewProperty"s] = onNewPropertyCode;
     }
 
 private:
@@ -198,6 +200,7 @@ private:
     static constexpr codeType toBooleanCode = 51;
     static constexpr codeType BufferCode = 52;
     static constexpr codeType __clientCode = 53;
+    static constexpr codeType onNewPropertyCode = 54;
 
     codeType code;
     constexpr name(codeType i) : code(i) {}
@@ -277,7 +280,7 @@ struct n
     static constexpr name toBoolean = name::toBooleanCode;
     static constexpr name Buffer = name::BufferCode;
     static constexpr name __client = name::__clientCode;
-
+    static constexpr name onNewProperty = name::onNewPropertyCode;
 };
 
 #endif // NAME_H

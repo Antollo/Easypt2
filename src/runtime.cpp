@@ -45,6 +45,10 @@ void runtime::init(stack *st)
         return object::makeObject(thisObj->get<object::type::Function>().first->explain());
     });
 
+    object::functionPrototype->addFunctionL("__jit"_n, {
+        return object::makeObject(thisObj->get<object::type::Function>().first->toIntermediateLanguage());
+    });
+
     object::objectPtr Function = insertObject("Function"_n, constructorCaller);
     (*Function)[n::classPrototype] = object::functionPrototype;
 
@@ -52,7 +56,7 @@ void runtime::init(stack *st)
     insertObject("false"_n, false)->setConst();
 
     auto import = insertObject(n::import, &modules::import);
-    import->addProperty("getImportPaths"_n, object::makeObject(&modules::getImportPaths));
+    import->addProperty("getImportPaths"_n, object::makeObject(static_cast<object::objectPtr(*)(object::objectPtr, object::type::Array&&, stack*)>(&modules::getImportPaths)));
 
     insertObject("parse"_n, interpreter::parse);
     insertObject(n::execute, interpreter::execute);

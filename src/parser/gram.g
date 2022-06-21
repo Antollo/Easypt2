@@ -34,7 +34,7 @@
 %token NOT;
 %token AND;
 %token OR;
-%token USER_OPERATOR;
+%token BINARY_FUNCTION_OPERATOR;
 %token RETURN;
 %token THROW;
 %token TRY;
@@ -87,8 +87,8 @@
 %token INIT_ASSIGNMENT_IDENTIFIER;
 
 %token SPREAD_OPERATOR;
-
 %token RETURN_LAST;
+%token DECORATOR;
 
 %start parse, input;
 
@@ -312,6 +312,10 @@ factorBase(Node& me)  { Node b(INI); } :
     DELETE_
     expression(100, b) { me.token(DELETE_); me.addChild(b); }
     |
+    DECORATOR
+    { me.text(treeParser::text); }
+    expression(100, b) { me.token(DECORATOR); me.addChild(b); }
+    |
     SPREAD_OPERATOR
     expression(100, b) { me.token(SPREAD_OPERATOR); me.addChild(b); }
     |
@@ -392,7 +396,7 @@ leftAssociativeOperator :
     | GREATER_EQUAL
     | AND
     | OR
-    | USER_OPERATOR
+    | BINARY_FUNCTION_OPERATOR
     | INSTANCEOF
     ]
     ;
@@ -404,6 +408,7 @@ rightAssociativeOperator :
     | INIT_ASSIGNMENT
     | NOT
     | COMPLEMENT
+    | DECORATOR
     ]
     ;
 {}

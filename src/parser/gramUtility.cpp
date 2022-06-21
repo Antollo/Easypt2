@@ -48,6 +48,7 @@ int operatorPriority(int token)
     case LET:
     case FUNCTION:
     case JSON:
+    case DECORATOR:
         return 3;
     case MULTIPLICATION:
     case DIVISION:
@@ -79,7 +80,7 @@ int operatorPriority(int token)
         return 14;
     case OR:
         return 15;
-    case USER_OPERATOR:
+    case BINARY_FUNCTION_OPERATOR:
         return 16;
     case CONDITIONAL:
         return 17;

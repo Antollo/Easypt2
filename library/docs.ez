@@ -1,112 +1,94 @@
 ...import("algorithm");
-
-function returns(obj, value) {
-    obj.addProperty("returns", value);
-};
-
-function parameters(obj, value) {
-    obj.addProperty("parameters", value);
-};
-
-function description(obj, value) {
-    obj.addProperty("description", value);
-};
-
-function example(obj, value) {
-    obj.addProperty("example", value);
-};
-
-function expectedOutput(obj, value) {
-    obj.addProperty("expectedOutput", value);
-};
+...import("docsData.ez");
 
 function printPair(a, b) {
     console.controlSequence("7m").write(a).controlSequence("0m").writeLine("\n", b);
 };
 
-function findObjectName() {
+function findObjectName(obj) {
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++) {
-        if (stack[names[i]].getId() == args[0].getId())
+        if (stack[names[i]].getId() == obj.getId())
             return names[i];
     }
     return "<unknown>";
 };
 
-function findObjectClassName {
+function findObjectClassName(obj) {
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++) {
-        if (args[0] instanceOf stack[names[i]])
+        if (obj instanceOf stack[names[i]])
             return names[i];
     }
     return "<unknown>";
 };
 
-function findObjectClassNameByClassPrototype {
+function findObjectClassNameByClassPrototype(obj) {
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++) {
-        if (args[0].getId() == stack[names[i]].classPrototype.getId())
+        if (obj.getId() == stack[names[i]].classPrototype.getId())
             return names[i];
     }
     return "<unknown>";
 };
 
-function listProperties {
+function listProperties(obj) {
     let list = "";
-    sort(args[0].getOwnPropertyNames()).forEach(function {
-        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype|__").length() == 0) {
-            list.append(args[0]);
+    let names <- sort(obj.getOwnPropertyNames());
+    for (let i = 0; i < names.length(); i++) {
+        if (names[i].search("returns|parameters|description|example|expectedOutput|prototype|__").length() == 0) {
+            list.append(names[i]);
             list.append("\n");
         }
-    });
+    }
     if (list.length())
         list.erase(list.length() - 1, 1);
     return list;
 };
 
-function help {
-    if (findObjectName(args[0]).length() != 0)
-        printPair("Name:", findObjectName(args[0]));
-    if (findObjectClassName(args[0]).length() != 0)
-        printPair("Instance of:", findObjectClassName(args[0]));
-    if (args[0] instanceOf Class)
-        printPair("Inherits from: ", findObjectClassNameByClassPrototype(args[0].classPrototype.prototype));
-    if (args[0].hasOwnProperty("parameters"))
-        printPair("Parameters:", args[0].parameters);
-    if (args[0].hasOwnProperty("returns"))
-        printPair("Return value:", args[0].returns);
+function help(obj) {
+    if (findObjectName(obj).length() != 0)
+        printPair("Name:", findObjectName(obj));
+    if (findObjectClassName(obj).length() != 0)
+        printPair("Instance of:", findObjectClassName(obj));
+    if (obj instanceOf Class)
+        printPair("Inherits from: ", findObjectClassNameByClassPrototype(obj.classPrototype.prototype));
+    if (obj.hasOwnProperty("parameters"))
+        printPair("Parameters:", obj.parameters);
+    if (obj.hasOwnProperty("returns"))
+        printPair("Return value:", obj.returns);
     else
-        if (args[0] instanceOf Function)
+        if (obj instanceOf Function)
             printPair("Return value:", "this");
-    if (args[0].hasOwnProperty("description"))
-        printPair("Description:", args[0].description);
-    if (args[0].hasOwnProperty("example"))
-        printPair("Example:", args[0].example);
-    if (args[0].hasOwnProperty("expectedOutput"))
-        printPair("Expected output:", args[0].expectedOutput);
-    if (args[0] instanceOf Class) {
-        printPair("Members:", listProperties(args[0].classPrototype));
-        printPair("Inherited members:", listProperties(args[0].classPrototype.prototype));
+    if (obj.hasOwnProperty("description"))
+        printPair("Description:", obj.description);
+    if (obj.hasOwnProperty("example"))
+        printPair("Example:", obj.example);
+    if (obj.hasOwnProperty("expectedOutput"))
+        printPair("Expected output:", obj.expectedOutput);
+    if (obj instanceOf Class) {
+        printPair("Members:", listProperties(obj.classPrototype));
+        printPair("Inherited members:", listProperties(obj.classPrototype.prototype));
     }
-    let properties <- listProperties(args[0]);
+    let properties <- listProperties(obj);
     if (properties.length())
         printPair("Properties:", properties);
 };
 
-function testExample (object, name) {
-    if (object.hasOwnProperty("example") && object.hasOwnProperty("expectedOutput")
-        && object.example instanceOf String && object.expectedOutput instanceOf String) {
+function testExample(obj, name) {
+    if (obj.hasOwnProperty("example") && obj.hasOwnProperty("expectedOutput")
+        && obj.example instanceOf String && obj.expectedOutput instanceOf String) {
         try {
             let output;
             try {
-                output <- console.getOutput(parse(object.example));  
+                output <- console.getOutput(parse(obj.example));  
             } catch {
                 output <- exception;
             } 
-            if (object.expectedOutput == output) {
+            if (obj.expectedOutput == output) {
                 console.debug("Example passed: ", name);
                 return true;
             }
@@ -119,16 +101,16 @@ function testExample (object, name) {
     return true;
 };
 
-function recursiveTestExample (object, name) {
-    let ok = testExample(object, name);
-    let names <- object.getOwnPropertyNames();
+function recursiveTestExample(obj, name) {
+    let ok = testExample(obj, name);
+    let names <- obj.getOwnPropertyNames();
     for (let i = 0; i < names.length(); i++)
         if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
-            ok = ok && recursiveTestExample(Object.readOperator.call(object, names[i]), name + "." + names[i]);
+            ok = ok && recursiveTestExample(Object.readOperator.call(obj, names[i]), name + "." + names[i]);
     return ok;
 };
 
-function testAllExamples {
+function testAllExamples() {
     let ok = true;
     let stack <- getStack();
     let names <- stack.getOwnPropertyNames();
@@ -140,99 +122,136 @@ function testAllExamples {
 
 let prefix = "docs/";
 
-function mdCodeLink (name, link) {
-    if (args[0].search("prototype|classPrototype").length() == 0)
-        return "[`" + name + "`](" + link + ".md)";
-    else
-        return "`" + name + "`";
+function toFilename(filename) {
+    let result = "/built-ins/" + filename + (filename.split(".").length() > 1 ? "/index" : "");
+    return "{{site.baseurl}}" + result.replaceAll(".", "\\", true).replaceAll("/", "\\", true);
 };
 
-function mdListProperties (object, name) {
+function mdCodeLink(name, link) {
+    if (name.search("prototype|classPrototype").length() == 0)
+        return "[" + name + "](" + toFilename(link) + ")";
+    else
+        return name;
+};
+
+function mdListProperties(obj, name) {
     let list = "";
-    sort(object.getOwnPropertyNames()).forEach(function {
-        if (args[0].search("returns|parameters|description|example|expectedOutput|prototype|__").length() == 0) {
-            if (Object.classPrototype.readOperator.call(object, args[0]).hasOwnProperty("description"))
-                list.append("- " + mdCodeLink(args[0], name + "." + args[0]));
+    let names <- sort(obj.getOwnPropertyNames());
+    for (let i = 0; i < names.length(); i++) {
+        if (names[i].search("returns|parameters|description|example|expectedOutput|prototype|__").length() == 0) {
+            if (Object.classPrototype.readOperator.call(obj, names[i]).hasOwnProperty("description"))
+                list.append("- " + mdCodeLink("`" + names[i] + "`", name + "." + names[i]));
             else
-                list.append("- `" + args[0] + "`");
+                list.append("- `" + names[i] + "`");
             list.append("\n");
         }
-    });
+    }
     return list;
 };
 
-function doc {
+function doc(obj, name) {
     let file <- File();
-    file.create(prefix + args[1] + ".md");
-    file.writeLine("## Name: `", args[1], "`\n");
-    let className = findObjectClassName(args[0]);
-    file.writeLine("#### Instance of: ", mdCodeLink(className, className), "\n");
+
+    let filename = prefix + name;
+    filename.replaceAll(".", "\\", true).replaceAll("/", "\\", true);
+    let path = filename;
+
+    filename = path + (name.split(".").length() > 1 ? "\\index" : "");
+    let mkdir = ChildProcess("cmd", ["/C mkdir " + path]);
+    console.warn(mkdir.stderr.readLine());
+
+    /*if ((let splitted = filename.split("\\"))[-3] == "classPrototype")
+    {
+        splitted.erase(splitted.length() - 2, 1);
+        splitted = splitted.join("\\");
+        let file <- File();
+        file.create(splitted + ".md");
+        file.write("# Members\n{% include list.liquid all=true %}\n");
+        console.error(splitted);
+    }*/
+
+    console.debug(path)
+    console.debug(filename + ".md")
+
+    file.create(filename + ".md");
+    console.ok(name);
+    file.writeLine("# ", name, "\n");
+    let className = findObjectClassName(obj);
+    file.writeLine("<dl>");
+    file.writeLine("<dt> Instance of </dt><dd markdown=\"1\">\n ", mdCodeLink("`" + className + "`", className), " \n</dd>");
     let baseClassName;
-    if (args[0] instanceOf Class) {
-        baseClassName = findObjectClassNameByClassPrototype(args[0].classPrototype.prototype);
-        file.writeLine("#### Inherits from: ", mdCodeLink(baseClassName, baseClassName), "\n");
+    if (obj instanceOf Class) {
+        baseClassName = findObjectClassNameByClassPrototype(obj.classPrototype.prototype);
+        file.writeLine("<dt> Inherits from </dt><dd markdown=\"1\">\n ", mdCodeLink("`" + baseClassName + "`", baseClassName), " \n</dd>");
     }
-    if (args[0].hasOwnProperty("parameters"))
-        file.writeLine("#### Parameters: `", args[0].parameters, "`\n");
-    if (args[0].hasOwnProperty("returns"))
-        file.writeLine("#### Return value: `", args[0].returns, "`\n");
+    if (obj.hasOwnProperty("parameters"))
+        file.writeLine("<dt> Parameters </dt><dd markdown=\"1\">\n `", obj.parameters, "` \n</dd>");
+    if (obj.hasOwnProperty("returns"))
+        file.writeLine("<dt> Return value </dt><dd markdown=\"1\">\n `", obj.returns, "` \n</dd>");
     else
-        if (args[0] instanceOf Function)
-            file.writeLine("#### Return value: `this`\n");
-    if (args[0].hasOwnProperty("description"))
-        file.writeLine("### Description:\n\n", args[0].description, "\n");
-    if (args[0].hasOwnProperty("example"))
-        file.writeLine("#### Example:\n\n```js\n", args[0].example, "\n```\n");
-    if (args[0].hasOwnProperty("expectedOutput"))
-        file.writeLine("##### Expected output:\n\n```\n", args[0].expectedOutput, "\n```\n");
-    if (args[0] instanceOf Class) {
-        file.writeLine("#### Members:\n\n", mdListProperties(args[0].classPrototype, args[1] + ".classPrototype"), "\n");
-        file.writeLine("#### Inherited members:\n\n", mdListProperties(args[0].classPrototype.prototype, baseClassName + ".classPrototype"), "\n");
+        if (obj instanceOf Function)
+            file.writeLine("<dt> Return value </dt><dd markdown=\"1\">\n `this` \n</dd>\n");
+    file.writeLine("</dl>\n");
+    if (obj.hasOwnProperty("description"))
+        file.writeLine("### Description\n\n", obj.description, "\n");
+    if (obj.hasOwnProperty("example"))
+        file.writeLine("### Example\n\n```js\n", obj.example, "\n```\n");
+    if (obj.hasOwnProperty("expectedOutput"))
+        file.writeLine("**Expected output**\n\n```\n", obj.expectedOutput, "\n```\n");
+    if (obj instanceOf Class) {
+        file.writeLine("### Members\n\n", mdListProperties(obj.classPrototype, name + ".classPrototype"), "\n");
+        file.writeLine("### Inherited members\n\n", mdListProperties(obj.classPrototype.prototype, baseClassName + ".classPrototype"), "\n");
     }
-    let properties <- mdListProperties(args[0], args[1]);
-    if (properties.length())
-        file.writeLine("### Properties:\n\n", properties, "\n");
+    let properties <- mdListProperties(obj, name);
+    if (properties.length() && name != "modules")
+        file.writeLine("### Properties\n\n", properties, "\n");
+    if (obj.hasOwnProperty("description") && obj.description.hasOwnProperty("note"))
+        file.writeLine(obj.description.note, "\n");
     file.close();
 };
 
-function recursiveDoc {
-    if (args[0].hasOwnProperty("description") && args[0].description instanceOf String) {
-        doc(args[0], args[1]);
-        let names <- args[0].getOwnPropertyNames();
+function recursiveDoc(obj, name) {
+    if (obj.hasOwnProperty("description") && obj.description instanceOf String && name != "this") {
+        doc(obj, name);
+        let names <- obj.getOwnPropertyNames();
         for (let i = 0; i < names.length(); i++) {
-            if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
-                recursiveDoc(Object.readOperator.call(args[0], names[i]), args[1] + "." + names[i]);
+            if (names[i] != "prototype" && names[i].substring(0, 2) != "__" && name != "modules")
+                recursiveDoc(Object.readOperator.call(obj, names[i]), name + "." + names[i]);
         }
         
-        if (args[0].hasOwnProperty("classPrototype")) {
-            names <- args[0].classPrototype.getOwnPropertyNames();
+        if (obj.hasOwnProperty("classPrototype")) {
+            names <- obj.classPrototype.getOwnPropertyNames();
             for (let i = 0; i < names.length(); i++)
                 if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
-                    recursiveDoc(Object.readOperator.call(args[0].classPrototype, names[i]), args[1] + ".classPrototype." + names[i]);
+                    recursiveDoc(Object.readOperator.call(obj.classPrototype, names[i]), name + ".classPrototype." + names[i]);
         }
         
         return true;
     }
     else {
-        if (args[1].search("classPrototype$").length() == 0 && args[1].search("returns|parameters|description|example|expectedOutput|prototype").length() == 0)
-            console.warn(args[1]);
+        if (name.search("classPrototype$").length() == 0 && name.search("returns|parameters|description|example|expectedOutput|prototype").length() == 0)
+            console.warn(name);
     }
     return false;
 };
 
 function makeDocs(path) {
-    let file <- File();
-    prefix = args.length() > 0 ? path : "docs/";
-    file.create(prefix + "index.md");
-    file.writeLine("# Easypt reference\n");
-    file.writeLine("## Language\n");
-    file.writeLine("- [Grammar](grammar.md).\n");
-    file.writeLine("- [Expressions reference](expressions.md).\n");
-    file.writeLine("- [Statements reference](statements.md).\n");
-    file.writeLine("- [Type conversion](type_conversion.md).\n");
-    file.writeLine("## Built-in objects functions and classes\n");
+    addDocToModuleObject(module);
 
-    file.writeLine("- " + mdCodeLink("module", "module"));
+    let index <- File();
+    prefix = args.length() > 0 ? path : "docs/";
+    index.create(prefix + "index.md");
+    prefix = prefix + "built-ins/"; 
+    let builtInsIndex <- File();
+    builtInsIndex.create(prefix + "index.md");
+    index.writeLine("# Easypt reference\n");
+    index.writeLine("## Language");
+    index.writeLine("- [Grammar](grammar.md)");
+    index.writeLine("- [Expressions reference](expressions.md)");
+    index.writeLine("- [Statements reference](statements.md)");
+    index.writeLine("- [Type conversion](type_conversion.md)");
+    index.writeLine("\n## Built-in objects functions and classes");
+    builtInsIndex.writeLine("## Built-ins\n");
 
     let stack <- getStack();
     let names <- sort(stack.getOwnPropertyNames());
@@ -240,12 +259,15 @@ function makeDocs(path) {
         if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
         {
             if (recursiveDoc(Object.readOperator.call(stack, names[i]), names[i]))
-                file.writeLine("- " + mdCodeLink(names[i], names[i]));
+            {
+                let line <- "- " + mdCodeLink("`" + names[i] + "`", names[i]);
+                index.writeLine(line);
+                builtInsIndex.writeLine(line);
+            }
         }
-    file.writeLine("\n");
+    index.writeLine("\n");
+    builtInsIndex.writeLine("\n");
 };
-
-import("docsData.ez");
 
 return {
     help: help,

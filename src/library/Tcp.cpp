@@ -154,7 +154,7 @@ void Tcp::init(stack *st)
         argsConvertibleGuard<std::string, std::string>(args);
 
         thisObj->setType<std::shared_ptr<tcpServer>>();
-        thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<sslServer>(args[0]->getConverted<object::type::String>(), args[1]->getConverted<object::type::String>());
+        thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<sslServer>(args[0]->getConverted<object::type::String>(), args[1]->getConverted<object::type::String>(), modules::getImportPaths());
         return thisObj;
     });
 }

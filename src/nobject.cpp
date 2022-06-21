@@ -90,6 +90,14 @@ object::objectPtr &object::operator[](const name &n)
         if (res)
             return res;
     }
+    object::objectPtr &onNewProperty = read(n::onNewProperty);
+    if (onNewProperty)
+    {
+        static object::objectPtr res;
+        res = (*onNewProperty)(ptrFromThis(), {makeObject(static_cast<std::string>(n))}, nullptr);
+        if (res)
+            return res;
+    }
     return ((*_properties)[n] = makeEmptyObject());
 }
 
@@ -263,6 +271,18 @@ void object::toJson(std::stringstream &str, const size_t indentation) const
                            break;
                        case buffer::type::Int64:
                            toJsonSpan(b.asSpan<int64_t>());
+                           break;
+                       case buffer::type::Uint8:
+                           toJsonSpan(b.asSpan<uint8_t>());
+                           break;
+                       case buffer::type::Uint16:
+                           toJsonSpan(b.asSpan<uint16_t>());
+                           break;
+                       case buffer::type::Uint32:
+                           toJsonSpan(b.asSpan<uint32_t>());
+                           break;
+                       case buffer::type::Uint64:
+                           toJsonSpan(b.asSpan<uint64_t>());
                            break;
                        case buffer::type::Float:
                            toJsonSpan(b.asSpan<float>());
