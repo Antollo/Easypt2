@@ -6,7 +6,7 @@
             "\t$0",
             "}"
         ],
-        "description": "Int based for loop"
+        "description": "Number based for loop"
     },
     "While loop": {
         "prefix": "while",
@@ -51,8 +51,8 @@
     "Function": {
         "prefix": "function",
         "body": [
-            "function {",
-            "\t$0",
+            "function ($0) {",
+            "\t$1",
             "}"
         ],
         "description": "Function"
@@ -68,8 +68,8 @@
         "prefix": "class",
         "body": [
             "class ${0:Name} {",
-            "\tconstructor: function { },",
-            "\tdestructor: function { }",
+            "\tconstructor: function () { },",
+            "\tdestructor: function () { }",
             "};"
         ],
         "description": "Class"
@@ -78,10 +78,10 @@
         "prefix": "class",
         "body": [
             "class ${0:Name} extends ${1:Base} {",
-            "\tconstructor: function {",
+            "\tconstructor: function () {",
             "\t\tthis.super();",
             "\t},",
-            "\tdestructor: function { }",
+            "\tdestructor: function () { }",
             "};"
         ],
         "description": "Class with inheritance"

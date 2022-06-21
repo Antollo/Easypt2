@@ -1,5 +1,9 @@
 # Change Log
 
+### 3.0.8
+
+- Bump dependencies.
+
 ### 3.0.7
 
 - Fix encoding issue, change windows download link.
