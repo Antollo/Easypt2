@@ -1,53 +1,8 @@
 #include <iterator>
 #include "nobject.h"
 #include "Node.h"
+#include "stringUtils.h"
 
-std::string escapeString(const std::string &str)
-{
-
-    std::string result;
-    result.reserve(str.size() + 2);
-
-    result.push_back('"');
-    for (char c : str)
-    {
-        if (' ' <= c and c <= '~' and c != '\\' and c != '"')
-        {
-            result.push_back(c);
-        }
-        else
-        {
-            result.push_back('\\');
-            switch (c)
-            {
-            case '"':
-                result.push_back('"');
-                break;
-            case '\\':
-                result.push_back('\\');
-                break;
-            case '\t':
-                result.push_back('t');
-                break;
-            case '\r':
-                result.push_back('r');
-                break;
-            case '\n':
-                result.push_back('n');
-                break;
-            default:
-            {
-                std::stringstream s;
-                s << 'x' << std::setfill('0') << std::setw(2) << std::hex << (int)(c & 0xff);
-                result.append(s.str());
-                break;
-            }
-            }
-        }
-    }
-    result.push_back('"');
-    return result;
-}
 
 allocatorBuffer<sizeof(object)> objectMemoryBuffer;
 

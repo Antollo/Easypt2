@@ -23,39 +23,37 @@ public:
     template <class... Ts>
     static void debug(const Ts &...args)
     {
-        writeLine("\033[95m"s, now() + " ", args..., "\033[0m"s);
+        writeLine("\033[95m"s, now(), " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
     static void log(const Ts &...args)
     {
-        writeLine("\033[96m"s, now() + " ", args..., "\033[0m"s);
+        writeLine("\033[96m"s, now(), " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
     static void ok(const Ts &...args)
     {
-        writeLine("\033[92m\033[1m"s, now() + " ", args..., "\033[0m"s);
+        writeLine("\033[92m\033[1m"s, now(), " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
     static void warn(const Ts &...args)
     {
-        writeLine("\033[93m\033[1m"s, now() + " ", args..., "\033[0m"s);
+        writeLine("\033[93m\033[1m"s, now(), " ", args..., "\033[0m"s);
     }
 
     template <class... Ts>
     static void error(const Ts &...args)
     {
-        writeLineError("\033[91m\033[1m"s, now() + " ", args..., "\033[0m"s);
+        writeLineError("\033[91m\033[1m"s, now(), " ", args..., "\033[0m"s);
     }
-
-    static void stackTrace();
 
     template <class T>
     static inline void controlSequence(const T &code)
     {
-        write("\033["s + code);
+        write("\033["s, code);
     }
 
 #ifdef _WIN32
@@ -180,7 +178,7 @@ public:
 #endif
 
     template <class... Ts>
-    static void CIO(read)(Ts&... args)
+    static void CIO(read)(Ts &...args)
     {
         lastFormattedInputFunction = true;
         (std::cin >> ... >> args);
@@ -334,9 +332,29 @@ public:
 
 #endif
 
+    static void printStackTrace()
+    {
+        if (stackTrace.empty())
+            return;
+        for (int64_t i = stackTrace.size() - 1; i >= 0; i--)
+            console::error(stackTrace[i]);
+        stackTrace.clear();
+    }
+
+    static void pushToStackTrace(const std::string &str)
+    {
+        stackTrace.push_back(str);
+    }
+
+    static void clearStackTrace()
+    {
+        stackTrace.clear();
+    }
+
 private:
     static std::string now();
     static bool lastFormattedInputFunction;
+    static inline std::vector<std::string> stackTrace;
 };
 
 #endif /* !CONSOLE_H_ */

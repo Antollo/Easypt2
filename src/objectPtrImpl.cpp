@@ -79,7 +79,7 @@ void objectPtrImpl::deleter()
             catch (objectException &e)
             {
                 auto eObj = e.getPtr();
-                console::stackTrace();
+                console::printStackTrace();
                 if (eObj->isConvertible<std::string>())
                     console::error(eObj->getConverted<object::type::String>());
                 else
@@ -87,12 +87,12 @@ void objectPtrImpl::deleter()
             }
             catch (std::exception &e)
             {
-                console::stackTrace();
+                console::printStackTrace();
                 console::error((std::string)e.what());
             }
             catch (...)
             {
-                console::stackTrace();
+                console::printStackTrace();
                 console::error("unknown error in destructor");
             }
             _obj->_refCount--;

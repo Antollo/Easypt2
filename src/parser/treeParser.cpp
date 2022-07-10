@@ -17,8 +17,8 @@ void treeParser::parseFile(const std::string &filename, Node &node)
 
 void treeParser::parseString(const std::string &str, Node &node)
 {
-    if (str.size() > 8)
-        file = "\"" + str.substr(0, 8) + "...\"";
+    if (str.size() > 16)
+        file = "\"" + str.substr(0, 16) + "...\"";
     else
         file = "\"" + str + "\"";
     std::stringstream stringStream(str, std::stringstream::in);

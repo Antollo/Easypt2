@@ -196,8 +196,7 @@ public:
                std::all_of(_properties->begin(), _properties->end(), [&rhs](const propertiesType::value_type &x)
                            {
                                auto it = rhs._properties->find(x.first);
-                               return it != rhs._properties->end() && *it->second == *x.second;
-                           });
+                               return it != rhs._properties->end() && *it->second == *x.second; });
     }
 
     template <class T>
@@ -336,7 +335,7 @@ public:
             case typeIndex::Buffer:
             {
                 const object::type::Buffer &me = uncheckedGet<const object::type::Buffer>();
-                return std::string(reinterpret_cast<const char*>(me->begin()), reinterpret_cast<const char*>(me->end()));
+                return std::string(reinterpret_cast<const char *>(me->begin()), reinterpret_cast<const char *>(me->end()));
             }
             case typeIndex::Boolean:
                 return uncheckedGet<type::Boolean>() ? "true"s : "false"s;
@@ -356,7 +355,7 @@ public:
             {
             case typeIndex::Array:
                 return uncheckedGet<type::Array>();
-             default:
+            default:
             {
                 auto toArrayMethod = read(n::toArray);
                 if (toArrayMethod && toArrayMethod != toArray)
@@ -519,6 +518,10 @@ public:
 
 private:
     object::objectPtr ptr;
+};
+
+class breakType
+{
 };
 
 #endif

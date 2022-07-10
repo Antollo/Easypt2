@@ -15,7 +15,7 @@ void coroutineBase::handleException(std::exception_ptr ptr)
     catch (objectException &e)
     {
         auto eObj = e.getPtr();
-        console::stackTrace();
+        console::printStackTrace();
         if (eObj->isConvertible<std::string>())
             console::error(eObj->getConverted<object::type::String>());
         else
@@ -23,12 +23,12 @@ void coroutineBase::handleException(std::exception_ptr ptr)
     }
     catch (std::exception &e)
     {
-        console::stackTrace();
+        console::printStackTrace();
         console::error((std::string)e.what());
     }
     catch (...)
     {
-        console::stackTrace();
+        console::printStackTrace();
         console::error("unknown error in destructor");
     }
 }

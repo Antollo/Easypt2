@@ -349,10 +349,6 @@ public:
 private:
     friend class console;
 
-    class breakType
-    {
-    };
-
     class stackOptimizations
     {
     public:
@@ -468,7 +464,7 @@ private:
             names.emplace(_text);
         default:
             for (const auto &child : _children)
-                child.getUsedNames(names);
+                child.getDeclaredNames(names);
             break;
         }
     }
@@ -501,25 +497,15 @@ private:
         return fileIndex;
     }
     inline bool numberAssignmentOptimization(objectPtrImpl &a, objectPtrImpl &b, stack &st) const;
-    void exception() const
+    std::string exceptionString(const std::string &str = "") const
     {
-        stackTrace.push_back("exception at " + files[debugInfo[this]._fileIndex] + ":" + std::to_string(debugInfo[this]._line));
+        return "exception at " + files[debugInfo[this]._fileIndex] + ":" + std::to_string(debugInfo[this]._line) + (str.empty() ? "" : (" (" + str + ")"));
     }
-    void exception(const std::string &str) const
+    void exception(const std::string &str = "") const
     {
-        stackTrace.push_back("exception at " + files[debugInfo[this]._fileIndex] + ":" + std::to_string(debugInfo[this]._line) + " (" + str + ")");
+        console::pushToStackTrace(exceptionString(str));
     }
-    static void printStackTrace()
-    {
-        if (stackTrace.empty())
-            return;
-        for (int64_t i = stackTrace.size() - 1; i >= 0; i--)
-            console::error(stackTrace[i]);
-        stackTrace.clear();
-    }
-    static std::string parseString(const std::string &source);
 
-    static inline std::vector<std::string> stackTrace;
     static inline std::vector<std::string> files;
     class debugInfoType
     {

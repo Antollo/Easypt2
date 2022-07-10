@@ -1,89 +1,17 @@
 #include "Node.h"
 #include "nobject.h"
 #include "console.h"
+#include "stringUtils.h"
 #include <cassert>
 #include <exception>
 
-std::string Node::parseString(const std::string &source)
-{
-    std::string ret;
-    size_t length = source.size() - 1;
-    ret.reserve(length);
-    for (size_t i = 1; i < length; i++)
-    {
-        if (source[i] != '\\')
-            ret.push_back(source[i]);
-        else if (i + 1 < length)
-            switch (source[++i])
-            {
-            case '"':
-                ret.push_back('"');
-                break;
-            case '\\':
-                ret.push_back('\\');
-                break;
-            case 'a':
-                ret.push_back('\a');
-                break;
-            case 'b':
-                ret.push_back('\b');
-                break;
-            case 'f':
-                ret.push_back('\f');
-                break;
-            case 'n':
-                ret.push_back('\n');
-                break;
-            case 'r':
-                ret.push_back('\r');
-                break;
-            case 't':
-                ret.push_back('\t');
-                break;
-            case 'v':
-                ret.push_back('\v');
-                break;
-            case '\n':
-                break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-            {
-                if (i + 2 > length)
-                    throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
-                char temp = source[i+3];
-                char *tempPtr = const_cast<char*>(&source[i + 3]);
-                *tempPtr = '\0';
-                ret.push_back(std::strtol(&source[i], nullptr, 10));
-                *tempPtr = temp;
-                i += 2;
-                break;
-            }
-            case 'x':
-            {
-                if (i + 2 > length)
-                    throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
-                char temp = source[i+3];
-                char *tempPtr = const_cast<char*>(&source[i + 3]);
-                *tempPtr = '\0';
-                ret.push_back(std::strtol(&source[i]+1, nullptr, 16));
-                *tempPtr = temp;
-                i += 2;
-                break;
-            }
-            }
-        else
-            throw std::runtime_error("wrong escape sequence on position " + std::to_string(i) + " in \"" + source + "\"");
-    }
-    return ret;
-}
+#ifdef NDEBUG
+#ifdef assert
+#undef assert
+#endif
+#define assert(x)
+#endif
+
 
 void Node::text(const std::string &t)
 {
@@ -381,16 +309,15 @@ object::objectPtr Node::evaluate(stack &st) const
     caseUnary(CALL_OPERATOR,
     {
         assert(_children.size() >= 1);
-        object::type::Array args(_children.size() - 1);
-        for (size_t i = 1, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size() - 1);
+        for (size_t i = 1; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
 
         try
@@ -412,16 +339,15 @@ object::objectPtr Node::evaluate(stack &st) const
     caseUnary(READ_OPERATOR,
     {
         assert(_children.size() >= 1);
-        object::type::Array args(_children.size() - 1);
-        for (size_t i = 1, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size() - 1);
+        for (size_t i = 1; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
         try
         {
@@ -444,16 +370,15 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() >= 2);
         assert(_children[1]._token == IDENTIFIER);
         auto b = (*a)[_children[1]._text];
-        object::type::Array args(_children.size() - 2);
-        for (size_t i = 2, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size() - 2);
+        for (size_t i = 2; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
         try
         {
@@ -480,16 +405,15 @@ object::objectPtr Node::evaluate(stack &st) const
 
     case ARRAY_LITERAL:
     {
-        object::type::Array args(_children.size());
-        for (size_t i = 0, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size());
+        for (size_t i = 0; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
         return object::makeObject(args);
     }
@@ -659,17 +583,17 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         catch (objectException &e)
         {
-            stackTrace.clear();
             stack localStack(&st);
             localStack.insert(n::exception, e.getPtr());
             _children[1].evaluateVoid(localStack);
+            console::clearStackTrace();
         }
         catch (std::exception &e)
         {
-            stackTrace.clear();
             stack localStack(&st);
             localStack.insert(n::exception, object::makeObject((std::string)e.what()));
             _children[1].evaluateVoid(localStack);
+            console::clearStackTrace();
         }
         return nullptr;
     }
@@ -698,7 +622,7 @@ object::objectPtr Node::evaluate(stack &st) const
         {
             object::type::Array arr = a->uncheckedGet<const object::type::Array>();
             object::type::Array toAdd = b->getConverted<object::type::Array>();
-            arr.insert(arr.end(), toAdd.begin(), toAdd.end());
+            arr.insert(arr.end(), std::make_move_iterator(toAdd.begin()), std::make_move_iterator(toAdd.end()));
             return object::makeObject(arr);
         }
         return (*(*a)[n::addition])(a, {b}, &st);
@@ -1065,16 +989,15 @@ void Node::evaluateVoid(stack &st) const
     caseUnary(CALL_OPERATOR,
     {
         assert(_children.size() >= 1);
-        object::type::Array args(_children.size() - 1);
-        for (size_t i = 1, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size() - 1);
+        for (size_t i = 1; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
         try
         {
@@ -1096,16 +1019,15 @@ void Node::evaluateVoid(stack &st) const
     caseUnary(READ_OPERATOR,
     {
         assert(_children.size() >= 1);
-        object::type::Array args(_children.size() - 1);
-        for (size_t i = 1, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size() - 1);
+        for (size_t i = 1; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
         try
         {
@@ -1129,16 +1051,15 @@ void Node::evaluateVoid(stack &st) const
         assert(_children.size() >= 2);
         assert(_children[1]._token == IDENTIFIER);
         auto b = (*a)[_children[1]._text];
-        object::type::Array args(_children.size() - 2);
-        for (size_t i = 2, j = 0; i < _children.size(); i++)
+        object::type::Array args;
+        args.reserve(_children.size() - 2);
+        for (size_t i = 2; i < _children.size(); i++)
             if (_children[i]._token != SPREAD_OPERATOR)
-                args[j++] = _children[i].evaluate(st);
+                args.emplace_back(_children[i].evaluate(st));
             else
             {
-                args.erase(args.begin() + j);
                 auto arr = _children[i].evaluate(st)->getConverted<object::type::Array>();
-                args.insert(args.begin() + j, arr.begin(), arr.end());
-                j += arr.size();
+                args.insert(args.end(), std::make_move_iterator(arr.begin()), std::make_move_iterator(arr.end()));
             }
         try
         {
@@ -1334,17 +1255,17 @@ void Node::evaluateVoid(stack &st) const
         }
         catch (objectException &e)
         {
-            stackTrace.clear();
             stack localStack(&st);
             localStack.insert(n::exception, e.getPtr());
             _children[1].evaluateVoid(localStack);
+            console::clearStackTrace();
         }
         catch (std::exception &e)
         {
-            stackTrace.clear();
             stack localStack(&st);
             localStack.insert(n::exception, object::makeObject((std::string)e.what()));
             _children[1].evaluateVoid(localStack);
+            console::clearStackTrace();
         }
         return;
     }

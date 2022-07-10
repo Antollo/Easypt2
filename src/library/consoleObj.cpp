@@ -131,7 +131,7 @@ void consoleObj::init(stack *st)
         return thisObj;
     });
     consoleObj->addFunctionL("stackTrace"_n, {
-        console::stackTrace();
+        console::printStackTrace();
         return thisObj;
     });
 }

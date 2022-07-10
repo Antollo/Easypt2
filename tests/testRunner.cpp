@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     catch (objectException &e)
     {
         auto obj = e.getPtr();
-        console::stackTrace();
+        console::printStackTrace();
         if (obj->isConvertible<std::string>())
             console::error(obj->getConverted<object::type::String>());
         else
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     }
     catch (std::exception &e)
     {
-        console::stackTrace();
+        console::printStackTrace();
         console::error((std::string)e.what());
         runtime::fini(&globalStack);
         return 1;
