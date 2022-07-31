@@ -89,7 +89,7 @@ function testExample(obj, name) {
                 output <- exception;
             } 
             if (obj.expectedOutput == output) {
-                console.debug("Example passed: ", name);
+                console.ok("Example passed: ", name);
                 return true;
             }
             console.error("Example not passed: ", name, "\n", output);
@@ -117,6 +117,10 @@ function testAllExamples() {
     for (let i = 0; i < names.length(); i++)
         if (names[i] != "prototype" && names[i].substring(0, 2) != "__")
             ok = ok && recursiveTestExample(Object.readOperator.call(stack, names[i]), names[i]);
+    if (ok) 
+        console.ok("All examples have passed")
+    else
+        console.error("Not all examples have passed")
     return ok;
 };
 

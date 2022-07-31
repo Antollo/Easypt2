@@ -406,9 +406,6 @@ rightAssociativeOperator :
     ASSIGNMENT
     | JSON_ASSIGNMENT
     | INIT_ASSIGNMENT
-    | NOT
-    | COMPLEMENT
-    | DECORATOR
     ]
     ;
 {}
