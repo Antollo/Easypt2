@@ -41,9 +41,8 @@ void Node::addChild(Node &arg)
     {
         arg.names() = std::move(names());
         names().clear();
-        Node *node = new Node(std::move(arg));
-        node->optimize();
-        _value = object::makeObject(object::type::Function(node, nullptr));
+        arg.optimize();
+        _value = object::makeObject(object::makeFunction(std::move(arg)));
         break;
     }
     default:

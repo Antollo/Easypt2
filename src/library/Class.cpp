@@ -9,12 +9,12 @@ void Class::init(stack *st)
 
     object::classPrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<nullptr_t>(args);
-        thisObj->setType<object::type::NativeFunction>();
+        thisObj->setType<object::typeIndex::NativeFunction>();
         thisObj->get<object::type::NativeFunction>() = constructorCaller;
         thisObj->addProperty(n::classPrototype, args[0]);
         // TODO: 2 following lines fixes prototype destructor calling
         // in classPrototype (inherited destructor)
-        args[0]->setType<object::type::NativeFunction>();
+        args[0]->setType<object::typeIndex::NativeFunction>();
         args[0]->get<object::type::NativeFunction>() = constructorCaller;
         return thisObj;
     });

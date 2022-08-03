@@ -3,12 +3,12 @@
 void Accessible::init(stack *st)
 {
     object::objectPtr Accessible = insertObject("Accessible"_n, constructorCaller);
-    object::objectPtr accessablePrototype = object::makeEmptyObject();
+    object::objectPtr accessiblePrototype = object::makeEmptyObject();
 
-    (*Accessible)[n::classPrototype] = accessablePrototype;
+    (*Accessible)[n::classPrototype] = accessiblePrototype;
 
-    accessablePrototype->addFunctionL(n::constructor, {
-        thisObj->setType<nullptr_t>();
+    accessiblePrototype->addFunctionL(n::constructor, {
+        thisObj->setType<object::typeIndex::Object>();
         thisObj->setAccessible();
 
         thisObj->addProperty("owner"_n, (*st)["this"_n]);

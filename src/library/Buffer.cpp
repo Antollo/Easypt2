@@ -9,7 +9,7 @@ void Buffer::init(stack *st)
     (*Buffer)[n::classPrototype] = bufferPrototype;
 
     bufferPrototype->addFunctionL(n::constructor, {
-        thisObj->setType<object::type::Buffer>();
+        thisObj->setType<object::typeIndex::Buffer>();
         thisObj->get<object::type::Buffer>() = std::make_shared<buffer>();
         return thisObj;
     });

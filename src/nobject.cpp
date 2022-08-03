@@ -72,14 +72,13 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
 
     case typeIndex::Function:
     {
-        auto &node = uncheckedGet<type::Function>().first;
-        auto capturedStack = uncheckedGet<type::Function>().second;
+        auto &function = *uncheckedGet<type::Function>();
 
-        if (capturedStack != nullptr)
-            st = capturedStack.get();
+        if (function.capturedStack != nullptr)
+            st = function.capturedStack.get();
         stack localStack(st);
 
-        auto &names = node->names();
+        auto &names = function.node.names();
         const size_t toInsert = std::min(names.size(), args.size());
         localStack.reserve(toInsert + 1 + (bool)thisObj);
         for (size_t i = 0; i < toInsert; i++)
@@ -89,7 +88,7 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
             localStack.insert(n::thisObj, thisObj);
         try
         {
-            auto evalRet = node->evaluate(localStack);
+            auto evalRet = function.node.evaluate(localStack);
             if (evalRet != nullptr)
                 return evalRet;
         }

@@ -29,6 +29,16 @@ objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl
 class tcpClient;
 class tcpServer;
 
+class nodeAndStack
+{
+public:
+    nodeAndStack() = default;
+    nodeAndStack(Node &&n)
+        : node(std::move(n)) {}
+    Node node;
+    std::unique_ptr<stack> capturedStack;
+};
+
 class object
 {
 public:
@@ -43,7 +53,7 @@ public:
         using String = std::string;
         using Array = std::vector<objectPtr, allocator<objectPtr>>;
         using Promise = std::shared_ptr<coroutine<objectPtr>>;
-        using Function = std::pair<std::shared_ptr<Node>, std::shared_ptr<stack>>;
+        using Function = std::shared_ptr<nodeAndStack>;
         using NativeFunction = objectPtr (*)(objectPtr, Array &&, stack *);
         using ExternalFunction = externalFunction;
         using File = std::shared_ptr<file>;
@@ -73,7 +83,12 @@ public:
 
     static type::Function makeFunction()
     {
-        return {std::make_shared<Node>(), nullptr};
+        return std::make_shared<nodeAndStack>();
+    }
+
+    static type::Function makeFunction(Node &&node)
+    {
+        return std::make_shared<nodeAndStack>(std::move(node));
     }
 
     template <class T>
@@ -210,10 +225,10 @@ public:
         return static_cast<typeIndex>(_value.index());
     }
 
-    template <class T>
+    template <typeIndex I>
     void setType()
     {
-        _value.emplace<remove_cref_t<T>>();
+        _value.emplace<static_cast<size_t>(I)>();
     }
 
     template <class T>
@@ -435,7 +450,7 @@ public:
     std::string toJson() const;
     void clear();
 
-    void captureStack(stack &&st) { get<type::Function>().second = std::make_shared<stack>(std::move(st)); }
+    void captureStack(stack &&st) { get<type::Function>()->capturedStack = std::make_unique<stack>(std::move(st)); }
 
     static inline objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
     static inline objectPtr toNumber, toString, toArray, toBoolean;
@@ -456,10 +471,21 @@ public:
 private:
     friend class objectPtrImpl;
     friend class modules;
-
-    std::variant<type::Object, type::Boolean, type::Number, type::String, type::Array, type::Promise,
-                 type::Function, type::NativeFunction, type::ExternalFunction, type::File,
-                 type::TcpClient, type::TcpServer, type::ChildProcess, type::Buffer>
+    
+    std::variant<type::Object,
+                 type::Boolean,
+                 type::Number,
+                 type::String,
+                 type::Array,
+                 type::Promise,
+                 type::Function,
+                 type::NativeFunction,
+                 type::ExternalFunction,
+                 type::File,
+                 type::TcpClient,
+                 type::TcpServer,
+                 type::ChildProcess,
+                 type::Buffer>
         _value;
 
     objectPtr _prototype;

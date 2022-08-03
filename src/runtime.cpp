@@ -42,11 +42,11 @@ void runtime::init(stack *st)
     });
 
     object::functionPrototype->addFunctionL("__explain"_n, {
-        return object::makeObject(thisObj->get<object::type::Function>().first->explain());
+        return object::makeObject(thisObj->get<object::type::Function>()->node.explain());
     });
 
     object::functionPrototype->addFunctionL("__jit"_n, {
-        return object::makeObject(thisObj->get<object::type::Function>().first->toIntermediateLanguage());
+        return object::makeObject(thisObj->get<object::type::Function>()->node.toIntermediateLanguage());
     });
 
     object::objectPtr Function = insertObject("Function"_n, constructorCaller);

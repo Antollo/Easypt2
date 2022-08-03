@@ -25,7 +25,7 @@ void ChildProcess::init(stack *st)
             argsV[i] = argsIn[i]->getConverted<object::type::String>();
         
 
-        thisObj->setType<object::type::ChildProcess>();
+        thisObj->setType<object::typeIndex::ChildProcess>();
         auto &_childProcess = (thisObj->get<object::type::ChildProcess>() = std::make_shared<childProcess>(
             args[0]->getConverted<object::type::String>(),
             argsV,

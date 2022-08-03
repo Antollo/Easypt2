@@ -91,7 +91,7 @@ object::objectPtr modules::import(object::objectPtr thisObj, object::type::Array
             if (filePath.extension() == ".ez")
             {
                 object::type::Function root = object::makeFunction();
-                treeParser::parseFile(filePath.string(), *root.first);
+                treeParser::parseFile(filePath.string(), root->node);
                 object::objectPtr sourceFunction = object::makeObject(root);
                 result = (*sourceFunction)(sourceFunction, std::move(args), &s);
             }
@@ -118,7 +118,7 @@ object::objectPtr interpreter::parse(object::objectPtr thisObj, object::type::Ar
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<object::type::String>();
     object::type::Function root = object::makeFunction();
-    treeParser::parseString(temp, *root.first);
+    treeParser::parseString(temp, root->node);
     return object::makeObject(root);
 }
 
@@ -127,10 +127,10 @@ object::objectPtr interpreter::execute(object::objectPtr thisObj, object::type::
     argsConvertibleGuard<std::string>(args);
     std::string temp = args[0]->getConverted<object::type::String>();
     object::type::Function root = object::makeFunction();
-    treeParser::parseString(temp, *root.first);
+    treeParser::parseString(temp, root->node);
     try
     {
-        auto &children = root.first->children();
+        auto &children = root->node.children();
 
         if (!children.empty())
         {

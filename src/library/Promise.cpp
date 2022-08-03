@@ -9,7 +9,7 @@ void Promise::init(stack *st)
     object::promisePrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<nullptr_t>(args);
 
-        thisObj->setType<object::type::Promise>();
+        thisObj->setType<object::typeIndex::Promise>();
 
         thisObj->get<object::type::Promise>() = coroutine<object::objectPtr>::makeCoroutine([args]() {
             object::type::Array argsCopy = args;
@@ -45,7 +45,7 @@ void Promise::init(stack *st)
     conditionalPromisePrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<nullptr_t, nullptr_t>(args);
 
-        thisObj->setType<object::type::Promise>();
+        thisObj->setType<object::typeIndex::Promise>();
 
         thisObj->get<object::type::Promise>() = coroutine<object::objectPtr>::makeCoroutine([args]() {
             object::objectPtr f = args[0];
@@ -69,7 +69,7 @@ void Promise::init(stack *st)
         auto begin = std::chrono::steady_clock::now();
         number time = args[0]->get<const number>();
 
-        thisObj->setType<object::type::Promise>();
+        thisObj->setType<object::typeIndex::Promise>();
 
         thisObj->get<object::type::Promise>() = coroutine<object::objectPtr>::makeCoroutine(
             [begin, time]() {

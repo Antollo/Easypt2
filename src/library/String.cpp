@@ -10,7 +10,7 @@ void String::init(stack *st)
     (*String)[n::classPrototype] = object::stringPrototype;
 
     object::stringPrototype->addFunctionL(n::constructor, {
-        thisObj->setType<std::string>();
+        thisObj->setType<object::typeIndex::String>();
         return thisObj;
     });
 

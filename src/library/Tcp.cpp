@@ -9,8 +9,8 @@ void Tcp::init(stack *st)
     (*TcpClient)[n::classPrototype] = tcpClientPrototype;
 
     tcpClientPrototype->addFunctionL(n::constructor, {
-        thisObj->setType<std::shared_ptr<tcpClient>>();
-        thisObj->get<std::shared_ptr<tcpClient>>() = std::make_shared<tcpClient>();
+        thisObj->setType<object::typeIndex::TcpClient>();
+        thisObj->get<object::type::TcpClient>() = std::make_shared<tcpClient>();
         return thisObj;
     });
 
@@ -21,7 +21,7 @@ void Tcp::init(stack *st)
         int port = static_cast<int>(args[1]->getConverted<object::type::Number>());
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([adress, port, thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpClient>>();
+            auto t = thisObj->get<object::type::TcpClient>();
             auto f = std::async(std::launch::async, [t, &adress, port]() {
                 coroutineEvent post;
                 t->connect(adress, port);
@@ -33,7 +33,7 @@ void Tcp::init(stack *st)
 
     tcpClientPrototype->addFunctionL("receive"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpClient>>();
+            auto t = thisObj->get<object::type::TcpClient>();
             std::string str;
             auto f = std::async(std::launch::async, [t, &str]() {
                 coroutineEvent post;
@@ -50,7 +50,7 @@ void Tcp::init(stack *st)
         std::string str = args[0]->getConverted<object::type::String>();
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([str, thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpClient>>();
+            auto t = thisObj->get<object::type::TcpClient>();
             auto f = std::async(std::launch::async, [t, &str]() {
                 coroutineEvent post;
                 t->send(str);
@@ -62,7 +62,7 @@ void Tcp::init(stack *st)
 
     tcpClientPrototype->addFunctionL("close"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpClient>>();
+            auto t = thisObj->get<object::type::TcpClient>();
             auto f = std::async(std::launch::async, [t]() {
                 coroutineEvent post;
                 t->close();
@@ -78,8 +78,8 @@ void Tcp::init(stack *st)
     (*SslClient)[n::classPrototype] = sslClientPrototype;
 
     sslClientPrototype->addFunctionL(n::constructor, {
-        thisObj->setType<std::shared_ptr<tcpClient>>();
-        thisObj->get<std::shared_ptr<tcpClient>>() = std::make_shared<sslClient>();
+        thisObj->setType<object::typeIndex::TcpClient>();
+        thisObj->get<object::type::TcpClient>() = std::make_shared<sslClient>();
         return thisObj;
     });
 
@@ -89,8 +89,8 @@ void Tcp::init(stack *st)
     (*TcpServer)[n::classPrototype] = tcpServerPrototype;
 
     tcpServerPrototype->addFunctionL(n::constructor, {
-        thisObj->setType<std::shared_ptr<tcpServer>>();
-        thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<tcpServer>();
+        thisObj->setType<object::typeIndex::TcpServer>();
+        thisObj->get<object::type::TcpServer>() = std::make_shared<tcpServer>();
         return thisObj;
     });
 
@@ -100,7 +100,7 @@ void Tcp::init(stack *st)
         int port = static_cast<int>(args[0]->getConverted<object::type::Number>());
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([port, thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpServer>>();
+            auto t = thisObj->get<object::type::TcpServer>();
             auto f = std::async(std::launch::async, [t, port]() {
                 coroutineEvent post;
                 t->bind(port);
@@ -116,7 +116,7 @@ void Tcp::init(stack *st)
         auto tcpClientPrototype = (*(*thisObj)[n::prototype])[n::__client];
 
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([tcpClientPrototype, thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpServer>>();
+            auto t = thisObj->get<object::type::TcpServer>();
             std::shared_ptr<tcpClient> c;
             auto f = std::async(std::launch::async, [t, &c]() {
                 coroutineEvent post;
@@ -124,8 +124,8 @@ void Tcp::init(stack *st)
             });
             await f;
             auto tcpClientObject = object::makeEmptyObject();
-            tcpClientObject->setType<std::shared_ptr<tcpClient>>();
-            tcpClientObject->get<std::shared_ptr<tcpClient>>() = c;
+            tcpClientObject->setType<object::typeIndex::TcpClient>();
+            tcpClientObject->get<object::type::TcpClient>() = c;
             (*tcpClientObject)[n::prototype] = tcpClientPrototype;
             return tcpClientObject;
         }));
@@ -133,7 +133,7 @@ void Tcp::init(stack *st)
 
     tcpServerPrototype->addFunctionL("close"_n, {
         return object::makeObject(coroutine<object::objectPtr>::makeCoroutine([thisObj]() {
-            auto t = thisObj->get<std::shared_ptr<tcpServer>>();
+            auto t = thisObj->get<object::type::TcpServer>();
             auto f = std::async(std::launch::async, [t]() {
                 coroutineEvent post;
                 t->close();
@@ -153,8 +153,8 @@ void Tcp::init(stack *st)
     sslServerPrototype->addFunctionL(n::constructor, {
         argsConvertibleGuard<std::string, std::string>(args);
 
-        thisObj->setType<std::shared_ptr<tcpServer>>();
-        thisObj->get<std::shared_ptr<tcpServer>>() = std::make_shared<sslServer>(args[0]->getConverted<object::type::String>(), args[1]->getConverted<object::type::String>(), modules::getImportPaths());
+        thisObj->setType<object::typeIndex::TcpServer>();
+        thisObj->get<object::type::TcpServer>() = std::make_shared<sslServer>(args[0]->getConverted<object::type::String>(), args[1]->getConverted<object::type::String>(), modules::getImportPaths());
         return thisObj;
     });
 }

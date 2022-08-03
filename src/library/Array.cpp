@@ -10,7 +10,7 @@ void Array::init(stack *st)
     });
 
     object::arrayPrototype->addFunctionL(n::constructor, {
-        thisObj->setType<object::type::Array>();
+        thisObj->setType<object::typeIndex::Array>();
         return thisObj;
     });
 
