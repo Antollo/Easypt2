@@ -9,6 +9,7 @@ stringUtils.cpp
 library/consoleObj.cpp library/Accessible.cpp library/Object.cpp library/Array.cpp
 library/File.cpp library/String.cpp library/Number.cpp library/Boolean.cpp library/Class.cpp
 library/Promise.cpp library/Time.cpp library/Tcp.cpp library/ChildProcess.cpp library/Buffer.cpp
+library/Iterator.cpp
 parser/gram.c parser/lex.yy.c parser/gramUtility.cpp parser/treeParser.cpp parser/Node.cpp
 parser/NodeJit.cpp)
 

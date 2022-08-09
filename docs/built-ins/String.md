@@ -14,7 +14,7 @@
 Represents text as a sequence of characters (UTF-8 code units).
 Provides methods for manipulating such sequences. Strings 
 are indexed with non-negative integers or negative integers 
-(counts elemensts from the end of the array)
+(negative indices counts elements from the end of the string).
 
 ### Example
 
@@ -36,6 +36,7 @@ console.write("a".getByteAt(0));
 - [`getByteAt`]({{site.baseurl}}\built-ins\String\classPrototype\getByteAt\index)
 - [`indexOf`]({{site.baseurl}}\built-ins\String\classPrototype\indexOf\index)
 - [`insertFrom`]({{site.baseurl}}\built-ins\String\classPrototype\insertFrom\index)
+- [`iterator`]({{site.baseurl}}\built-ins\String\classPrototype\iterator\index)
 - [`length`]({{site.baseurl}}\built-ins\String\classPrototype\length\index)
 - [`readOperator`]({{site.baseurl}}\built-ins\String\classPrototype\readOperator\index)
 - [`replace`]({{site.baseurl}}\built-ins\String\classPrototype\replace\index)

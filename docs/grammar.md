@@ -61,6 +61,8 @@ function        : FUNCTION
 await           : AWAIT
 delete          : DELETE
 break           : BREAK
+is              : IS
+in              : IN
 ```
 
 ### Identifier
@@ -212,10 +214,13 @@ forStatement :
     FOR
     PARENTHESES_OPEN
     expression
-    ';'
-    expression
-    ';'
-    expression
+    [
+        ';'
+        expression
+        ';'
+        expression
+    |
+    ]
     PARENTHESES_CLOSE
     statement
 ```
@@ -270,6 +275,7 @@ statement :
 ```
 expression :
     factor
+    postUnaryOperator
     [
         // while (newToken.priority <= expression.priority)
         [
@@ -282,13 +288,17 @@ expression :
             CONDITIONAL expression JSON_ASSIGNMENT expression
         |
             PARENTHESES_OPEN expressionList PARENTHESES_CLOSE
+            postUnaryOperator
         |
             BRACKET_OPEN expressionList BRACKET_CLOSE
+            postUnaryOperator
         |
             DOT IDENTIFIER
+            postUnaryOperator
             [
                 // prefer
                 PARENTHESES_OPEN expressionList PARENTHESES_CLOSE
+                postUnaryOperator
                 |
             ]
         ]
@@ -311,8 +321,7 @@ expressionListTail :
 
 
 ```
-factor :
-    factorBase
+postUnaryOperator :
     [
         // prefer
         INCREMENT
@@ -324,7 +333,7 @@ factor :
 ```
 
 ```
-factorBase :
+factor :
     PARENTHESES_OPEN expression PARENTHESES_CLOSE
     |
     SUBTRACTION
@@ -417,6 +426,8 @@ leftAssociativeOperator :
     | OR
     | BINARY_FUNCTION_OPERATOR
     | INSTANCEOF
+    | IS
+    | IN
     ]
 ```
 

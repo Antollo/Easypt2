@@ -10,7 +10,8 @@
 #endif
 
 std::string tokenToName(int token);
-void LLmessage(int token);
+void LLmessage(int expectedToken);
+void LLmessage(int expectedToken, int token);
 int operatorPriority(int token);
 
 #endif /* !GRAMUTILITY_H_ */

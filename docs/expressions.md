@@ -110,6 +110,10 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
   (where `T` is `Number`, `String`, `Array` or `Boolean`).
   Otherwise, operator calls `a["=="](b)`.
 
+- #### `a is b` Identity operator.
+  Checks if the operands refer to the same object.
+  Equivalent of `a.getId() == b.getId()`.
+
 - #### `a != b` Inquality operator.
   If `a` is of type `T` and `b` is convertible to type `T`, then operator 
   checks if the values of two operands are not equal
@@ -199,7 +203,7 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
   If `a` is not a constant assign the copy of `b` to `a`.
 
 - #### `a <- b` Initialization assignment operator.
-  If `a` is in form _identifier_, _identifier.property_ or _let identifier_, then operator 
+  If `a` is in form _identifier_, _expression.identifier_ or _let identifier_, then operator 
   makes `a` a reference to `b` (`a` and `b` points to the same object).
 
 - #### `a : b` JSON assignment operator.
@@ -212,7 +216,11 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 
 - #### `f(/* ... */)` Call operator.
 
+  If `f` is instance of `Function` calls `f`, otherwise if `f.callOperator` exists calls it.
+
 - #### `x.m(/* ... */)` Method call operator.
+
+  If `x.m` is instance of `Function` calls `x.m`, otherwise if `x.m.callOperator` exists calls it.
 
 - #### `a[b]` Read operator.
   Equivalent of `a.readOperator(b)`.
@@ -269,7 +277,7 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 
 - #### `delete a` Delete operator.
   If `a` is _identifier_, then operator deletes variable `a`. 
-  If `a` is _identifier.property_, then operator deletes that property.
+  If `a` is _expression.identifier_, then operator deletes that property.
 
 - #### `await a` Await operator.
   Equivalent of `a["await"]()`.

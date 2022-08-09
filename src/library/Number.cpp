@@ -8,6 +8,7 @@ void Number::init(stack *st)
     object::numberPrototype->addFunctionL("toInteger"_n, {
         return object::makeObject(thisObj->get<const number>().toInteger());
     });
+
     object::numberPrototype->addFunctionL("toFloatingPoint"_n, {
         return object::makeObject(thisObj->get<const number>().toFloatingPoint());
     });

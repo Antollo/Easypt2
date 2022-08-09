@@ -239,11 +239,11 @@ function recursiveDoc(obj, name) {
     return false;
 };
 
-function makeDocs(path) {
+function makeDocs() {
     addDocToModuleObject(module);
 
     let index <- File();
-    prefix = args.length() > 0 ? path : "docs/";
+    prefix = args.length() > 0 ? args[0] : "docs/";
     index.create(prefix + "index.md");
     prefix = prefix + "built-ins/"; 
     let builtInsIndex <- File();

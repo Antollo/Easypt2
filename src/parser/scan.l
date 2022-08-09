@@ -54,6 +54,8 @@ comment \/\/.*
 <INITIAL>await              { return AWAIT; }
 <INITIAL>delete             { return DELETE_; }
 <INITIAL>break              { return BREAK; }
+<INITIAL>is                 { return IS; }
+<INITIAL>in                 { return IN_; }
 <INITIAL>\.\.\.             { return SPREAD_OPERATOR; }
 
 <INITIAL>{identifier}       {

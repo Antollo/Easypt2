@@ -89,6 +89,11 @@
 %token SPREAD_OPERATOR;
 %token RETURN_LAST;
 %token DECORATOR;
+%token IS;
+%token IN_;
+%token FOR_IN;
+%token FOR_IN_COMPOUND_STATEMENT;
+%token FOR_IN_COMPOUND_STATEMENT_STACKLESS;
 
 %start parse, input;
 
@@ -169,21 +174,45 @@ whileStatement(Node& me) { Node a(INI), b(INI); } :
     { me.token(WHILE); me.addChild(b); }
     ;
 
-forStatement(Node& me) { Node a(INI), b(INI), c(INI), d(INI); } :
+forStatement(Node& me) { Node a(INI), b(INI), c(INI), d(INI); bool normalFor = false; } :
     FOR
     PARENTHESES_OPEN
     { a.init(INI); }
-    expression(100, a) { me.addChild(a); }
-    ';'
-    { b.init(INI); }
-    expression(100, b) { me.addChild(b); }
-    ';'
-    { c.init(INI); }
-    expression(100, c) { me.addChild(c); }
+    expression(100, a)
+    [
+        ';'
+        { b.init(INI); }
+        expression(100, b)
+        ';'
+        { c.init(INI); }
+        expression(100, c)
+        { normalFor = true; }
+    |
+    ]
     PARENTHESES_CLOSE
     { d.init(INI); }
     statement(d)
-    { me.token(FOR); me.addChild(d); }
+    { 
+        if (normalFor)
+        {
+            me.token(FOR);
+            me.addChild(a);
+            me.addChild(b);
+            me.addChild(c);
+            me.addChild(d);
+        }
+        else
+        {
+            if (a.token() == IN_)
+            {
+                me.token(FOR_IN);
+                me.children() = std::move(a.children());
+                me.addChild(d);
+            }
+            else
+                LLmessage(IN_, a.token());
+        }
+    }
     ;
 
 tryCatchStatement(Node& me) { Node a(INI), b(INI); } :
@@ -237,6 +266,7 @@ statement(Node& me) :
 
 expression(int priority, Node& me) { Node a(INI), b(INI), c(INI); int token; } :
     factor(me)
+    postUnaryOperator(me)
     [
         %while (op(LLsymb) <= priority)
         { a = Node(INI); std::swap(me, a); me.addChild(a); me.token(token = LLsymb); me.text(treeParser::text); }
@@ -252,15 +282,19 @@ expression(int priority, Node& me) { Node a(INI), b(INI), c(INI); int token; } :
         |
             { me.token(CALL_OPERATOR); }
             PARENTHESES_OPEN expressionList(me) PARENTHESES_CLOSE
+            postUnaryOperator(me)
         |
             { me.token(READ_OPERATOR); }
             BRACKET_OPEN expressionList(me) BRACKET_CLOSE
+            postUnaryOperator(me)
         |
             DOT IDENTIFIER { b.token(IDENTIFIER); b.text(treeParser::text); me.addChild(b); me.token(DOT); }
+            postUnaryOperator(me)
             [
                 %prefer
                 { me.token(METHOD_CALL_OPERATOR); }
                 PARENTHESES_OPEN expressionList(me) PARENTHESES_CLOSE
+                postUnaryOperator(me)
                 |
             ]
         ]
@@ -281,20 +315,18 @@ expressionListTail(Node& me) { Node a(INI); } :
     ;
 
 
-factor(Node& me)  { Node a(INI); } :
-    factorBase(a)
+postUnaryOperator(Node& me)  { Node a(INI); } :
     [
         %prefer
-        INCREMENT { me.token(INCREMENT); me.addChild(a); }
+        INCREMENT { a.token(INCREMENT); a.addChild(me); me = std::move(a); }
     |
         %prefer
-        DECREMENT { me.token(DECREMENT); me.addChild(a); }
+        DECREMENT { a.token(DECREMENT); a.addChild(me); me = std::move(a); }
     |
-        { me = std::move(a); }
     ]
     ;
 
-factorBase(Node& me)  { Node b(INI); } :
+factor(Node& me)  { Node b(INI); } :
     PARENTHESES_OPEN expression(100, me) PARENTHESES_CLOSE
     |
     SUBTRACTION
@@ -398,6 +430,8 @@ leftAssociativeOperator :
     | OR
     | BINARY_FUNCTION_OPERATOR
     | INSTANCEOF
+    | IS
+    | IN_
     ]
     ;
 

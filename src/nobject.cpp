@@ -2,6 +2,7 @@
 #include "nobject.h"
 #include "Node.h"
 #include "stringUtils.h"
+#include "iterator.h"
 
 
 allocatorBuffer<sizeof(object)> objectMemoryBuffer;
@@ -79,7 +80,16 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
         stack localStack(st);
 
         auto &names = function.node.names();
-        const size_t toInsert = std::min(names.size(), args.size());
+        const size_t toInsert = names.size();
+        if (args.size() < toInsert)
+        {
+            std::stringstream message;
+            message << "missing named arguments: \"";
+            for (size_t i = args.size(); i < toInsert; i++)
+                message << static_cast<std::string>(names[i]) << (i + 1 < toInsert ? "\", \"" : "\"");
+            throw std::runtime_error(message.str());
+        }
+        
         localStack.reserve(toInsert + 1 + (bool)thisObj);
         for (size_t i = 0; i < toInsert; i++)
             localStack.insert(names[i], args[i]);
@@ -89,12 +99,13 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
         try
         {
             auto evalRet = function.node.evaluate(localStack);
-            if (evalRet != nullptr)
+            if (evalRet)
                 return evalRet;
         }
         catch (const object::objectPtr &ret)
         {
-            return ret;
+            if (ret)
+                return ret;
         }
         if (thisObj)
             return thisObj;
@@ -112,7 +123,13 @@ object::objectPtr object::operator()(objectPtr thisObj, type::Array &&args, stac
     }
 
     default:
-        throw std::runtime_error("object is not a function");
+    {
+        auto &callOperator = read(n::callOperator);
+        if (callOperator)
+            return (*callOperator)(thisObj, std::move(args), st);
+        else
+            throw std::runtime_error("object is not a function");
+    }
     }
 }
 
@@ -260,6 +277,8 @@ void object::toJson(std::stringstream &str, const size_t indentation) const
                        str << "\"<tcpServer>\"";
                    else if constexpr (std::is_same_v<A, type::ChildProcess>)
                        str << "\"<childProcess>\"";
+                   else if constexpr (std::is_same_v<A, type::Iterator>)
+                       str << "\"<iterator>\"";
                    else
                    {
                        std::string tabs(indentation * 4, ' ');
@@ -286,4 +305,27 @@ void object::clear()
     _value = nullptr;
     _flags.reset();
     _prototype = nullptr;
+}
+
+object::type::Iterator object::iterator()
+{
+    switch (getTypeIndex())
+    {
+    case typeIndex::String:
+        return std::make_shared<stringIterator>(ptrFromThis());
+    case typeIndex::Array:
+        return std::make_shared<arrayIterator>(ptrFromThis());
+    default:
+    {
+        auto &iterator = read(n::iterator);
+        if (iterator && iterator->isCallable())
+        {
+            auto iteratorInstance = (*iterator)(ptrFromThis(), {}, nullptr);
+            auto &next = iteratorInstance->read(n::next);
+            if (next && next->isCallable())
+                return std::make_shared<objectIterator>(iteratorInstance);
+        }
+        throw std::runtime_error("object is not iterable");
+    }
+    }
 }

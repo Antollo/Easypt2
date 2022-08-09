@@ -88,6 +88,9 @@ public:
         codeToNameMap[BufferCode] = "Buffer"s;
         codeToNameMap[__clientCode] = "__client"s;
         codeToNameMap[onNewPropertyCode] = "onNewProperty"s;
+        codeToNameMap[callOperatorCode] = "callOperator"s;
+        codeToNameMap[iteratorCode] = "iterator"s;
+        codeToNameMap[nextCode] = "next"s;
         
         nameToCodeMap["prototype"s] = prototypeCode;
         nameToCodeMap["args"s] = argsCode;
@@ -142,6 +145,9 @@ public:
         nameToCodeMap["Buffer"s] = BufferCode;
         nameToCodeMap["__client"s] = __clientCode;
         nameToCodeMap["onNewProperty"s] = onNewPropertyCode;
+        nameToCodeMap["callOperator"s] = callOperatorCode;
+        nameToCodeMap["iterator"s] = iteratorCode;
+        nameToCodeMap["next"s] = nextCode;
     }
 
 private:
@@ -201,6 +207,9 @@ private:
     static constexpr codeType BufferCode = 52;
     static constexpr codeType __clientCode = 53;
     static constexpr codeType onNewPropertyCode = 54;
+    static constexpr codeType callOperatorCode = 55;
+    static constexpr codeType iteratorCode = 56;
+    static constexpr codeType nextCode = 57;
 
     codeType code;
     constexpr name(codeType i) : code(i) {}
@@ -281,6 +290,9 @@ struct n
     static constexpr name Buffer = name::BufferCode;
     static constexpr name __client = name::__clientCode;
     static constexpr name onNewProperty = name::onNewPropertyCode;
+    static constexpr name callOperator = name::callOperatorCode;
+    static constexpr name iterator = name::iteratorCode;
+    static constexpr name next = name::nextCode;
 };
 
 #endif // NAME_H

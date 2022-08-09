@@ -9,23 +9,31 @@ extern int yylineno;
 
 std::string tokenToName(int token)
 {
-    return LLgetSymbol(token);
+    std::string ret = LLgetSymbol(token);
+    if (ret.back() == '_')
+        ret.pop_back();
+    return ret;
 }
 
-void LLmessage(int token)
+void LLmessage(int expectedToken)
+{
+    LLmessage(expectedToken, LLsymb);
+}
+
+void LLmessage(int expectedToken, int token)
 {
     std::string message = "syntax error in " + treeParser::file + ":" + std::to_string(yylineno);
-    switch (token)
+    switch (expectedToken)
     {
     case LL_MISSINGEOF:
-        message += " expected EOF not encountered, unexpected token <" + tokenToName(LLsymb) + "> found";
+        message += " expected EOF not encountered, unexpected token <" + tokenToName(token) + "> found";
         break;
     case LL_DELETE:
-        message += " unexpected token <" + tokenToName(LLsymb) + "> detected";
+        message += " unexpected token <" + tokenToName(token) + "> detected";
         break;
     default:
-        message += " expected token <" + tokenToName(token) + "> not found";
-        message += " unexpected token <" + tokenToName(LLsymb) + "> detected";
+        message += " expected token <" + tokenToName(expectedToken) + "> not found";
+        message += " unexpected token <" + tokenToName(token) + "> detected";
         break;
     }
     treeParser::throwLater(message);
@@ -66,6 +74,8 @@ int operatorPriority(int token)
     case GREATER:
     case GREATER_EQUAL:
     case INSTANCEOF:
+    case IS:
+    case IN_:
         return 9;
     case EQUAL:
     case NOT_EQUAL:

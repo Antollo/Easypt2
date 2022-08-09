@@ -13,7 +13,7 @@ Object containing information about current source file.
 ### Example
 
 ```js
-console.writeLine(module.name);
+console.writeLine(module);
 /* Possible output:
 21-06-2022 12:00:00 {
     "name": "repl",

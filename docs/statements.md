@@ -24,6 +24,18 @@ An expression optionally followed with a comma.
 
 Consists of three expressions between parenthesis spliced with semicolons followed with a statement. Executes the first expression and then while the value of the second expression is true executes the third expression and the statement.
 
+`for (` _left expression_ `in` _expression_ `)` _statement_
+
+Iterates over iterable object. Invokes `itarator` method on the result of second expression, result of invoking `iterator` method should satisfy _iterator_ requirements. 
+First expression should be in form _identifier_, _expression.identifier_ or _let identifier_. Equivalent of: 
+
+```js
+let leftExpression
+let it <- expression.iterator()
+while (!(leftExpression <- it.next()) is Iterator.end)
+    statement
+```
+
 ### `while` loop
 
 `while (` _expression_ `)` _statement_

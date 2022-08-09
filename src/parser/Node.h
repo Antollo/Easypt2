@@ -156,12 +156,15 @@ public:
         _token = t;
     }
 
+    int token() { return _token; }
+
     void text(const std::string &t);
 
     objectPtrImpl evaluate(stack &st) const;
     number evaluateNumber(stack &st) const;
     bool evaluateBoolean(stack &st) const;
     void evaluateVoid(stack &st) const;
+    objectPtrImpl &evaluateRef(stack &st, objectPtrImpl &&toAssign) const;
 
     void addChild(Node &arg);
     void addName(const std::string &n)
@@ -243,6 +246,16 @@ public:
                     _token = FOR_COMPOUND_STATEMENT_STACKLESS;
                 else
                     _token = FOR_COMPOUND_STATEMENT;
+            }
+            break;
+
+        case FOR_IN:
+            if (_children[2]._token == COMPOUND_STATEMENT)
+            {
+                if (!_children[2].shouldHaveStack())
+                    _token = FOR_IN_COMPOUND_STATEMENT_STACKLESS;
+                else
+                    _token = FOR_IN_COMPOUND_STATEMENT;
             }
             break;
 
@@ -373,7 +386,7 @@ private:
     {
         const auto symbol = LLgetSymbol(token);
         if (symbol)
-            return symbol;
+            return tokenToName(token);
         else
             return std::to_string(token);
     }

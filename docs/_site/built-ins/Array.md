@@ -13,7 +13,8 @@
 
 Array class provides methods for manipulating arrays (list-like
 objects). Array elements are indexed with non-negative integers or
-negative integers (counts elemensts from the end of the array).
+negative integers (negative indices counts elements from the end 
+of the array).
 
 ### Example
 
@@ -38,6 +39,7 @@ arr.forEach(function {
 - [`forEach`]({{site.baseurl}}\built-ins\Array\classPrototype\forEach\index)
 - [`insert`]({{site.baseurl}}\built-ins\Array\classPrototype\insert\index)
 - [`insertFrom`]({{site.baseurl}}\built-ins\Array\classPrototype\insertFrom\index)
+- [`iterator`]({{site.baseurl}}\built-ins\Array\classPrototype\iterator\index)
 - [`join`]({{site.baseurl}}\built-ins\Array\classPrototype\join\index)
 - [`length`]({{site.baseurl}}\built-ins\Array\classPrototype\length\index)
 - [`readOperator`]({{site.baseurl}}\built-ins\Array\classPrototype\readOperator\index)

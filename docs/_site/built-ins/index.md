@@ -5,6 +5,7 @@
 - [`Class`]({{site.baseurl}}\built-ins\Class)
 - [`File`]({{site.baseurl}}\built-ins\File)
 - [`Function`]({{site.baseurl}}\built-ins\Function)
+- [`Iterator`]({{site.baseurl}}\built-ins\Iterator)
 - [`Number`]({{site.baseurl}}\built-ins\Number)
 - [`Object`]({{site.baseurl}}\built-ins\Object)
 - [`Promise`]({{site.baseurl}}\built-ins\Promise)

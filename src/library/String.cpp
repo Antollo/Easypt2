@@ -76,7 +76,7 @@ void String::init(stack *st)
     });
 
     object::stringPrototype->addFunctionL("append"_n, {
-        argsConvertibleGuard<std::string>(args);
+        argsGuard<std::string>(args);
         std::string &dest = thisObj->get<object::type::String>();
         const std::string &src = args[0]->get<const std::string>();
         size_t srcPos = 0;
@@ -252,5 +252,9 @@ void String::init(stack *st)
         }
 
         return inPlace ? thisObj : object::makeObject(std::move(str));
+    });
+
+    object::stringPrototype->addFunctionL("iterator"_n, {
+        return object::makeObject(thisObj->iterator());
     });
 }

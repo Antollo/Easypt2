@@ -60,7 +60,7 @@ class MyClass {
 /*
 "=" is the assignment operator - it assigns a copy of the right operand to the left operand
 "<-" is the initialization assignment operator - if the left operand is in form of "identifier", 
-     "identifier.property" or "let identifier", then operator makes left operand a reference to 
+     "expression.identifier" or "let identifier", then operator makes left operand a reference to 
      right operand (left operand and right operand points to the same object)
 
 In summary, using "=" in the following code would create two MyClass instances (one temporary

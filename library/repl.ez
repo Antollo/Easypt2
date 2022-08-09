@@ -1,10 +1,14 @@
 let input;
 let src <- String();
+function print(str) {
+    if ((!str instanceOf Function) && (!str is console))
+        console.log(str)
+}
 while (true)
     if (input = await console.write("> ").readLineAsync())
         src.append(input).append("\n");
     else
         try
-            (execute(src) && false) || src.erase(0, src.length());
+            (print(execute(src)) && false) || src.erase(0, src.length());
         catch
             (console.error(exception) && false) || src.erase(0, src.length());

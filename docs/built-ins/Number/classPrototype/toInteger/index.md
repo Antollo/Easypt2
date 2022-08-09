@@ -11,7 +11,7 @@
 
 ### Description
 
-Converts number to at least 4 bytes integer representation.
+Converts number to at least 8 bytes integer representation.
 
 ### Example
 

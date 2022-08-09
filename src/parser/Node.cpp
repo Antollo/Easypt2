@@ -301,6 +301,64 @@ object::objectPtr Node::evaluate(stack &st) const
         }
         return nullptr;
 
+    case FOR_IN:
+    {
+        assert(_children.size() == 3);
+        auto iterator = _children[1].evaluate(st)->iterator();
+        auto &value = _children[0].evaluateRef(st, iterator->next());
+        try
+        {
+            do
+                _children[2].evaluateVoid(st);
+            while ((value = iterator->next()) != object::iteratorEnd);
+        }
+        catch (const breakType &)
+        {
+        }
+        return nullptr;
+    }
+
+    case FOR_IN_COMPOUND_STATEMENT:
+    {
+        assert(_children.size() == 3);
+        auto iterator = _children[1].evaluate(st)->iterator();
+        auto &value = _children[0].evaluateRef(st, iterator->next());
+        stack localStack(&st);
+        try
+        {
+            do
+            {
+                for (auto &child : _children[2]._children)
+                    child.evaluateVoid(localStack);
+            }
+            while ((value = iterator->next()) != object::iteratorEnd);
+        }
+        catch (const breakType &)
+        {
+        }
+        return nullptr;
+    }
+
+    case FOR_IN_COMPOUND_STATEMENT_STACKLESS:
+    {
+        assert(_children.size() == 3);
+        auto iterator = _children[1].evaluate(st)->iterator();
+        auto &value = _children[0].evaluateRef(st, iterator->next());
+        try
+        {
+            do
+            {
+                for (auto &child : _children[2]._children)
+                    child.evaluateVoid(st);
+            }
+            while ((value = iterator->next()) != object::iteratorEnd);
+        }
+        catch (const breakType &)
+        {
+        }
+        return nullptr;
+    }
+
     case STATEMENT:
         assert(_children.size() == 1);
         return _children[0].evaluate(st);
@@ -452,8 +510,6 @@ object::objectPtr Node::evaluate(stack &st) const
         assert(_children.size() == 2);
         assert(!_children[0]._text.isEmpty());
         auto &a = st[_children[0]._text];
-        if (a->isConst())
-            throw std::runtime_error("tried to modify constant value");
         object::objectPtr b;
         if (!numberAssignmentOptimization(a, b, st))
             a = b;
@@ -464,8 +520,6 @@ object::objectPtr Node::evaluate(stack &st) const
     {
         assert(_children[0]._children.size() == 2);
         auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
-        if (a->isConst())
-            throw std::runtime_error("tried to modify constant value");
         object::objectPtr b;
         if (!numberAssignmentOptimization(a, b, st))
             a = b;
@@ -608,6 +662,12 @@ object::objectPtr Node::evaluate(stack &st) const
     {
         assert(_children.size() == 2);
         return object::makeObject(a->hasOwnProperty(n::prototype) && b->hasOwnProperty(n::classPrototype) && (*a)[n::prototype].get() == (*b)[n::classPrototype].get());
+    })
+
+    caseBinary(IS,
+    {
+        assert(_children.size() == 2);
+        return object::makeObject(a == b);
     })
 
     caseBinary(ADDITION,
@@ -980,6 +1040,64 @@ void Node::evaluateVoid(stack &st) const
         }
         return;
 
+    case FOR_IN:
+    {
+        assert(_children.size() == 3);
+        auto iterator = _children[1].evaluate(st)->iterator();
+        auto &value = _children[0].evaluateRef(st, iterator->next());
+        try
+        {
+            do
+                _children[2].evaluateVoid(st);
+            while ((value = iterator->next()) != object::iteratorEnd);
+        }
+        catch (const breakType &)
+        {
+        }
+        return;
+    }
+
+    case FOR_IN_COMPOUND_STATEMENT:
+    {
+        assert(_children.size() == 3);
+        auto iterator = _children[1].evaluate(st)->iterator();
+        auto &value = _children[0].evaluateRef(st, iterator->next());
+        stack localStack(&st);
+        try
+        {
+            do
+            {
+                for (auto &child : _children[2]._children)
+                    child.evaluateVoid(localStack);
+            }
+            while ((value = iterator->next()) != object::iteratorEnd);
+        }
+        catch (const breakType &)
+        {
+        }
+        return;
+    }
+
+    case FOR_IN_COMPOUND_STATEMENT_STACKLESS:
+    {
+        assert(_children.size() == 3);
+        auto iterator = _children[1].evaluate(st)->iterator();
+        auto &value = _children[0].evaluateRef(st, iterator->next());
+        try
+        {
+            do
+            {
+                for (auto &child : _children[2]._children)
+                    child.evaluateVoid(st);
+            }
+            while ((value = iterator->next()) != object::iteratorEnd);
+        }
+        catch (const breakType &)
+        {
+        }
+        return;
+    }
+
     case STATEMENT:
         assert(_children.size() == 1);
         _children[0].evaluateVoid(st);
@@ -1129,8 +1247,6 @@ void Node::evaluateVoid(stack &st) const
         assert(_children.size() == 2);
         assert(!_children[0]._text.isEmpty());
         auto &a = st[_children[0]._text];
-        if (a->isConst())
-            throw std::runtime_error("tried to modify constant value");
         object::objectPtr b;
         if (!numberAssignmentOptimization(a, b, st))
             a = b;
@@ -1141,8 +1257,6 @@ void Node::evaluateVoid(stack &st) const
     {
         assert(_children[0]._children.size() == 2);
         auto &a = (*(_children[0]._children[0].evaluate(st)))[_children[0]._children[1]._text];
-        if (a->isConst())
-            throw std::runtime_error("tried to modify constant value");
         object::objectPtr b;
         if (!numberAssignmentOptimization(a, b, st))
             a = b;
@@ -1278,6 +1392,9 @@ void Node::evaluateVoid(stack &st) const
     })
 
     allCases(INSTANCEOF)
+        return;
+
+    allCases(IS)
         return;
 
     caseBinary(ADDITION,
@@ -1537,6 +1654,12 @@ bool Node::evaluateBoolean(stack &st) const
         return a->hasOwnProperty(n::prototype) && b->hasOwnProperty(n::classPrototype) && (*a)[n::prototype].get() == (*b)[n::classPrototype].get();
     })
 
+    caseBinary(IS,
+    {
+        assert(_children.size() == 2);
+        return a == b;
+    })
+
     caseUnary(AND,
     {
         assert(_children.size() == 2);
@@ -1590,4 +1713,22 @@ bool Node::evaluateBoolean(stack &st) const
         return _children[0].evaluateBoolean(st) ? _children[1].evaluateBoolean(st) : _children[2].evaluateBoolean(st);
     }
     return evaluate(st)->getConverted<object::type::Boolean>();
+}
+
+object::objectPtr &Node::evaluateRef(stack &st, objectPtrImpl &&toAssign) const
+{
+    switch (_token)
+    {
+    case IDENTIFIER:
+        return st[_text] = std::move(toAssign);
+    case LET:
+        return st.insert(_text, std::move(toAssign));
+    case DOT:
+        if (_children[1]._token == IDENTIFIER)
+            return (*(_children[0].evaluate(st)))[_children[1]._text] = std::move(toAssign);
+        [[fallthrough]];
+    
+    default:
+        throw std::runtime_error("left side is not in form of \"identifier\", \"expression.identifier\" or \"let identifier\"");
+    }
 }

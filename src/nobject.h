@@ -11,6 +11,7 @@
 #include <functional>
 #include <cstdint>
 #include "objectPtrImpl.h"
+#include "iteratorBase.h"
 #include "assert.h"
 #include "name.h"
 #include "stack.h"
@@ -33,8 +34,7 @@ class nodeAndStack
 {
 public:
     nodeAndStack() = default;
-    nodeAndStack(Node &&n)
-        : node(std::move(n)) {}
+    nodeAndStack(Node &&n) : node(std::move(n)) {}
     Node node;
     std::unique_ptr<stack> capturedStack;
 };
@@ -44,6 +44,7 @@ class object
 public:
     using objectPtr = objectPtrImpl;
     using propertiesType = std::unordered_map<name, objectPtr, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtr>>>;
+    using iteratorBase = objectIteratorBase;
 
     struct type
     {
@@ -61,6 +62,7 @@ public:
         using TcpServer = std::shared_ptr<tcpServer>;
         using ChildProcess = std::shared_ptr<childProcess>;
         using Buffer = std::shared_ptr<buffer>;
+        using Iterator = std::shared_ptr<iteratorBase>;
     };
 
     enum class typeIndex
@@ -78,7 +80,8 @@ public:
         TcpClient,
         TcpServer,
         ChildProcess,
-        Buffer
+        Buffer,
+        Iterator
     };
 
     static type::Function makeFunction()
@@ -143,6 +146,8 @@ public:
             _prototype = booleanPrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, type::Promise>)
             _prototype = promisePrototype;
+        else if constexpr (std::is_same_v<std::decay_t<T>, type::Iterator>)
+            _prototype = iteratorPrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, type::Function> || std::is_same_v<std::decay_t<T>, type::NativeFunction> || std::is_same_v<std::decay_t<T>, type::ExternalFunction>)
         {
             if constexpr (std::is_same_v<std::decay_t<T>, type::NativeFunction>)
@@ -264,12 +269,6 @@ public:
     const T &uncheckedGet() const
     {
         return *reinterpret_cast<const T *>(&_value);
-    }
-
-    template <class Visitor>
-    auto visit(objectPtr b, Visitor &&visitor)
-    {
-        return std::visit(std::forward<Visitor>(visitor), _value, b->_value);
     }
 
     template <class T>
@@ -409,6 +408,8 @@ public:
             throw std::runtime_error("unsupported conversion: "s + getTypeName() + " to "s + typeid(T).name());
     }
 
+    type::Iterator iterator();
+
     void setConst(bool v = true) { _flags[_const] = v; }
     void setAccessible(bool v = true) { _flags[_accessible] = v; }
     void setSettable(bool v = true) { _flags[_setttable] = v; }
@@ -417,6 +418,21 @@ public:
     bool isAccessible() const { return _flags[_accessible]; }
     bool isSettable() const { return _flags[_setttable]; }
     bool isDestructible() const { return _flags[_destructible]; }
+    bool isCallable() const
+    {
+        switch (getTypeIndex())
+        {
+        case typeIndex::NativeFunction:
+        case typeIndex::Function:
+        case typeIndex::ExternalFunction:
+            return true;
+        default:
+        {
+            auto &callOperator = read(n::callOperator);
+            return callOperator && callOperator->isCallable();
+        }
+        }
+    }
     objectPtr &operator[](const name &n);
     objectPtr operator()(objectPtr thisObj, type::Array &&args, stack *st);
     bool hasOwnProperty(const name &n) const { return _properties->count(n) || (n == n::prototype && _prototype); }
@@ -452,8 +468,17 @@ public:
 
     void captureStack(stack &&st) { get<type::Function>()->capturedStack = std::make_unique<stack>(std::move(st)); }
 
-    static inline objectPtr numberPrototype, stringPrototype, booleanPrototype, arrayPrototype, objectPrototype, functionPrototype, promisePrototype, classPrototype;
+    static inline objectPtr numberPrototype, 
+        stringPrototype,
+        booleanPrototype, 
+        arrayPrototype, 
+        objectPrototype,
+        functionPrototype, 
+        promisePrototype, 
+        classPrototype, 
+        iteratorPrototype;
     static inline objectPtr toNumber, toString, toArray, toBoolean;
+    static inline objectPtr iteratorEnd;
 
     static void setGlobalStack(stack *newGlobalStack) { globalStack = newGlobalStack; }
 
@@ -471,7 +496,7 @@ public:
 private:
     friend class objectPtrImpl;
     friend class modules;
-    
+
     std::variant<type::Object,
                  type::Boolean,
                  type::Number,
@@ -485,7 +510,8 @@ private:
                  type::TcpClient,
                  type::TcpServer,
                  type::ChildProcess,
-                 type::Buffer>
+                 type::Buffer,
+                 type::Iterator>
         _value;
 
     objectPtr _prototype;

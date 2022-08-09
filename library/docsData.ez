@@ -341,7 +341,8 @@ console.setInput @expectedOutput@
 Array @description@
 "Array class provides methods for manipulating arrays (list-like
 objects). Array elements are indexed with non-negative integers or
-negative integers (counts elemensts from the end of the array).";
+negative integers (negative indices counts elements from the end 
+of the array).";
 Array @example@
 "let arr = [36.6, \"Harry\", true];
 arr.forEach(function {
@@ -478,6 +479,20 @@ Array.readOperator @example@
 console.write(arr[1]);";
 Array.readOperator @expectedOutput@
 "Harry";
+
+Array.classPrototype.iterator @returns@
+"/*Iterator*/";
+Array.classPrototype.iterator @description@
+"Returns an iterator that iterates over the elements the of array.";
+Array.classPrototype.iterator @example@
+"let arr = [36.6, \"Harry\", true];
+for (let x in arr)
+    console.write(x, \" \");"
+Array.classPrototype.iterator @expectedOutput@
+"36.600000 Harry true ";
+
+
+/// Object
 
 Object @description@
 "Base class of all Easypt classes, all objects
@@ -661,7 +676,7 @@ function addDocToModuleObject(module)
     module @description@
     "Object containing information about current source file.";
     module @example@
-    "console.writeLine(module.name);
+    "console.writeLine(module);
 /* Possible output:
 21-06-2022 12:00:00 {
     \"name\": \"repl\",
@@ -713,7 +728,7 @@ String @description@
 "Represents text as a sequence of characters (UTF-8 code units).
 Provides methods for manipulating such sequences. Strings 
 are indexed with non-negative integers or negative integers 
-(counts elemensts from the end of the array)";
+(negative indices counts elements from the end of the string).";
 String @example@
 "console.write(\"a\".getByteAt(0));";
 String @expectedOutput@
@@ -902,6 +917,19 @@ console.write(sentence.replaceAll(\"dog\", \"monkey\"));";
 String.classPrototype.replaceAll @expectedOutput@
 "The quick brown fox jumps over the lazy monkey. If the monkey reacted, was it really lazy?";
 
+String.classPrototype.iterator @returns@
+"/*Iterator*/";
+String.classPrototype.iterator @description@
+"Returns an iterator that iterates over characters in the string, 
+characters are represented as new strings.";
+String.classPrototype.iterator @example@
+"let str = \"Harry\";
+for (let c in str)
+    console.write(c, \" \");"
+String.classPrototype.iterator @expectedOutput@
+"H a r r y ";
+
+
 /// Boolean
 
 Boolean @description@
@@ -924,7 +952,7 @@ Number @expectedOutput@
 Number.classPrototype.toInteger @returns@
 "/*Number*/";
 Number.classPrototype.toInteger @description@
-"Converts number to at least 4 bytes integer representation.";
+"Converts number to at least 8 bytes integer representation.";
 Number.classPrototype.toInteger @example@
 "console.write(3.14.toInteger());";
 Number.classPrototype.toInteger @expectedOutput@
@@ -933,7 +961,7 @@ Number.classPrototype.toInteger @expectedOutput@
 Number.classPrototype.toFloatingPoint @returns@
 "/*Number*/";
 Number.classPrototype.toFloatingPoint @description@
-"Converts number to at least 4 bytes integer representation. 
+"Converts number to at least 8 bytes floating point number representation. 
 Warning: after making a copy of this number it might convert 
 to integer representation again.";
 Number.classPrototype.toFloatingPoint @example@
@@ -1736,9 +1764,7 @@ while (true) {
         let time = Time.sinceEpoch.asFloatingPoint();
         await tcpClientB.receive();
         await tcpClientB.send(\"HTTP/1.1 200 OK\\r\\n\"+
-                            \"Date: Mon, 27 Jul 2009 12:28:53 GMT\\r\\n\"+
-                            \"Server: Apache/2.2.14 (Win32)\\r\\n\"+
-                            \"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\\r\\n\"+
+                            \"Server: Easypt ssl example\\r\\n\"+
                             \"Content-Length: 48\\r\\n\"+
                             \"Content-Type: text/html\\r\\n\"+
                             \"Connection: Closed\\r\\n\\r\\n\"+
@@ -1799,6 +1825,84 @@ getStack @description@
 getStack @example@
 "console.log(getStack())";
 
+
+/// Iterator
+
+Iterator @description@
+"Iterator is an object that can iterate over a sequence. 
+To satisfy iterator requirements object should implement 
+`next` method that either returns next element in the sequence 
+or `Iterator.end`. Object does not need to extend `Iterator` 
+to be an iterator. To satisfy iterable requirements object 
+should implement `iterator` method that returns an iterator.";
+
+Iterator @example@
+"for (let i in [1, 2, 3, 4])
+    console.write(i)
+console.newLine()
+
+for (let i in \"abcd\")
+    console.write(i)
+console.newLine()
+
+let it <- [1, 2, 3, 4].iterator()
+while (!(let i <- it.next()) is Iterator.end)
+    console.write(i)
+console.newLine()
+
+class MyRangeIterator extends Iterator {
+    constructor: function(i, end) {
+        this.i = i - 1
+        this.end = end
+    },
+    next: function() {
+        return this.i++ < this.end ? this.i : Iterator.end
+    }
+}
+
+class MyRange {
+    constructor: function(start, end) {
+        this.start = start
+        this.end = end
+    },
+    iterator: function() {
+        return MyRangeIterator(this.start, this.end)
+    }
+}
+
+for (let i in MyRange(11, 15))
+    console.write(i, \" \")";
+Iterator @expectedOutput@
+"1234
+abcd
+1234
+11 12 13 14 ";
+
+
+Iterator.end @description@
+"Represents the end of iteration.";
+Iterator.end @example@
+"let it <- [1, 2, 3, 4].iterator()
+while (!(let i <- it.next()) is Iterator.end)
+    console.write(i)";
+Iterator.end @expectedOutput@
+"1234";
+
+
+Iterator.classPrototype.constructor @description@
+"Returns empty iterator."
+
+
+Iterator.classPrototype.next @returns@
+"/*any*/";
+Iterator.classPrototype.next @description@
+"Returns the next element in the sequence or `Iterator.end`.";
+Iterator.classPrototype.next @example@
+"let it <- [1, 2, 3, 4].iterator()
+while (!(let i <- it.next()) is Iterator.end)
+    console.write(i)";
+Iterator.classPrototype.next @expectedOutput@
+"1234";
 
 /* TODO: 
 - ChildProcess

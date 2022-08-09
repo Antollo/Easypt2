@@ -137,12 +137,15 @@ object::objectPtr interpreter::execute(object::objectPtr thisObj, object::type::
             const size_t size = children.size() - 1;
             for (size_t i = 0; i < size; i++)
                 children[i].evaluateVoid(*st);
-            return children.back().evaluate(*st);
+            auto evalRet = children.back().evaluate(*st);
+            if (evalRet)
+                return evalRet;
         }
     }
     catch (const object::objectPtr &ret)
     {
-        return ret;
+        if (ret)
+            return ret;
     }
     catch (objectException &e)
     {
@@ -152,7 +155,9 @@ object::objectPtr interpreter::execute(object::objectPtr thisObj, object::type::
     {
         throw e;
     }
-    return thisObj;
+    if (thisObj)
+        return thisObj;
+    return object::makeEmptyObject();
 }
 
 object::objectPtr constructorCaller(object::objectPtr thisObj, object::type::Array &&args, stack *st)

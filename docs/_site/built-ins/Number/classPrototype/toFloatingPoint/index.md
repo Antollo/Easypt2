@@ -11,7 +11,7 @@
 
 ### Description
 
-Converts number to at least 4 bytes integer representation. 
+Converts number to at least 8 bytes floating point number representation. 
 Warning: after making a copy of this number it might convert 
 to integer representation again.
 

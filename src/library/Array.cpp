@@ -66,7 +66,7 @@ void Array::init(stack *st)
     });
 
     object::arrayPrototype->addFunctionL("append"_n, {
-        argsConvertibleGuard<object::type::Array>(args);
+        argsGuard<object::type::Array>(args);
         object::type::Array &dest = thisObj->get<object::type::Array>();
         const object::type::Array &src = args[0]->get<const object::type::Array>();
         size_t srcPos = 0;
@@ -143,5 +143,9 @@ void Array::init(stack *st)
                 result << separator;
         }
         return object::makeObject(result.str());
+    });
+
+    object::arrayPrototype->addFunctionL("iterator"_n, {
+        return object::makeObject(thisObj->iterator());
     });
 }

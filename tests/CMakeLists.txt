@@ -13,7 +13,7 @@ add_test(NAME Conversions COMMAND testConversions WORKING_DIRECTORY ${PROJECT_SO
 add_executable(testRunner testRunner.cpp)
 target_link_libraries(testRunner libeasypt)
 
-set(inputs 1 2 3 4 5)
+set(inputs 1 2 3 4 5 6)
 foreach (input ${inputs})
     add_test(
         NAME "e2eTest${input}"

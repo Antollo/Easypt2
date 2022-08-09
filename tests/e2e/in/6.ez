@@ -1,0 +1,94 @@
+for (let i in [1, 2, 3, 4, 5])
+    console.writeLine(i)
+
+for (let i in "abcde")
+    console.writeLine(i)
+
+for (let i in [1, 2, 3, 4, 5])
+{
+    console.write(i)
+    console.writeLine(i)
+}
+
+for (let i in "abcde")
+{
+    console.write(i)
+    console.writeLine(i)
+}
+
+for (let i in [1, 2, 3, 4, 5])
+{
+    let j = i
+    console.write(j)
+    console.writeLine(j)
+}
+
+for (let i in "abcde")
+{
+    let j = i
+    console.write(j)
+    console.writeLine(j)
+}
+
+let i
+let it <- [1, 2, 3, 4].iterator()
+while (!(i <- it.next()) is Iterator.end)
+    console.writeLine(i)
+
+console.newLine()
+
+class MyRangeIterator extends Iterator {
+    constructor: function(i, end) {
+        this.i = i - 1
+        this.end = end
+    },
+    next: function() {
+        return this.i++ < this.end ? this.i : Iterator.end
+    }
+}
+
+class MyRange {
+    constructor: function(start, end) {
+        this.start = start
+        this.end = end
+    },
+    iterator: function() {
+        return MyRangeIterator(this.start, this.end)
+    }
+}
+
+for (let i in MyRange(11, 15))
+    console.writeLine(i)
+
+console.newLine()
+
+let callableObject = {
+    callOperator: function(a, b, c) {
+        console.writeLine(a, b, c)
+    }
+}
+
+callableObject(1, 2, 3)
+
+class CallableClass {
+    callOperator: function(a, b, c) {
+        console.writeLine(a, b, c)
+    }
+}
+
+
+CallableClass()(1, 2, 3)
+
+console.newLine()
+
+class HasOnNewProperty {
+    onNewProperty: function(name) {
+        console.writeLine(name)
+        this.addProperty(name, 123)
+        return 456
+    }
+}
+
+let obj = HasOnNewProperty()
+console.writeLine(obj.abcd)
+console.writeLine(obj.abcd)
