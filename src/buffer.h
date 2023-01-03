@@ -135,7 +135,7 @@ public:
             _t = type::Int32;
         else if constexpr (std::is_same_v<T, int64_t>)
             _t = type::Int64;
-        if constexpr (std::is_same_v<T, uint8_t> || std::is_same_v<T, unsigned char>)
+        else if constexpr (std::is_same_v<T, uint8_t> || std::is_same_v<T, unsigned char>)
             _t = type::Uint8;
         else if constexpr (std::is_same_v<T, uint16_t>)
             _t = type::Uint16;

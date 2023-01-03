@@ -91,4 +91,9 @@ namespace Iterator
 {
     void init(stack *st);
 };
+
+namespace Range
+{
+    void init(stack *st);
+};
 #endif /* !LIBRARY_H_ */

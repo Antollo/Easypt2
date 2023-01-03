@@ -279,6 +279,8 @@ void object::toJson(std::stringstream &str, const size_t indentation) const
                        str << "\"<childProcess>\"";
                    else if constexpr (std::is_same_v<A, type::Iterator>)
                        str << "\"<iterator>\"";
+                   else if constexpr (std::is_same_v<A, type::Range>)
+                       str << "\"<range " << value->getStart() << ".." << value->getStop() << ".." << value->getStep() << ">\"";
                    else
                    {
                        std::string tabs(indentation * 4, ' ');
@@ -315,6 +317,8 @@ object::type::Iterator object::iterator()
         return std::make_shared<stringIterator>(ptrFromThis());
     case typeIndex::Array:
         return std::make_shared<arrayIterator>(ptrFromThis());
+    case typeIndex::Range:
+        return std::make_shared<rangeIterator>(*get<type::Range>());
     default:
     {
         auto &iterator = read(n::iterator);

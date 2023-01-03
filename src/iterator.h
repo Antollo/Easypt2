@@ -4,10 +4,32 @@
 #include <stdexcept>
 #include "nobject.h"
 
-class arrayIterator : public object::iteratorBase
+class iteratorBase : public object::iteratorInterface
 {
 public:
-    using object::iteratorBase::objectIteratorBase;
+    iteratorBase()
+        : obj(nullptr) {}
+
+    iteratorBase(const object::objectPtr &obj)
+        : obj(obj) {}
+    
+    iteratorBase(object::objectPtr &&obj)
+        : obj(obj) {}
+
+    iteratorBase(const iteratorBase &) = default;
+    iteratorBase(iteratorBase &&) = default;
+    iteratorBase &operator=(const iteratorBase &) = default;
+    iteratorBase &operator=(iteratorBase &&) = default;
+
+protected:
+    object::objectPtr obj;
+};
+
+
+class arrayIterator : public iteratorBase
+{
+public:
+    using iteratorBase::iteratorBase;
 
     object::objectPtr next() override
     {
@@ -22,10 +44,10 @@ private:
     size_t pos = 0;
 };
 
-class stringIterator : public object::iteratorBase
+class stringIterator : public iteratorBase
 {
 public:
-    using object::iteratorBase::objectIteratorBase;
+    using iteratorBase::iteratorBase;
 
     object::objectPtr next() override
     {
@@ -40,10 +62,10 @@ private:
     size_t pos = 0;
 };
 
-class objectIterator : public object::iteratorBase
+class objectIterator : public iteratorBase
 {
 public:
-    using object::iteratorBase::objectIteratorBase;
+    using iteratorBase::iteratorBase;
 
     object::objectPtr next() override
     {
@@ -52,16 +74,42 @@ public:
     }
 };
 
-class emptyIterator : public object::iteratorBase
+class emptyIterator : public object::iteratorInterface
 {
 public:
-    emptyIterator()
-        : object::iteratorBase(nullptr) { }
 
     object::objectPtr next() override
     {
         return object::iteratorEnd;
     }
+};
+
+class rangeIterator : public object::iteratorInterface
+{
+public:
+    rangeIterator(number start, number stop, number step)
+        : current(start), stop(stop), step(step) {}
+
+    rangeIterator(const range &r)
+        : current(r.getStart()), stop(r.getStop()), step(r.getStep()) {}
+    
+    rangeIterator(range &&r)
+        : current(r.getStart()), stop(r.getStop()), step(r.getStep()) {}
+
+    object::objectPtr next() override
+    {
+        if ((step > 0_n && current < stop) || (step < 0_n && current > stop))
+        {
+            auto val = current;
+            current += step;
+            return object::makeObject(val);
+        }
+        else
+            return object::iteratorEnd;
+    }
+
+private:
+    number current, stop, step;
 };
 
 #endif /* SRC_ITERATOR_H */

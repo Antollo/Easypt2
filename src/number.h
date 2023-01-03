@@ -9,21 +9,20 @@ using namespace std::rel_ops;
 
 class number
 {
-
 public:
     number() = default;
-    number(const int8_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const uint8_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const int16_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const uint16_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const int32_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const uint32_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const int64_t &n) : index(intIndex), i(static_cast<intType>(n)){};
-    number(const uint64_t &n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(int8_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(uint8_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(int16_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(uint16_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(int32_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(uint32_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(int64_t n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(uint64_t n) : index(intIndex), i(static_cast<intType>(n)){};
 
-    number(const bool &n) : index(intIndex), i(static_cast<intType>(n)){};
+    number(const bool n) : index(intIndex), i(static_cast<intType>(n)){};
 
-    number(const double &n);
+    number(const double n);
 
     number(const std::string &n);
     number(const char *n) : number(std::string(n)){};
@@ -61,9 +60,13 @@ public:
     number operator--(int);
     number &operator++();
     number &operator--();
+    number operator-() const;
 
     number toInteger() const;
     number toFloatingPoint() const;
+
+    number ceil() const;
+    number floor() const;
 
     template <class T, class U = std::enable_if_t<std::is_arithmetic_v<T>>>
     explicit operator T() const

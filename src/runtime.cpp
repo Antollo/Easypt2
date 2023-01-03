@@ -37,6 +37,9 @@ void runtime::init(stack *st)
     object::iteratorPrototype = object::makeEmptyObject();
     (*object::iteratorPrototype)[n::prototype] = object::objectPrototype;
 
+    object::rangePrototype = object::makeEmptyObject();
+    (*object::rangePrototype)[n::prototype] = object::objectPrototype;
+
     object::functionPrototype->addFunctionL("call"_n, {
         argsConvertibleGuard<nullptr_t>(args);
         auto thisArg = args[0];
@@ -80,6 +83,7 @@ void runtime::init(stack *st)
     ChildProcess::init(st);
     Buffer::init(st);
     Iterator::init(st);
+    Range::init(st);
 
     auto modulesPtr = st->insert("modules"_n, object::makeEmptyObject());
     modules::init(modulesPtr);

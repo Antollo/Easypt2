@@ -55,7 +55,7 @@ void Buffer::init(stack *st)
             return object::makeObject(static_cast<object::type::Number>(me->get<double>(pos)));
         
         default:
-            throw std::runtime_error("unknow type of Buffer, cannot convert to Number");
+            throw std::runtime_error("unknown type of Buffer, cannot convert to Number");
         }
     });
 
@@ -268,7 +268,7 @@ void Buffer::init(stack *st)
             return object::makeObject(static_cast<number>(me->get<double>(0)));
         
         default:
-            throw std::runtime_error("unknow type of Buffer, cannot convert to Number");
+            throw std::runtime_error("unknown type of Buffer, cannot convert to Number");
         }
     });
 

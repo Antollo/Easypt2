@@ -486,7 +486,8 @@ Array.classPrototype.iterator @description@
 "Returns an iterator that iterates over the elements the of array.";
 Array.classPrototype.iterator @example@
 "let arr = [36.6, \"Harry\", true];
-for (let x in arr)
+let it = arr.iterator()
+while (!((let x <- it.next()) is Iterator.end))
     console.write(x, \" \");"
 Array.classPrototype.iterator @expectedOutput@
 "36.600000 Harry true ";
@@ -924,7 +925,8 @@ String.classPrototype.iterator @description@
 characters are represented as new strings.";
 String.classPrototype.iterator @example@
 "let str = \"Harry\";
-for (let c in str)
+let it = str.iterator()
+while (!((let c <- it.next()) is Iterator.end))
     console.write(c, \" \");"
 String.classPrototype.iterator @expectedOutput@
 "H a r r y ";
@@ -1903,6 +1905,137 @@ while (!(let i <- it.next()) is Iterator.end)
     console.write(i)";
 Iterator.classPrototype.next @expectedOutput@
 "1234";
+
+
+/// Range
+
+Range @description@
+"Represents an immutable range that has start end, and step. 
+The default value of step is 1, it can be floating-point 
+number. Range operator `..` (e.g. `0..10`, `-0.1..-0.2..-0.01`) 
+is the recommended way of creating the range.";
+Range @example@
+"for (let i in 0..10)
+    console.write(i, \", \")
+console.newLine()
+
+for (let i in 0..10..2)
+    console.write(i, \", \")
+console.newLine()
+
+for (let i in 0.5..-0.51..-0.25)
+    console.write(i, \", \")";
+Range @expectedOutput@
+"0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+0, 2, 4, 6, 8, 
+0.500000, 0.250000, 0, -0.250000, -0.500000, ";
+
+
+Range.classPrototype.iterator @returns@
+"/*Iterator*/";
+Range.classPrototype.iterator @description@
+"Returns an iterator that iterates over the elements the of the range.";
+Range.classPrototype.iterator @example@
+"let it = (0..10).iterator()
+while (!((let x <- it.next()) is Iterator.end))
+    console.write(x, \" \")"
+Range.classPrototype.iterator @expectedOutput@
+"0 1 2 3 4 5 6 7 8 9 ";
+
+
+Range.classPrototype.length @returns@
+"/*Number*/";
+Range.classPrototype.length @description@
+"Returns number of elements in range `ceil((stop - start) / step)`.";
+Range.classPrototype.length @example@
+"let r = 0..10
+console.write(r.length()).newLine()
+r = 0..10..2
+console.write(r.length()).newLine()
+r = 0.5..-0.51..-0.25
+console.write(r.length())"
+Range.classPrototype.length @expectedOutput@
+"10
+5
+5";
+
+
+Range.classPrototype.readOperator @parameters@
+"i /*Number*/";
+Range.classPrototype.readOperator @returns@
+"/*Number*/";
+Range.classPrototype.readOperator @description@
+"Returns i-th element of the range `start + step * i`.";
+Range.classPrototype.readOperator @example@
+"let r = 0..10
+console.write(r[2]).newLine()
+r = 0..10..2
+console.write(r[2]).newLine()
+r = 0.5..-0.51..-0.25
+console.write(r[2])"
+Range.classPrototype.readOperator @expectedOutput@
+"2
+4
+0";
+
+
+Range.classPrototype.constructor @parameters@
+"start /*Number*/, stop /*Number*/, [step /*Number*/]";
+Range.classPrototype.constructor @returns@
+"/*Range*/";
+Range.classPrototype.constructor @description@
+"Creates new range object.";
+Range.classPrototype.constructor @example@
+"function printRange(r) {
+    console.write(r.start(), \" \", r.stop(), \" \", r.step()).newLine()
+}
+
+printRange(0..5)
+printRange(5..0)
+printRange(5..0..-2)
+
+printRange(Range(0, 5))
+printRange(Range(5, 0))
+printRange(Range(5, 0,-2))"
+Range.classPrototype.constructor @expectedOutput@
+"0 5 1
+5 0 -1
+5 0 -2
+0 5 1
+5 0 -1
+5 0 -2
+";
+
+
+Range.classPrototype.start @returns@
+"/*Number*/";
+Range.classPrototype.start @description@
+"Returns start of the range.";
+Range.classPrototype.start @example@
+"console.write((0..2).start())"
+Range.classPrototype.start @expectedOutput@
+"0";
+
+
+Range.classPrototype.stop @returns@
+"/*Number*/";
+Range.classPrototype.stop @description@
+"Returns stop of the range.";
+Range.classPrototype.stop @example@
+"console.write((0..2).stop())"
+Range.classPrototype.stop @expectedOutput@
+"2";
+
+
+Range.classPrototype.step @returns@
+"/*Number*/";
+Range.classPrototype.step @description@
+"Returns step of the range.";
+Range.classPrototype.step @example@
+"console.write((0..2).step())"
+Range.classPrototype.step @expectedOutput@
+"1";
+
 
 /* TODO: 
 - ChildProcess

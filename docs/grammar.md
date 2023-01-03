@@ -132,6 +132,7 @@ and should not be used.
 \]              : BRACKET_CLOSE
 \?              : CONDITIONAL
 \.\.\.          : SPREAD_OPERATOR
+\.\.            : RANGE
 @{identifier}   : DECORATOR
 @{identifier}@  : BINARY_FUNCTION_OPERATOR
 ```
@@ -286,6 +287,13 @@ expression :
             expression
         |
             CONDITIONAL expression JSON_ASSIGNMENT expression
+        |
+            RANGE expression // parse with priority less by 1
+            [
+                // prefer
+                RANGE expression
+                |
+            ]
         |
             PARENTHESES_OPEN expressionList PARENTHESES_CLOSE
             postUnaryOperator

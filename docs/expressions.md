@@ -57,12 +57,12 @@ sort: 2
 
 ## Notation
 
+```warning
 In this document the following notation is used:
-`a["operator"](b)` (where `operator` can be `+`, `&`, `>=` ...).
+`a["operator"](b)` (where `operator` can be `+`, `-`, `==`, `await` ...). 
 However, read operator (`a["property"]`) can be overloaded (e.g. `Array` overloads this operator), and the intended behavior is as following:
 
-```js
-Object.classPrototype.readOperator.call(a, "operator")(b)
+`Object.classPrototype.readOperator.call(a, "operator")(b)`
 ```
 
 ## Arithmetic Operators
@@ -270,6 +270,14 @@ Object.classPrototype.readOperator.call(a, "operator")(b)
 - #### `a ? b : c` Conditional (ternary) operator.
   If `a` is true then value of conditional expression
   is `b`, otherwise it's `c`.
+
+- #### `start..stop` or `start..stop..step` Range operator.
+  Creates range.
+  Example:
+  ```js
+  for (let i in 0..10)
+      console.log(i);
+  ```
 
 - #### `a instanceOf b` "Instance of" operator.
   Checks if `b` is an instance of `a`

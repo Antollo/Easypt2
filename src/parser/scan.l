@@ -57,6 +57,7 @@ comment \/\/.*
 <INITIAL>is                 { return IS; }
 <INITIAL>in                 { return IN_; }
 <INITIAL>\.\.\.             { return SPREAD_OPERATOR; }
+<INITIAL>\.\.               { return RANGE; }
 
 <INITIAL>{identifier}       {
                                 treeParser::text = yytext;

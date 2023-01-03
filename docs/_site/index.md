@@ -16,6 +16,7 @@
 - [`Number`]({{site.baseurl}}\built-ins\Number)
 - [`Object`]({{site.baseurl}}\built-ins\Object)
 - [`Promise`]({{site.baseurl}}\built-ins\Promise)
+- [`Range`]({{site.baseurl}}\built-ins\Range)
 - [`SslClient`]({{site.baseurl}}\built-ins\SslClient)
 - [`SslServer`]({{site.baseurl}}\built-ins\SslServer)
 - [`String`]({{site.baseurl}}\built-ins\String)

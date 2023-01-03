@@ -1,4 +1,4 @@
-# Array.classPrototype.iterator
+# Range.classPrototype.iterator
 
 <dl>
 <dt> Instance of </dt><dd markdown="1">
@@ -11,20 +11,19 @@
 
 ### Description
 
-Returns an iterator that iterates over the elements the of array.
+Returns an iterator that iterates over the elements the of the range.
 
 ### Example
 
 ```js
-let arr = [36.6, "Harry", true];
-let it = arr.iterator()
+let it = (0..10).iterator()
 while (!((let x <- it.next()) is Iterator.end))
-    console.write(x, " ");
+    console.write(x, " ")
 ```
 
 **Expected output**
 
 ```
-36.600000 Harry true 
+0 1 2 3 4 5 6 7 8 9 
 ```
 

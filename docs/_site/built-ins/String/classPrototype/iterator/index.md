@@ -18,7 +18,8 @@ characters are represented as new strings.
 
 ```js
 let str = "Harry";
-for (let c in str)
+let it = str.iterator()
+while (!((let c <- it.next()) is Iterator.end))
     console.write(c, " ");
 ```
 

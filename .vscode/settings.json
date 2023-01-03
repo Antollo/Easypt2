@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.ejs": "html",
         "*.h": "cpp",
         "*.hpp": "cpp",
         "*.ez": "easypt",
@@ -104,7 +105,10 @@
         "*.tcc": "cpp",
         "memory_resource": "cpp",
         "cwctype": "cpp",
-        "numbers": "cpp"
+        "numbers": "cpp",
+        "cerrno": "cpp",
+        "cfloat": "cpp",
+        "climits": "cpp"
     },
     "files.exclude": {
         "**/*.vcproj*": true,

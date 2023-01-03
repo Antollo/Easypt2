@@ -4,7 +4,7 @@
 #include <limits>
 #include "number.h"
 
-number::number(const double &n)
+number::number(double n)
 {
     if (std::trunc(n) == n && n >= std::numeric_limits<intType>::min() && n <= std::numeric_limits<intType>::max())
     {
@@ -48,7 +48,7 @@ number &number::operator+=(const number &x)
         return *this;
     }
     else
-        return *this = *this * x;
+        return *this = *this + x;
 }
 number &number::operator-=(const number &x)
 {
@@ -58,7 +58,7 @@ number &number::operator-=(const number &x)
         return *this;
     }
     else
-        return *this = *this * x;
+        return *this = *this - x;
 }
 number &number::operator*=(const number &x)
 {
@@ -248,6 +248,14 @@ number &number::operator--()
     return *this;
 }
 
+number number::operator-() const
+{
+    if (index == intIndex)
+        return -i;
+    else
+        return -f;
+}
+
 number number::toInteger() const
 {
     return static_cast<intType>(*this);
@@ -259,6 +267,19 @@ number number::toFloatingPoint() const
     n.index = floatIndex;
     n.f = static_cast<floatType>(*this);
     return n;
+}
+
+number number::ceil() const
+{
+    if (index == number::intIndex)
+        return *this;
+    else
+        return static_cast<intType>(std::ceil(f));
+}
+
+number number::floor() const
+{
+    return toInteger();
 }
 
 std::ostream &operator<<(std::ostream &s, const number &x)
@@ -280,6 +301,7 @@ number operator"" _n(unsigned long long n)
 {
     return number(static_cast<number::intType>(n));
 }
+
 number operator"" _n(long double n)
 {
     return number(static_cast<number::floatType>(n));

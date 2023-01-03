@@ -94,6 +94,8 @@
 %token FOR_IN;
 %token FOR_IN_COMPOUND_STATEMENT;
 %token FOR_IN_COMPOUND_STATEMENT_STACKLESS;
+%token RANGE;
+%token RANGE_WITH_STEP;
 
 %start parse, input;
 
@@ -279,6 +281,13 @@ expression(int priority, Node& me) { Node a(INI), b(INI), c(INI); int token; } :
         |
             CONDITIONAL expression(op(CONDITIONAL), b) { me.addChild(b); } 
             JSON_ASSIGNMENT expression(op(CONDITIONAL), c) { me.addChild(c); } 
+        |
+            RANGE expression(op(RANGE)-1, b) { me.addChild(b); }
+            [
+                %prefer
+                RANGE expression(op(RANGE), c) { me.addChild(c); me.token(RANGE_WITH_STEP); }
+            |
+            ]
         |
             { me.token(CALL_OPERATOR); }
             PARENTHESES_OPEN expressionList(me) PARENTHESES_CLOSE

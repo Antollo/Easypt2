@@ -11,7 +11,7 @@
 #include <functional>
 #include <cstdint>
 #include "objectPtrImpl.h"
-#include "iteratorBase.h"
+#include "iteratorInterface.h"
 #include "assert.h"
 #include "name.h"
 #include "stack.h"
@@ -24,6 +24,7 @@
 #include "buffer.h"
 #include "externalFunction.h"
 #include "copyPtr.h"
+#include "range.h"
 
 objectPtrImpl constructorCaller(objectPtrImpl thisObj, std::vector<objectPtrImpl, allocator<objectPtrImpl>> &&args, stack *st);
 
@@ -44,7 +45,7 @@ class object
 public:
     using objectPtr = objectPtrImpl;
     using propertiesType = std::unordered_map<name, objectPtr, std::hash<name>, std::equal_to<name>, allocator<std::pair<const name, objectPtr>>>;
-    using iteratorBase = objectIteratorBase;
+    using iteratorInterface = objectIteratorInterface;
 
     struct type
     {
@@ -62,7 +63,8 @@ public:
         using TcpServer = std::shared_ptr<tcpServer>;
         using ChildProcess = std::shared_ptr<childProcess>;
         using Buffer = std::shared_ptr<buffer>;
-        using Iterator = std::shared_ptr<iteratorBase>;
+        using Iterator = std::shared_ptr<iteratorInterface>;
+        using Range = std::shared_ptr<range>;
     };
 
     enum class typeIndex
@@ -81,7 +83,8 @@ public:
         TcpServer,
         ChildProcess,
         Buffer,
-        Iterator
+        Iterator,
+        Range
     };
 
     static type::Function makeFunction()
@@ -148,6 +151,8 @@ public:
             _prototype = promisePrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, type::Iterator>)
             _prototype = iteratorPrototype;
+        else if constexpr (std::is_same_v<std::decay_t<T>, type::Range>)
+            _prototype = rangePrototype;
         else if constexpr (std::is_same_v<std::decay_t<T>, type::Function> || std::is_same_v<std::decay_t<T>, type::NativeFunction> || std::is_same_v<std::decay_t<T>, type::ExternalFunction>)
         {
             if constexpr (std::is_same_v<std::decay_t<T>, type::NativeFunction>)
@@ -320,7 +325,7 @@ public:
                     return static_cast<number>(me->get<double>(0));
 
                 default:
-                    throw std::runtime_error("unknow type of Buffer, cannot convert to Number");
+                    throw std::runtime_error("unknown type of Buffer, cannot convert to Number");
                 }
             }
             case typeIndex::Boolean:
@@ -476,7 +481,8 @@ public:
         functionPrototype, 
         promisePrototype, 
         classPrototype, 
-        iteratorPrototype;
+        iteratorPrototype,
+        rangePrototype;
     static inline objectPtr toNumber, toString, toArray, toBoolean;
     static inline objectPtr iteratorEnd;
 
@@ -511,7 +517,8 @@ private:
                  type::TcpServer,
                  type::ChildProcess,
                  type::Buffer,
-                 type::Iterator>
+                 type::Iterator,
+                 type::Range>
         _value;
 
     objectPtr _prototype;

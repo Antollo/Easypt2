@@ -17,7 +17,8 @@ Returns an iterator that iterates over the elements the of array.
 
 ```js
 let arr = [36.6, "Harry", true];
-for (let x in arr)
+let it = arr.iterator()
+while (!((let x <- it.next()) is Iterator.end))
     console.write(x, " ");
 ```
 

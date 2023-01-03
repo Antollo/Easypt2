@@ -68,6 +68,7 @@ int operatorPriority(int token)
         return 6;
     case SHIFT_LEFT:
     case SHIFT_RIGHT:
+    case RANGE:
         return 7;
     case LESS:
     case LESS_EQUAL:

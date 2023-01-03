@@ -810,6 +810,18 @@ object::objectPtr Node::evaluate(stack &st) const
         return (*(*a)[n::shiftRight])(a, {b}, &st);
     })
 
+    case RANGE:
+    {
+        assert(_children.size() == 2);
+        return object::makeObject(std::make_shared<range>(_children[0].evaluateNumber(st), _children[1].evaluateNumber(st)));
+    }
+
+    case RANGE_WITH_STEP:
+    {
+        assert(_children.size() == 3);
+        return object::makeObject(std::make_shared<range>(_children[0].evaluateNumber(st), _children[1].evaluateNumber(st),  _children[2].evaluateNumber(st)));
+    }
+
     #define objectReturn(...) return __VA_ARGS__
     #define valueReturn(...) return object::makeObject(__VA_ARGS__)
     forCompareOperator(compareNode);

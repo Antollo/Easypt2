@@ -91,6 +91,7 @@ public:
         codeToNameMap[callOperatorCode] = "callOperator"s;
         codeToNameMap[iteratorCode] = "iterator"s;
         codeToNameMap[nextCode] = "next"s;
+        codeToNameMap[RangeCode] = "Range"s;
         
         nameToCodeMap["prototype"s] = prototypeCode;
         nameToCodeMap["args"s] = argsCode;
@@ -148,10 +149,11 @@ public:
         nameToCodeMap["callOperator"s] = callOperatorCode;
         nameToCodeMap["iterator"s] = iteratorCode;
         nameToCodeMap["next"s] = nextCode;
+        nameToCodeMap["Range"s] = RangeCode;
     }
 
 private:
-    static constexpr codeType start = 50;
+    static constexpr codeType start = 59;
     static constexpr codeType emptyCode = 0;
     static constexpr codeType reservedCode = 1;
     static constexpr codeType prototypeCode = 2;
@@ -210,6 +212,7 @@ private:
     static constexpr codeType callOperatorCode = 55;
     static constexpr codeType iteratorCode = 56;
     static constexpr codeType nextCode = 57;
+    static constexpr codeType RangeCode = 58;
 
     codeType code;
     constexpr name(codeType i) : code(i) {}
@@ -293,6 +296,7 @@ struct n
     static constexpr name callOperator = name::callOperatorCode;
     static constexpr name iterator = name::iteratorCode;
     static constexpr name next = name::nextCode;
+    static constexpr name Range = name::RangeCode;
 };
 
 #endif // NAME_H
