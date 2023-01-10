@@ -21,7 +21,7 @@ function parseHttpMessage(msg) {
         obj.httpVersion <- msgLineArray[2];
     }
     let element;
-    for (let j = 1; j < headersArray.length(); j++) {
+    for (let j in 1..headersArray.length()) {
         element <- headersArray[j].split(": ");
         obj.headers[element[0]] = element[1];
     }
@@ -32,30 +32,26 @@ class HttpServer {
     constructor: function {
         this.tcpServer <- TcpServer();
         this.open = true;
-        this.i = 0;
     },
     listen: function (port)
     {
         await this.tcpServer.bind(port);
-        let i <- this.i;
         while (this.open) {
             let client = await this.tcpServer.listen();
-            Promise(() => {
-                try {
-                    let msg <- await client.receive();
-                    if (msg.length() == 0)
-                        return -1;
-                    let obj <- parseHttpMessage(msg);
-                    if (obj.body)
-                        while (obj.body.length() < obj.headers["Content-Length"])
-                            obj.body.append(await client.receive());
+            try {
+                let msg <- await client.receive();
+                if (msg.length() == 0)
+                    return -1;
+                let obj <- parseHttpMessage(msg);
+                if (obj.body)
+                    while (obj.body.length() < obj.headers["Content-Length"])
+                        obj.body.append(await client.receive());
 
-                    await client.send("HTTP/1.0 200 OK\r\n\r\nHello");
-                    await client.close();
-                } catch {
-                    console.error(exception);
-                }
-            });
+                await client.send("HTTP/1.0 200 OK\r\n\r\nHello");
+                await client.close();
+            } catch {
+                console.error(exception);
+            }
         }
     },
     destructor: function {
@@ -64,7 +60,7 @@ class HttpServer {
     }
 };
 
-function request(method, requestUri, headers, body, port, httpVersion)
+function request(method, requestUri, headers)
 {
     if (args.length() < 6)
         let httpVersion <- "HTTP/1.1";
@@ -86,7 +82,7 @@ function request(method, requestUri, headers, body, port, httpVersion)
     await server.connect(headers["Host"], port);
     await server.send(r);
     let obj <- parseHttpMessage(await server.receive());
-    if (obj.body)
+    if (obj.hasOwnProperty("body"))
         while (obj.body.length() < obj.headers["Content-Length"])
             obj.body.append(await server.receive());
     return obj;
@@ -96,5 +92,5 @@ let r = request("GET", "/", { Host: "example.com" });
 console.log(r);
 
 
-//let h <- HttpServer();
-//h.listen(1717);
+let h <- HttpServer();
+h.listen(1717);
