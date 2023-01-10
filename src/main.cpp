@@ -92,7 +92,7 @@ int main(int argc, char **argv)
             console::writeLine(help);
         runtime::fini(&globalStack);
     }
-    catch (objectException &e)
+    catch (const objectException &e)
     {
         auto obj = e.getPtr();
         console::printStackTrace();
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
             console::error((std::string)e.what());
         runtime::fini(&globalStack);
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         console::printStackTrace();
         console::error((std::string)e.what());

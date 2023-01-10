@@ -12,7 +12,7 @@ void coroutineBase::handleException(std::exception_ptr ptr)
     {
         std::rethrow_exception(ptr);
     }
-    catch (objectException &e)
+    catch (const objectException &e)
     {
         auto eObj = e.getPtr();
         console::printStackTrace();
@@ -21,7 +21,7 @@ void coroutineBase::handleException(std::exception_ptr ptr)
         else
             console::error((std::string)e.what());
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         console::printStackTrace();
         console::error((std::string)e.what());

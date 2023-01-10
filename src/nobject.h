@@ -570,13 +570,13 @@ public:
     objectException(const object::objectPtr &obj) : ptr(obj) {}
 
     const char *what() const noexcept override { return "object exception"; }
-    object::objectPtr &getPtr()
+    object::objectPtr &getPtr() const
     {
         return ptr;
     }
 
 private:
-    object::objectPtr ptr;
+    mutable object::objectPtr ptr;
 };
 
 class breakType

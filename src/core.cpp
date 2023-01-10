@@ -147,13 +147,13 @@ object::objectPtr interpreter::execute(object::objectPtr thisObj, object::type::
         if (ret)
             return ret;
     }
-    catch (objectException &e)
+    catch (const objectException &e)
     {
-        throw e;
+        throw;
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
-        throw e;
+        throw;
     }
     if (thisObj)
         return thisObj;

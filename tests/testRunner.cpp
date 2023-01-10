@@ -57,7 +57,7 @@ int main(int argc, char **argv)
             }
         }
     }
-    catch (objectException &e)
+    catch (const objectException &e)
     {
         auto obj = e.getPtr();
         console::printStackTrace();
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         runtime::fini(&globalStack);
         return 1;
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
         console::printStackTrace();
         console::error((std::string)e.what());

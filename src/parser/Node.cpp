@@ -149,15 +149,15 @@ object::objectPtr Node::evaluate(stack &st) const
                 return _children.back().evaluate(localStack);
             }
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
         return nullptr;
     }
@@ -176,15 +176,15 @@ object::objectPtr Node::evaluate(stack &st) const
                 return _children.back().evaluate(st);
             }
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
         return nullptr;
     }
@@ -381,15 +381,15 @@ object::objectPtr Node::evaluate(stack &st) const
         {
             return (*a)(a, std::move(args), &st);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[0].exception(_children[0].toName());
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[0].exception(_children[0].toName());
-            throw e;
+            throw;
         }
     })
 
@@ -410,15 +410,15 @@ object::objectPtr Node::evaluate(stack &st) const
         {
             return (*(*a)[n::readOperator])(a, std::move(args), &st);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[0].exception(_children[0].toName() + ".readOperator");
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[0].exception(_children[0].toName() + ".readOperator");
-            throw e;
+            throw;
         }
     })
 
@@ -441,15 +441,15 @@ object::objectPtr Node::evaluate(stack &st) const
         {
             return (*b)(a, std::move(args), &st);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[0].exception(_children[0].toName() + "." + _children[1].toName());
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[0].exception(_children[0].toName() + "." + _children[1].toName());
-            throw e;
+            throw;
         }
     })
 
@@ -634,14 +634,14 @@ object::objectPtr Node::evaluate(stack &st) const
         {
             _children[0].evaluateVoid(st);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             stack localStack(&st);
             localStack.insert(n::exception, e.getPtr());
             _children[1].evaluateVoid(localStack);
             console::clearStackTrace();
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             stack localStack(&st);
             localStack.insert(n::exception, object::makeObject((std::string)e.what()));
@@ -905,15 +905,15 @@ void Node::evaluateVoid(stack &st) const
             for (; i < _children.size(); i++)
                 _children[i].evaluateVoid(localStack);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
         return;
     }
@@ -926,15 +926,15 @@ void Node::evaluateVoid(stack &st) const
             for (; i < _children.size(); i++)
                 _children[i].evaluateVoid(st);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[i].exception();
-            throw e;
+            throw;
         }
         return;
     }
@@ -1133,15 +1133,15 @@ void Node::evaluateVoid(stack &st) const
             (*a)(a, std::move(args), &st);
             return;
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[0].exception(_children[0].toName());
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[0].exception(_children[0].toName());
-            throw e;
+            throw;
         }
     })
 
@@ -1163,15 +1163,15 @@ void Node::evaluateVoid(stack &st) const
             (*(*a)[n::readOperator])(a, std::move(args), &st);
             return;
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[0].exception(_children[0].toName() + ".readOperator");
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[0].exception(_children[0].toName() + ".readOperator");
-            throw e;
+            throw;
         }
     })
 
@@ -1195,15 +1195,15 @@ void Node::evaluateVoid(stack &st) const
             (*b)(a, std::move(args), &st);
             return;
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             _children[0].exception(_children[0].toName() + "." + _children[1].toName());
-            throw e;
+            throw;
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             _children[0].exception(_children[0].toName() + "." + _children[1].toName());
-            throw e;
+            throw;
         }
     })
 
@@ -1378,14 +1378,14 @@ void Node::evaluateVoid(stack &st) const
         {
             _children[0].evaluateVoid(st);
         }
-        catch (objectException &e)
+        catch (const objectException &e)
         {
             stack localStack(&st);
             localStack.insert(n::exception, e.getPtr());
             _children[1].evaluateVoid(localStack);
             console::clearStackTrace();
         }
-        catch (std::exception &e)
+        catch (const std::exception &e)
         {
             stack localStack(&st);
             localStack.insert(n::exception, object::makeObject((std::string)e.what()));

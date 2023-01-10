@@ -76,7 +76,7 @@ void objectPtrImpl::deleter()
             {
                 (*obj)(*this, {}, nullptr);
             }
-            catch (objectException &e)
+            catch (const objectException &e)
             {
                 auto eObj = e.getPtr();
                 console::printStackTrace();
@@ -85,7 +85,7 @@ void objectPtrImpl::deleter()
                 else
                     console::error((std::string)e.what());
             }
-            catch (std::exception &e)
+            catch (const std::exception &e)
             {
                 console::printStackTrace();
                 console::error((std::string)e.what());
