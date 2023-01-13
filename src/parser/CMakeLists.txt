@@ -11,9 +11,11 @@ else()
     execute_process(
         COMMAND flex scan.l
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND_ERROR_IS_FATAL ANY
     )
     execute_process(
         COMMAND LLnextgen gram.g
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND_ERROR_IS_FATAL ANY
     )
 endif()

@@ -1,3 +1,7 @@
+if(${EASYPT_DISABLE_OPENGL})
+    return()
+endif()
+
 add_library(glfw INTERFACE)
 add_library(glew INTERFACE)
 
