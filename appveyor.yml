@@ -5,9 +5,15 @@ image:
     - Ubuntu2004
     - Visual Studio 2022
 init:
+    - sh: sudo apt remove --purge --auto-remove cmake
     - sh: sudo apt update
-    - sh: sudo apt install -y cmake g++-11 xorg-dev libglu1-mesa-dev libgl1-mesa-dev
+    - sh: sudo apt install -y g++-11 xorg-dev libglu1-mesa-dev libgl1-mesa-dev software-properties-common lsb-release
     - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 700 --slave /usr/bin/g++ g++ /usr/bin/g++-11
+    - sh: sudo apt clean
+    - sh: wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+    - sh: sudo apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main"
+    - sh: sudo apt update
+    - sh: sudo apt install -y cmake
     - sh: cmake --version
     - sh: g++ --version
 before_build:
